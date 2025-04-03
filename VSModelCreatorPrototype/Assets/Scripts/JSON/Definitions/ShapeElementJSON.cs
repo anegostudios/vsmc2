@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 
-[SerializeField]
+[System.Serializable]
 public class ShapeElementJSON
 {
 

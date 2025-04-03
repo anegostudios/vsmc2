@@ -18,10 +18,9 @@ public class ShapeJSON
 
     /// <summary>
     /// The animations for the shape.
+    /// We're gonna hold off on animations right now.
     /// </summary>
-    public Animation[] Animations;
-
-    public Dictionary<uint, Animation> AnimationsByCrc32 = new Dictionary<uint, Animation>();
+    //public AnimationJSON[] Animations;
 
     /// <summary>
     /// The width of the texture. (default: 16)
