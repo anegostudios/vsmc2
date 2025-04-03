@@ -55,8 +55,9 @@ public class CameraController : MonoBehaviour
         Vector2 mouseMovement = mousePosAction.ReadValue<Vector2>();
         if (lmbAction.IsPressed())
         {
-            cameraAnchorPos += (cameraChild.transform.right) * mouseMovement.x * lmbMovementSpeed;
-            cameraAnchorPos += (cameraChild.transform.up) * mouseMovement.y * lmbMovementSpeed;
+            //Using 'transform.right' and up here allow us to move the camera anchor in reference to the camera's angle.
+            cameraAnchorPos += cameraChild.transform.right * mouseMovement.x * lmbMovementSpeed;
+            cameraAnchorPos += cameraChild.transform.up * mouseMovement.y * lmbMovementSpeed;
         }
 
         if (rmbAction.IsPressed())
@@ -68,5 +69,13 @@ public class CameraController : MonoBehaviour
         distFromAnchor -= mouseScrollwheelAction.ReadValue<Vector2>().y * zoomSpeed;
         distFromAnchor = Mathf.Clamp(distFromAnchor, minMaxDistance.x, minMaxDistance.y);
         rotX = Mathf.Clamp(rotX, minMaxRotX.x, minMaxRotX.y);
+    }
+
+    public void ResetCamera()
+    {
+        rotX = 0;
+        rotY = 0;
+        distFromAnchor = 10;
+        cameraAnchorPos = Vector3.zero;
     }
 }
