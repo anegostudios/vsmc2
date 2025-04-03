@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System;
 using UnityEngine;
+using Unity.VisualScripting;
+using System.Runtime.Serialization;
 
 [System.Serializable]
 public class ShapeElementJSON
@@ -25,6 +27,12 @@ public class ShapeElementJSON
     /// The faces of the shape element by name (will normally be null except during object deserialization: use FacesResolved instead!)
     /// </summary>
     public Dictionary<string, ShapeElementFaceJSON> Faces;
+
+    /// <summary>
+    /// An array holding the faces of this shape element in BlockFacing order: North, East, South, West, Up, Down.  May be null if not present or not enabled.
+    /// </summary>
+    [DoNotSerialize()]
+    public ShapeElementFaceJSON[] FacesResolved = new ShapeElementFaceJSON[6];
 
     /// <summary>
     /// The origin point for rotation.
@@ -84,5 +92,65 @@ public class ShapeElementJSON
     /// The "remote" parent for this element
     /// </summary>
     public string StepParentName;
+
+
+    /// <summary>
+    /// Sets up a local transform matrix for the shape element. Mostly copied from game code.
+    /// </summary>
+    public Matrix4x4 GetLocalTransformMatrix(int animVersion = 1, Matrix4x4? output = null)
+    {
+        if (output == null) output = Matrix4x4.identity;
+
+        ShapeElementJSON elem = this;
+        Vector3 origin = new Vector3();
+
+        //Setup rotation origin.
+        if (elem.RotationOrigin != null)
+        {
+            origin.x = (float)elem.RotationOrigin[0] / 16;
+            origin.y = (float)elem.RotationOrigin[1] / 16;
+            origin.z = (float)elem.RotationOrigin[2] / 16;
+        }
+
+        // R = rotate, S = scale, T = translate
+        // Version 0: R * S * T
+        // Version 1: T * S * R
+
+        if (animVersion == 1)
+        {
+            output *= Matrix4x4.Translate(origin);
+            output *= Matrix4x4.Scale(new Vector3((float)elem.ScaleX, (float)elem.ScaleY, (float)elem.ScaleZ));
+
+            //Rotation. May be source of problems, as base game splits this to X, then Y, then Z. Should be fine though.
+            output *= Matrix4x4.Rotate(Quaternion.Euler((float)elem.RotationX, (float)elem.RotationY, (float)elem.RotationZ));
+            output *= Matrix4x4.Translate(-origin);
+            
+            //Going to ignore animation for now.
+        }
+        return output.Value;
+    }
+
+    [OnDeserialized()]
+    public void ResolveFaces(StreamingContext context)
+    {
+        if (Faces != null)
+        {
+            foreach (var val in Faces)
+            {
+                ShapeElementFaceJSON f = val.Value;
+                if (!f.Enabled) continue;
+                BlockFacing facing = BlockFacing.FromFirstLetter(val.Key);
+                FacesResolved[facing.index] = f;
+            }
+            if (Children != null)
+            {
+                foreach (ShapeElementJSON child in Children)
+                {
+                    child.ResolveFaces(context);
+                }
+            }
+        }
+    }
+
 
 }
