@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 
 /// <summary>
 /// This should be attached to the camera anchor. The camera itself will rotate around this.
+/// This is a very primitive camera controller. It has no smoothing or other such QOL features.
 /// </summary>
 public class CameraController : MonoBehaviour
 {
@@ -19,9 +20,16 @@ public class CameraController : MonoBehaviour
     public Vector2 minMaxRotX;
     public Vector2 minMaxDistance;
 
+    [Header("Speeds")]
+    public float lmbMovementSpeed = 0.1f;
+    public float rmbRotationSpeed = 0.5f;
+    public float zoomSpeed = 0.2f;
+
     InputAction mouseScrollwheelAction;
     InputAction rmbAction;
     InputAction mousePosAction;
+    InputAction lmbAction;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -29,6 +37,8 @@ public class CameraController : MonoBehaviour
         mouseScrollwheelAction = InputSystem.actions.FindAction("ScrollWheel");
         rmbAction = InputSystem.actions.FindAction("RightClick");
         mousePosAction = InputSystem.actions.FindAction("Look");
+        lmbAction = InputSystem.actions.FindAction("Click");
+        cameraAnchorPos = new Vector3();
     }
 
     // Update is called once per frame
@@ -42,14 +52,20 @@ public class CameraController : MonoBehaviour
 
     void DoMouseUpdates()
     {
-        if (rmbAction.IsPressed())
+        Vector2 mouseMovement = mousePosAction.ReadValue<Vector2>();
+        if (lmbAction.IsPressed())
         {
-            Vector2 mouseMovement = mousePosAction.ReadValue<Vector2>();
-            rotY = (rotY + mouseMovement.x) % 360;
-            rotX -= mouseMovement.y;
+            cameraAnchorPos += (cameraChild.transform.right) * mouseMovement.x * lmbMovementSpeed;
+            cameraAnchorPos += (cameraChild.transform.up) * mouseMovement.y * lmbMovementSpeed;
         }
 
-        distFromAnchor -= mouseScrollwheelAction.ReadValue<Vector2>().y;
+        if (rmbAction.IsPressed())
+        {
+            rotY = (rotY + (mouseMovement.x * rmbRotationSpeed)) % 360;
+            rotX -= (mouseMovement.y * rmbRotationSpeed);
+        }
+
+        distFromAnchor -= mouseScrollwheelAction.ReadValue<Vector2>().y * zoomSpeed;
         distFromAnchor = Mathf.Clamp(distFromAnchor, minMaxDistance.x, minMaxDistance.y);
         rotX = Mathf.Clamp(rotX, minMaxRotX.x, minMaxRotX.y);
     }
