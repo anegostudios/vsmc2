@@ -1,9 +1,5 @@
 using System;
 using UnityEngine;
-using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
-using static UnityEditor.Rendering.FilterWindow;
-using static UnityEngine.Mesh;
-using static UnityEngine.Rendering.ProbeAdjustmentVolume;
 
 public class ShapeTesselator
 {
