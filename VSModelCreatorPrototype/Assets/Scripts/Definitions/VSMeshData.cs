@@ -8,12 +8,16 @@ public class VSMeshData
     public List<Vector3> vertices;
     public List<Vector2> uvs;
     public List<int> indices;
+    
+    //One texture index per vertex.
+    public List<int> textureIndices;
 
     public VSMeshData()
     {
         vertices = new List<Vector3>();
         uvs = new List<Vector2>();
         indices = new List<int>();
+        textureIndices = new List<int>();
     }
 
     public void MatrixTransform(Matrix4x4 matrix)
@@ -33,5 +37,6 @@ public class VSMeshData
         {
             indices.Add(index + cvc);
         }
+        textureIndices.AddRange(other.textureIndices);
     }
 }

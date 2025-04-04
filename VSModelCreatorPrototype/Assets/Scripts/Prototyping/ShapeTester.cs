@@ -1,6 +1,8 @@
 using TMPro;
 using UnityEngine;
 using SFB;
+using UnityEngine.Rendering;
+using System.Collections.Generic;
 
 public class ShapeTester : MonoBehaviour
 {
@@ -42,7 +44,7 @@ public class ShapeTester : MonoBehaviour
         foreach (MeshFilter filters in GetComponentsInChildren<MeshFilter>())
         {
             pCount += filters.mesh.vertexCount;
-        }
+        }   
         shapeDetails.text = "Currently loaded " + transform.childCount + " models with a total of " + pCount + " polygons.";
     }
 
@@ -51,7 +53,14 @@ public class ShapeTester : MonoBehaviour
         try
         {
             ShapeTesselator tess = new ShapeTesselator();
-            VSMeshData mesh = tess.TesselateShape(ShapeAccessor.DeserializeShapeFromFile(filePath));
+            ShapeJSON shape = ShapeAccessor.DeserializeShapeFromFile(filePath);
+            VSMeshData mesh = tess.TesselateShape(shape);
+
+            errorDetails.text = "Textures:";
+            foreach (var val in shape.Textures)
+            {
+                errorDetails.text += "\n"+val.Key + " : " + val.Value;
+            }
 
             GameObject ch = GameObject.Instantiate(shapePrefab, transform);
             Mesh unityMesh = new Mesh();
@@ -59,11 +68,19 @@ public class ShapeTester : MonoBehaviour
             unityMesh.SetUVs(0, mesh.uvs);
             unityMesh.SetTriangles(mesh.indices, 0);
 
+            List<Vector2> textureIndicesV2 = new List<Vector2>();
+            foreach (int i in mesh.textureIndices)
+            {
+                textureIndicesV2.Add(new Vector2(i + 0.5f, i + 0.5f));
+            }
+            unityMesh.SetUVs(1, textureIndicesV2);
+
             unityMesh.RecalculateBounds();
             unityMesh.RecalculateNormals();
             unityMesh.RecalculateTangents();
 
             ch.GetComponent<MeshFilter>().mesh = unityMesh;
+            ch.GetComponent<MeshRenderer>().material.SetTexture("_AvailableTextures", shape.loadedTextures);
 
         } catch (System.Exception e)
         {

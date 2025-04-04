@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [System.Serializable]
@@ -34,6 +37,28 @@ public class ShapeElementFaceJSON
     /// Whether or not the element is enabled.
     /// </summary>
     public bool Enabled = true;
+
+    [DoNotSerialize]
+    public int textureIndex;
+
+    public void ResolveTexture(Dictionary<string, string> textures)
+    {
+        //Remove the #.
+        Texture = Texture.Substring(1);
+        int index = 0;
+        foreach (var pair in textures)
+        {
+            if (pair.Key.Equals(Texture, System.StringComparison.CurrentCultureIgnoreCase))
+            {
+                textureIndex = index;
+                return;
+            }
+            index++;
+        }
+        //No texture found - Use first texture as default.
+        Debug.LogWarning("No texture found for element with texture " + Texture);
+        textureIndex = 0;
+    }
 
 
 }

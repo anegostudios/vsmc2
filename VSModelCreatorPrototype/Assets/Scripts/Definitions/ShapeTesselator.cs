@@ -1,6 +1,9 @@
+using System;
 using UnityEngine;
 using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
+using static UnityEditor.Rendering.FilterWindow;
 using static UnityEngine.Mesh;
+using static UnityEngine.Rendering.ProbeAdjustmentVolume;
 
 public class ShapeTesselator
 {
@@ -115,49 +118,35 @@ public class ShapeTesselator
     {
         VSMeshData meshData = new VSMeshData();
 
-        stackMatrix.Clear();
-        stackMatrix.PushIdentity();
+        System.DateTime pre = System.DateTime.Now;
+        ResolveAllMatricesForShape(shape);
+        Debug.Log("Calculating full shape matrices took " + (DateTime.Now - pre).TotalMilliseconds + "ms.");
 
-        TesselateShapeElements(meshData, shape.Elements);
+        pre = System.DateTime.Now;
+        TesselateShapeElements(meshData, shape.Elements, shape.TextureSizeMultipliers);
+        Debug.Log("Calculating mesh data for shape took " + (DateTime.Now - pre).TotalMilliseconds + "ms.");
         return meshData;
     }
 
-    private void TesselateShapeElements(VSMeshData meshData, ShapeElementJSON[] elements)
+    private void TesselateShapeElements(VSMeshData meshData, ShapeElementJSON[] elements, Vector2[] textureSizes)
     {
         foreach (ShapeElementJSON element in elements)
         {
-            stackMatrix.Push();
-            if (element.RotationOrigin == null)
-            {
-                rotationOrigin = Vector3.zero;
-            }
-            else 
-            {
-                rotationOrigin = new Vector3((float)element.RotationOrigin[0], (float)element.RotationOrigin[1], (float)element.RotationOrigin[2]);
-                stackMatrix.Translate(rotationOrigin.x / 16, rotationOrigin.y / 16, rotationOrigin.z / 16);
-            }
-
-            stackMatrix.Rotate(element.RotationX, element.RotationY, element.RotationZ);
-            stackMatrix.Scale(element.ScaleX, element.ScaleY, element.ScaleZ);
-            stackMatrix.Translate((element.From[0] - rotationOrigin.x) / 16.0f, (element.From[1] - rotationOrigin.y) / 16.0f, (element.From[2] - rotationOrigin.z) / 16.0);
-
             //Tesselate element now.
             VSMeshData elementMeshData = new VSMeshData();
-            TesselateShapeElement(elementMeshData, element);
-            elementMeshData.MatrixTransform(stackMatrix.Top);
+            TesselateShapeElement(elementMeshData, element, textureSizes);
+            elementMeshData.MatrixTransform(element.cachedMatrix);
             meshData.AddToFromOther(elementMeshData);
 
             //Now do children.
             if (element.Children != null)
             {
-                TesselateShapeElements(meshData, element.Children);
+                TesselateShapeElements(meshData, element.Children, textureSizes);
             }
-
-            stackMatrix.Pop();
         }
     }
 
-    private void TesselateShapeElement(VSMeshData meshData, ShapeElementJSON element)
+    private void TesselateShapeElement(VSMeshData meshData, ShapeElementJSON element, Vector2[] textureSizes)
     {
         Vector3 size = new Vector3(
             ((float)element.To[0] - (float)element.From[0]) / 16f,
@@ -173,16 +162,17 @@ public class ShapeTesselator
             if (face == null) continue;
             BlockFacing facing = BlockFacing.ALLFACES[f];
 
-            Vector2 uv1 = new Vector2(face.Uv[0], face.Uv[1]);
-            Vector2 uv2 = new Vector2(face.Uv[2], face.Uv[3]);
+            Vector2 uv1 = new Vector2(face.Uv[0], face.Uv[3]);
+            Vector2 uv2 = new Vector2(face.Uv[2], face.Uv[1]);
 
             Vector2 uvSize = uv2 - uv1;
+            int rot = (int)(face.Rotation / 90);
 
-            AddFace(meshData, facing, relativeCenter, size, uv1, uvSize);
+            AddFace(meshData, facing, relativeCenter, size, uv1, uvSize, face.textureIndex, rot % 4, textureSizes);
         }
     }
 
-    private void AddFace(VSMeshData modeldata, BlockFacing facing, Vector3 relativeCenter, Vector3 size, Vector2 uvStart, Vector2 uvSize)
+    private void AddFace(VSMeshData modeldata, BlockFacing facing, Vector3 relativeCenter, Vector3 size, Vector2 uvStart, Vector2 uvSize, int faceTextureIndex, int uvRotation, Vector2[] textureSizes)
     {
         int coordPos = facing.index * 12; // 4 * 3 xyz's perface
         int uvPos = facing.index * 8;     // 4 * 2 uvs per face
@@ -190,12 +180,13 @@ public class ShapeTesselator
 
         for (int i = 0; i < 4; i++)
         {
-            int uvIndex = 2 * ((i) % 4) + uvPos;
+            int uvIndex = 2 * ((uvRotation + i) % 4) + uvPos;
             modeldata.vertices.Add(new Vector3(relativeCenter.x + size.x * CubeVertices[coordPos++] / 2,
                 relativeCenter.y + size.y * CubeVertices[coordPos++] / 2,
                 relativeCenter.z + size.z * CubeVertices[coordPos++] / 2));
             modeldata.uvs.Add(new Vector2(uvStart.x + uvSize.x * CubeUvCoords[uvIndex],
-                uvStart.y + uvSize.y * CubeUvCoords[uvIndex + 1]));
+                uvStart.y + uvSize.y * CubeUvCoords[uvIndex + 1]) / (ShapeJSON.MaxTextureSize * textureSizes[faceTextureIndex]));
+            modeldata.textureIndices.Add(faceTextureIndex);
         }
 
         // 2 triangles = 6 indices per face
@@ -206,6 +197,44 @@ public class ShapeTesselator
         modeldata.indices.Add(lastVertexNumber + 2);
         modeldata.indices.Add(lastVertexNumber + 3);
 
+    }
+
+    public void ResolveAllMatricesForShape(ShapeJSON shape)
+    {
+        stackMatrix.Clear();
+        stackMatrix.PushIdentity();
+        ResolveMatricesForShapeElements(shape.Elements);
+    }
+
+    private void ResolveMatricesForShapeElements(ShapeElementJSON[] elements)
+    {
+        foreach (ShapeElementJSON element in elements)
+        {
+            stackMatrix.Push();
+            if (element.RotationOrigin == null)
+            {
+                rotationOrigin = Vector3.zero;
+            }
+            else
+            {
+                rotationOrigin = new Vector3((float)element.RotationOrigin[0], (float)element.RotationOrigin[1], (float)element.RotationOrigin[2]);
+                stackMatrix.Translate(rotationOrigin.x / 16, rotationOrigin.y / 16, rotationOrigin.z / 16);
+            }
+
+            stackMatrix.Rotate(element.RotationX, element.RotationY, element.RotationZ);
+            stackMatrix.Scale(element.ScaleX, element.ScaleY, element.ScaleZ);
+            stackMatrix.Translate((element.From[0] - rotationOrigin.x) / 16.0f, (element.From[1] - rotationOrigin.y) / 16.0f, (element.From[2] - rotationOrigin.z) / 16.0);
+
+            //Clone the matrix for the element.
+            element.cachedMatrix = stackMatrix.Top * Matrix4x4.identity;
+
+            //Now do children.
+            if (element.Children != null)
+            {
+                ResolveMatricesForShapeElements(element.Children);
+            }
+            stackMatrix.Pop();
+        }
     }
 
 }

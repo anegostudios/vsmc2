@@ -93,9 +93,11 @@ public class ShapeElementJSON
     /// </summary>
     public string StepParentName;
 
+    public Matrix4x4 cachedMatrix;
 
     /// <summary>
     /// Sets up a local transform matrix for the shape element. Mostly copied from game code.
+    /// Not actually used lol
     /// </summary>
     public Matrix4x4 GetLocalTransformMatrix(int animVersion = 1, Matrix4x4? output = null)
     {
@@ -130,14 +132,14 @@ public class ShapeElementJSON
         return output.Value;
     }
 
-    [OnDeserialized()]
-    public void ResolveFaces(StreamingContext context)
+    public void ResolveFacesAndTextures(Dictionary<string, string> textures)
     {
         if (Faces != null)
         {
             foreach (var val in Faces)
             {
                 ShapeElementFaceJSON f = val.Value;
+                f.ResolveTexture(textures);
                 if (!f.Enabled) continue;
                 BlockFacing facing = BlockFacing.FromFirstLetter(val.Key);
                 FacesResolved[facing.index] = f;
@@ -146,11 +148,10 @@ public class ShapeElementJSON
             {
                 foreach (ShapeElementJSON child in Children)
                 {
-                    child.ResolveFaces(context);
+                    child.ResolveFacesAndTextures(textures);
                 }
             }
         }
     }
-
 
 }
