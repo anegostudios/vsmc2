@@ -12,6 +12,8 @@ public class VSMeshData
     //One texture index per vertex.
     public List<int> textureIndices;
 
+    public Matrix4x4 storedMatrix;
+
     public VSMeshData()
     {
         vertices = new List<Vector3>();
@@ -22,10 +24,13 @@ public class VSMeshData
 
     public void MatrixTransform(Matrix4x4 matrix)
     {
+        storedMatrix = matrix;
+        /*
         for (int i = 0; i < vertices.Count; i++)
         {
             vertices[i] = matrix.MultiplyPoint(vertices[i]);
         }
+        */
     }
 
     public void AddToFromOther(VSMeshData other)

@@ -73,6 +73,7 @@ public class ShapeElementJSON
     public string SeasonColorMap = null;
     public short RenderPass = -1;
     public short ZOffset = 0;
+
     /// <summary>
     /// Set this to true to disable randomDrawOffset and randomRotations on this specific element (e.g. used for the ice element of Coopers Reeds in Ice)
     /// </summary>
@@ -94,6 +95,7 @@ public class ShapeElementJSON
     public string StepParentName;
 
     public Matrix4x4 cachedMatrix;
+    public int storedMeshID;
 
     /// <summary>
     /// Sets up a local transform matrix for the shape element. Mostly copied from game code.

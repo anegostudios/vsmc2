@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ShapeTesselator
@@ -110,9 +111,9 @@ public class ShapeTesselator
             0, 1, 2,      0, 2, 3
         };
 
-    public VSMeshData TesselateShape(ShapeJSON shape)
+    public List<VSMeshData> TesselateShape(ShapeJSON shape)
     {
-        VSMeshData meshData = new VSMeshData();
+        List<VSMeshData> meshData = new List<VSMeshData>();
 
         System.DateTime pre = System.DateTime.Now;
         ResolveAllMatricesForShape(shape);
@@ -123,8 +124,8 @@ public class ShapeTesselator
         Debug.Log("Calculating mesh data for shape took " + (DateTime.Now - pre).TotalMilliseconds + "ms.");
         return meshData;
     }
-
-    private void TesselateShapeElements(VSMeshData meshData, ShapeElementJSON[] elements, Vector2[] textureSizes)
+        
+    private void TesselateShapeElements(List<VSMeshData> meshData, ShapeElementJSON[] elements, Vector2[] textureSizes)
     {
         foreach (ShapeElementJSON element in elements)
         {
@@ -132,7 +133,7 @@ public class ShapeTesselator
             VSMeshData elementMeshData = new VSMeshData();
             TesselateShapeElement(elementMeshData, element, textureSizes);
             elementMeshData.MatrixTransform(element.cachedMatrix);
-            meshData.AddToFromOther(elementMeshData);
+            meshData.Add(elementMeshData);
 
             //Now do children.
             if (element.Children != null)

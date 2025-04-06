@@ -54,38 +54,57 @@ public class ShapeTester : MonoBehaviour
         {
             ShapeTesselator tess = new ShapeTesselator();
             ShapeJSON shape = ShapeAccessor.DeserializeShapeFromFile(filePath);
-            VSMeshData mesh = tess.TesselateShape(shape);
-
+            List<VSMeshData> mesh = tess.TesselateShape(shape);
+            
             errorDetails.text = "Textures:";
             foreach (var val in shape.Textures)
             {
-                errorDetails.text += "\n"+val.Key + " : " + val.Value;
+                errorDetails.text += "\n" + val.Key + " : " + val.Value;
             }
 
-            GameObject ch = GameObject.Instantiate(shapePrefab, transform);
-            Mesh unityMesh = new Mesh();
-            unityMesh.SetVertices(mesh.vertices);
-            unityMesh.SetUVs(0, mesh.uvs);
-            unityMesh.SetTriangles(mesh.indices, 0);
-
-            List<Vector2> textureIndicesV2 = new List<Vector2>();
-            foreach (int i in mesh.textureIndices)
+            foreach (VSMeshData meshData in mesh)
             {
-                textureIndicesV2.Add(new Vector2(i + 0.5f, i + 0.5f));
+                
+                GameObject ch = GameObject.Instantiate(shapePrefab, transform);
+                ch.transform.position = meshData.storedMatrix.GetPosition();
+                ch.transform.rotation = meshData.storedMatrix.rotation;
+                ch.transform.localScale = meshData.storedMatrix.lossyScale;
+                Mesh unityMesh = new Mesh();
+                unityMesh.SetVertices(meshData.vertices);
+                unityMesh.SetUVs(0, meshData.uvs);
+                unityMesh.SetTriangles(meshData.indices, 0);
+
+                List<Vector2> textureIndicesV2 = new List<Vector2>();
+                foreach (int i in meshData.textureIndices)
+                {
+                    textureIndicesV2.Add(new Vector2(i + 0.5f, i + 0.5f));
+                }
+                unityMesh.SetUVs(1, textureIndicesV2);
+
+                unityMesh.RecalculateBounds();
+                unityMesh.RecalculateNormals();
+                unityMesh.RecalculateTangents();
+
+                ch.GetComponent<MeshFilter>().mesh = unityMesh;
+                ch.GetComponent<MeshRenderer>().material.SetTexture("_AvailableTextures", shape.loadedTextures);
+                ch.GetComponent<MeshCollider>().sharedMesh = unityMesh;
             }
-            unityMesh.SetUVs(1, textureIndicesV2);
-
-            unityMesh.RecalculateBounds();
-            unityMesh.RecalculateNormals();
-            unityMesh.RecalculateTangents();
-
-            ch.GetComponent<MeshFilter>().mesh = unityMesh;
-            ch.GetComponent<MeshRenderer>().material.SetTexture("_AvailableTextures", shape.loadedTextures);
-
         } catch (System.Exception e)
         {
             errorDetails.text = "Failed to add shape from path: "+filePath+" with following exception: "+e.Message;
             errorDetails.color = Color.red;
+        }
+    }
+
+    private void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit))
+            {
+                hit.collider.transform.position += Vector3.up;
+            }
         }
     }
 
