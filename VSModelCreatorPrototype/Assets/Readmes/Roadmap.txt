@@ -1,0 +1,24 @@
+
+	Feature Set & Potential Roadmap
+
+The following 'version split' is a potential indication of what order new features will be implemented in.
+
+Version 1:
+ - Load & Save JSON shapes.
+ - Basic Camera Controls
+ - Basic ShapeElement Editing:
+   - Name, Size, Position, Origin, Rotation, Enabled
+   - Visual Editing (3D on-screen movement)
+   - Per-Face Editing:
+	 - UV Coords
+	 - UV Rotation
+	 - Texture Setting
+	 - Not sure about entity-texture mode.
+ - Undoable & Redoable Actions
+ - Lighting Settings
+ 
+Version 2:
+ - Focus mainly on animation.
+
+Version 3:
+ - Further features, such as rendering settings.
