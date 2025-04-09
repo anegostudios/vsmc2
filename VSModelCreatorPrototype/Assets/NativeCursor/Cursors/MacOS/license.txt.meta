@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 830d6842cd336ea4a962b256e44ce162
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 220347
+  packageName: Native Cursor
+  packageVersion: 1.1.3
+  assetPath: Assets/NativeCursor/Cursors/MacOS/license.txt
+  uploadId: 718824

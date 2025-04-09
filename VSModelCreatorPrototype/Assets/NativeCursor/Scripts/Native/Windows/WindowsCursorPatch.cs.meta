@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 0ef7b9c4b8995534a89c48e816928dc7
+AssetOrigin:
+  serializedVersion: 1
+  productId: 220347
+  packageName: Native Cursor
+  packageVersion: 1.1.3
+  assetPath: Assets/NativeCursor/Scripts/Native/Windows/WindowsCursorPatch.cs
+  uploadId: 718824

@@ -1,0 +1,2 @@
+GNU General Public Licence v3.0
+https://www.gnome-look.org/p/1717914

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: de955c8b5ab91bb47be67045e83742b7
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 220347
+  packageName: Native Cursor
+  packageVersion: 1.1.3
+  assetPath: Assets/NativeCursor/Cursors/Linux/Horizontal Text Select.cur
+  uploadId: 718824

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d3b34267ca694374ab395977d8facae6
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 220347
+  packageName: Native Cursor
+  packageVersion: 1.1.3
+  assetPath: Assets/NativeCursor/Cursors/MacOS/resizenorthsouth.asset
+  uploadId: 718824

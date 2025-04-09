@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: ac7f6c89f9004142a8854b6d8457e71d
+timeCreated: 1706281414
+AssetOrigin:
+  serializedVersion: 1
+  productId: 220347
+  packageName: Native Cursor
+  packageVersion: 1.1.3
+  assetPath: Assets/NativeCursor/Scripts/Core/CursorStackUtils.cs
+  uploadId: 718824
