@@ -25,16 +25,12 @@ public class VSMeshData
     public void MatrixTransform(Matrix4x4 matrix)
     {
         storedMatrix = matrix;
-        /*
-        for (int i = 0; i < vertices.Count; i++)
-        {
-            vertices[i] = matrix.MultiplyPoint(vertices[i]);
-        }
-        */
     }
 
     public void AddToFromOther(VSMeshData other)
     {
+        //Merges two mesh data together.
+        //Unused now - Due to each shape being seperate.
         int cvc = vertices.Count;
         vertices.AddRange(other.vertices);
         uvs.AddRange(other.uvs);

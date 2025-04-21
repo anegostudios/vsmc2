@@ -46,11 +46,16 @@ public class ShapeJSON
     [OnDeserialized()]
     public void ResolveFacesAndTextures(StreamingContext context)
     {
+        // This code is testing crap that will be rewritten.
+        // We resolve all the textures and whatnot for each element.
         TextureSizeMultipliers = new Vector2[Textures.Count];
         foreach (ShapeElementJSON elem in Elements)
         {
             elem.ResolveFacesAndTextures(Textures);
         }
+        
+        //This actually loads the textures. 
+        // Yes, I'm very aware that this is hardcoded to use my own filepaths. Later this will be in a completely seperate class (i.e. TextureManager)
         loadedTextures = new Texture2DArray(MaxTextureSize, MaxTextureSize, Textures.Count, TextureFormat.RGBA32, false);
         loadedTextures.filterMode = FilterMode.Point;
         loadedTextures.wrapMode = TextureWrapMode.Clamp;
@@ -75,6 +80,13 @@ public class ShapeJSON
                         TextureSizeMultipliers[i] = Vector2.one;
                     }
 
+                    // This may seem to be quite odd code - And again, is going to be rewritten. But...
+                    //  The material works by using a Unity texture array - The shader then accesses the textures based on that.
+                    //  However, the texture array requires that all its textures are of the same size. BEcause of this, any loaded texture has to be padded to the correct size.
+                    //  There is definitely a better way of doing this - Either using a single texture that with custom calculated UVs - Or by using a texture array that recalculates size based on the largest texture.
+
+                    //Also the damn UVs start from bottom-left, whereas texture sizes start from top-left.
+                    //Means I can't just set pixels, I have to hack it. It doesn't take too long really.
                     Texture2D created = new Texture2D(MaxTextureSize, MaxTextureSize);
                     for (int x = 0; x < load.width; x++)
                     {
@@ -83,8 +95,9 @@ public class ShapeJSON
                             created.SetPixel(x, load.height - 1 - y, load.GetPixel(x, y));
                         }
                     }
-                    //created.SetPixels(0, 0, load.width, load.height, load.GetPixels());
                     created.Apply();
+                    
+                    //LoadedTextures is the texture array. We set the pixels of texture 'i'.
                     loadedTextures.SetPixels(created.GetPixels(), i);
                 }
                 catch (System.Exception e)

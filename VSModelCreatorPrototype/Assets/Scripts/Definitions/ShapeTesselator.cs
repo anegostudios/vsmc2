@@ -113,6 +113,30 @@ public class ShapeTesselator
 
     public List<VSMeshData> TesselateShape(ShapeJSON shape)
     {
+        /*
+         * Generating each shape's box is slightly different to how the game does it.
+         * The game follows the pattern of:
+         *      - foreach (ShapeElement):
+         *          - Generate 3D Matrix
+         *          - Generate Mesh Data
+         *          - Repeat with Children
+         * My code does the following:
+         *      - foreach (ShapeElement):
+         *          - Generate 3D Matrix
+         *          - Repeat with Children
+         *      - foreach (ShapeElement):
+         *          - Generate Mesh Data
+         *          - Repeat With Children
+         * It's been done this way to allow me to visualize how to seperate the models to move them much more efficiently.
+         * No point in recalculating the entire mesh if only one elements position has moved, basically.
+         */
+
+        /*
+         * All of this is timed as well.
+         * In general, shape matrices are taking less than a single millisecond to calculate for a complex model - So fast that they won't even log.
+         * The mesh data takes slightly longer, averaging at a few milliseconds for a complex model.
+         * Very promising for the live editor working at 60fps.
+         */
         List<VSMeshData> meshData = new List<VSMeshData>();
 
         System.DateTime pre = System.DateTime.Now;

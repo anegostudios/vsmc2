@@ -134,6 +134,9 @@ public class ShapeElementJSON
         return output.Value;
     }
 
+    /// <summary>
+    /// Resolves the face indices and the texture codes for the element and its children.
+    /// </summary>
     public void ResolveFacesAndTextures(Dictionary<string, string> textures)
     {
         if (Faces != null)

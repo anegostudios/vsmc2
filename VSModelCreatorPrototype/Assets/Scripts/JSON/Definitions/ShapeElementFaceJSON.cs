@@ -43,7 +43,8 @@ public class ShapeElementFaceJSON
 
     public void ResolveTexture(Dictionary<string, string> textures)
     {
-        //Remove the #.
+        //This essentially just finds the texture index based on the loaded textures.
+        //Remove the # from the start of the texture.
         Texture = Texture.Substring(1);
         int index = 0;
         foreach (var pair in textures)
