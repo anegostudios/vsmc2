@@ -11,6 +11,7 @@ public class CameraController : MonoBehaviour
 
     public GameObject cameraChild;
     public GameObject pivotChild;
+    public GameObject cameraCompass;
 
     public float rotX;
     public float rotY;
@@ -49,6 +50,7 @@ public class CameraController : MonoBehaviour
         gameObject.transform.localPosition = cameraAnchorPos;
         gameObject.transform.localEulerAngles = new Vector3(rotX, rotY, 0);
         cameraChild.transform.localPosition = new Vector3(0, 0, -distFromAnchor);
+        cameraCompass.transform.localEulerAngles = new Vector3(0,0,rotY);
     }
 
     void DoMouseUpdates()

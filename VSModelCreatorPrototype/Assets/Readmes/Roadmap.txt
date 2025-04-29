@@ -22,3 +22,14 @@ Version 2:
 
 Version 3:
  - Further features, such as rendering settings.
+
+
+
+ Tyrons Wants:
+
+Milestone 1
+- Work with radfast to see how much code can be referenced directly from VintageStoryLib.dll
+- Grid, Compass - Done
+- Left mouse, right mouse, scroll wheel
+- Element tree
+- Play Animations

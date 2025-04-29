@@ -23,9 +23,8 @@ public class ShapeJSON
 
     /// <summary>
     /// The animations for the shape.
-    /// We're gonna hold off on animations right now.
     /// </summary>
-    //public AnimationJSON[] Animations;
+    public VSAnimation[] Animations;
 
     /// <summary>
     /// The width of the texture. (default: 16)

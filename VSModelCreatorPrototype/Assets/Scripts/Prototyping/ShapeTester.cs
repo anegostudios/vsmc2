@@ -10,6 +10,7 @@ public class ShapeTester : MonoBehaviour
     public TMP_Text shapeDetails;
     public TMP_Text errorDetails;
     public GameObject shapePrefab;
+    public ShapeJSON shape;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -57,7 +58,7 @@ public class ShapeTester : MonoBehaviour
             
             //ShapeAccessor turns the shape from JSON into the appropriate JSON properties.
             // We also load textures at this point.
-            ShapeJSON shape = ShapeAccessor.DeserializeShapeFromFile(filePath);
+            shape = ShapeAccessor.DeserializeShapeFromFile(filePath);
             
             //VSMeshData stores a single 'box' in the modeler.
             List<VSMeshData> meshes = tess.TesselateShape(shape);
