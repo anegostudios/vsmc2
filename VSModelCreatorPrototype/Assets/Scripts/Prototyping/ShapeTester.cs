@@ -11,6 +11,7 @@ public class ShapeTester : MonoBehaviour
     public TMP_Text errorDetails;
     public GameObject shapePrefab;
     public ShapeJSON shape;
+    public ElementHierachyManager hierachy;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -45,8 +46,11 @@ public class ShapeTester : MonoBehaviour
         foreach (MeshFilter filters in GetComponentsInChildren<MeshFilter>())
         {
             pCount += filters.mesh.triangles.Length;
-        }   
-        shapeDetails.text = "Currently loaded " + transform.childCount + " models with a total of " + (pCount / 3) + " polygons.";
+        }
+        if (shapeDetails != null)
+        {
+            shapeDetails.text = "Currently loaded " + transform.childCount + " models with a total of " + (pCount / 3) + " polygons.";
+        }
     }
 
     void AddNewShapeFromPath(string filePath)
@@ -55,19 +59,25 @@ public class ShapeTester : MonoBehaviour
         {
             // The tesselator will be used to generate the mesh data.
             ShapeTesselator tess = new ShapeTesselator();
-            
+
             //ShapeAccessor turns the shape from JSON into the appropriate JSON properties.
             // We also load textures at this point.
             shape = ShapeAccessor.DeserializeShapeFromFile(filePath);
-            
+
+            //Create the element hierachy.
+            hierachy.StartCreatingElementPrefabs(shape);
+
             //VSMeshData stores a single 'box' in the modeler.
             List<VSMeshData> meshes = tess.TesselateShape(shape);
-            
+
             //Debug just to show loaded textures.
-            errorDetails.text = "Textures:";
-            foreach (var val in shape.Textures)
+            if (errorDetails != null)
             {
-                errorDetails.text += "\n" + val.Key + " : " + val.Value;
+                errorDetails.text = "Textures:";
+                foreach (var val in shape.Textures)
+                {
+                    errorDetails.text += "\n" + val.Key + " : " + val.Value;
+                }
             }
 
             foreach (VSMeshData meshData in meshes)
@@ -79,7 +89,7 @@ public class ShapeTester : MonoBehaviour
                 ch.transform.position = meshData.storedMatrix.GetPosition();
                 ch.transform.rotation = meshData.storedMatrix.rotation;
                 ch.transform.localScale = meshData.storedMatrix.lossyScale;
-                
+
                 //Unity stores meshes in the 'Mesh' class.
                 Mesh unityMesh = new Mesh();
                 unityMesh.SetVertices(meshData.vertices);
@@ -99,16 +109,21 @@ public class ShapeTester : MonoBehaviour
                 unityMesh.RecalculateBounds();
                 unityMesh.RecalculateNormals();
                 unityMesh.RecalculateTangents();
-                
+
                 //Now apply the sections to the Unity object.
                 ch.GetComponent<MeshFilter>().mesh = unityMesh;
                 ch.GetComponent<MeshRenderer>().material.SetTexture("_AvailableTextures", shape.loadedTextures);
                 ch.GetComponent<MeshCollider>().sharedMesh = unityMesh;
             }
-        } catch (System.Exception e)
+        }
+        catch (System.Exception e)
         {
-            errorDetails.text = "Failed to add shape from path: "+filePath+" with following exception: "+e.Message;
-            errorDetails.color = Color.red;
+            Debug.LogException(e);
+            if (errorDetails != null)
+            {
+                errorDetails.text = "Failed to add shape from path: " + filePath + " with following exception: " + e.Message;
+                errorDetails.color = Color.red;
+            }
         }
     }
 

@@ -1,5 +1,7 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 using UnityEngine.UIElements;
 
 /// <summary>
@@ -12,6 +14,7 @@ public class CameraController : MonoBehaviour
     public GameObject cameraChild;
     public GameObject pivotChild;
     public GameObject cameraCompass;
+    public RawImage sceneViewRawImage;
 
     public float rotX;
     public float rotY;
@@ -27,19 +30,14 @@ public class CameraController : MonoBehaviour
     public float rmbRotationSpeed = 0.5f;
     public float zoomSpeed = 0.2f;
 
-    InputAction mouseScrollwheelAction;
-    InputAction rmbAction;
     InputAction mousePosAction;
-    InputAction lmbAction;
-
+    bool lmbDown = false;
+    bool rmbDown = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        mouseScrollwheelAction = InputSystem.actions.FindAction("ScrollWheel");
-        rmbAction = InputSystem.actions.FindAction("RightClick");
         mousePosAction = InputSystem.actions.FindAction("Look");
-        lmbAction = InputSystem.actions.FindAction("Click");
         cameraAnchorPos = new Vector3();
     }
 
@@ -53,24 +51,40 @@ public class CameraController : MonoBehaviour
         cameraCompass.transform.localEulerAngles = new Vector3(0,0,rotY);
     }
 
+    public void SceneViewMouseDown(BaseEventData data)
+    {
+        if ((data as PointerEventData).button == PointerEventData.InputButton.Left) lmbDown = true;
+        else if ((data as PointerEventData).button == PointerEventData.InputButton.Right) rmbDown = true;
+    }
+
+    public void SceneViewMouseUp(BaseEventData data)
+    {
+        if ((data as PointerEventData).button == PointerEventData.InputButton.Left) lmbDown = false;
+        else if ((data as PointerEventData).button == PointerEventData.InputButton.Right) rmbDown = false;
+    }
+
+    public void SceneViewMouseScroll(BaseEventData data)
+    {
+        distFromAnchor -= (data as PointerEventData).scrollDelta.y * zoomSpeed;
+        distFromAnchor = Mathf.Clamp(distFromAnchor, minMaxDistance.x, minMaxDistance.y);
+    }
+
     void DoMouseUpdates()
     {
         Vector2 mouseMovement = mousePosAction.ReadValue<Vector2>();
-        if (lmbAction.IsPressed())
+        if (lmbDown)
         {
             //Using 'transform.right' and up here allow us to move the camera anchor in reference to the camera's angle.
             cameraAnchorPos += cameraChild.transform.right * mouseMovement.x * lmbMovementSpeed;
             cameraAnchorPos += cameraChild.transform.up * mouseMovement.y * lmbMovementSpeed;
         }
 
-        if (rmbAction.IsPressed())
+        if (rmbDown)
         {
             rotY = (rotY + (mouseMovement.x * rmbRotationSpeed)) % 360;
             rotX -= (mouseMovement.y * rmbRotationSpeed);
         }
 
-        distFromAnchor -= mouseScrollwheelAction.ReadValue<Vector2>().y * zoomSpeed;
-        distFromAnchor = Mathf.Clamp(distFromAnchor, minMaxDistance.x, minMaxDistance.y);
         rotX = Mathf.Clamp(rotX, minMaxRotX.x, minMaxRotX.y);
     }
 

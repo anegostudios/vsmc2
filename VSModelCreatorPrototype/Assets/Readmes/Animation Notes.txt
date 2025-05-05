@@ -53,3 +53,26 @@ Update updates every frame so exceptionally useful for what I need.
 
 
 Next thing is figuring out how joints work...
+
+ 
+ - Create Joints
+ - Create Animation Data
+
+
+
+
+"/// <summary>
+/// Represents a shape animation and can calculate the transformation matrices for each frame to be sent to the shader
+/// Process
+/// 1. For each frame, for each root element, calculate the transformation matrix. Curent model matrix is identy mat.
+/// 1.1. Get previous and next key frame. Apply translation, rotation and scale to model matrix.
+/// 1.2. Store this matrix as animationmatrix in list
+/// 1.3. For each child element
+/// 1.3.1. Multiply local transformation matrix with the animation matrix. This matrix is now the curent model matrix. Go to 1 with child elements as root elems
+/// 
+/// 2. For each frame, for each joint
+/// 2.1. Calculate the inverse model matrix 
+/// 2.2. Multiply stored animationmatrix with the inverse model matrix
+/// 
+/// 3. done
+/// </summary>"
