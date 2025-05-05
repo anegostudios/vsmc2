@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using VSMC;
 
 public class ElementHierachyItemPrefab : MonoBehaviour
 {
@@ -12,7 +13,7 @@ public class ElementHierachyItemPrefab : MonoBehaviour
     public GameObject parentedObject;
     public TMP_Text elementName;
 
-    public void InitializePrefab(ShapeElementJSON element, int parentCount)
+    public void InitializePrefab(ShapeElement element, int parentCount)
     {
         Color c = GetComponent<Image>().color;
         GetComponent<Image>().color = new Color(c.r, c.g, c.b, AlternateColor ? 0.15f : 0.25f); 

@@ -1,8 +1,8 @@
 using TMPro;
 using UnityEngine;
 using SFB;
-using UnityEngine.Rendering;
 using System.Collections.Generic;
+using VSMC;
 
 public class ShapeTester : MonoBehaviour
 {
@@ -10,7 +10,7 @@ public class ShapeTester : MonoBehaviour
     public TMP_Text shapeDetails;
     public TMP_Text errorDetails;
     public GameObject shapePrefab;
-    public ShapeJSON shape;
+    public Shape shape;
     public ElementHierachyManager hierachy;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -64,11 +64,25 @@ public class ShapeTester : MonoBehaviour
             // We also load textures at this point.
             shape = ShapeAccessor.DeserializeShapeFromFile(filePath);
 
+            shape.InitForAnimations("root");
+            foreach (VSMC.Animation i in shape.Animations)
+            {
+                Debug.Log("Loaded animation: " + i.Name);
+            }
+            foreach (var joint in shape.JointsById)
+            {
+                Debug.Log("Loaded joint for element " + joint.Value.Element.Name + " with ID " + joint.Key);
+            }
+            foreach (var elem in shape.Elements)
+            {
+                ListElementJoints(elem);
+            }
+
             //Create the element hierachy.
             hierachy.StartCreatingElementPrefabs(shape);
 
             //VSMeshData stores a single 'box' in the modeler.
-            List<VSMeshData> meshes = tess.TesselateShape(shape);
+            List<MeshData> meshes = tess.TesselateShape(shape);
 
             //Debug just to show loaded textures.
             if (errorDetails != null)
@@ -80,7 +94,7 @@ public class ShapeTester : MonoBehaviour
                 }
             }
 
-            foreach (VSMeshData meshData in meshes)
+            foreach (MeshData meshData in meshes)
             {
                 //Clone the pre-created 'shapePrefab' Unity object. This is preconfigured with the correct materials to render the mesh.
                 GameObject ch = GameObject.Instantiate(shapePrefab, transform);
@@ -123,6 +137,18 @@ public class ShapeTester : MonoBehaviour
             {
                 errorDetails.text = "Failed to add shape from path: " + filePath + " with following exception: " + e.Message;
                 errorDetails.color = Color.red;
+            }
+        }
+    }
+
+    void ListElementJoints(ShapeElement elem)
+    {
+        Debug.Log("Got joint " + elem.JointId + " for elem " + elem.Name);
+        if (elem.Children != null)
+        {
+            foreach (ShapeElement t in elem.Children)
+            {
+                ListElementJoints(t);
             }
         }
     }

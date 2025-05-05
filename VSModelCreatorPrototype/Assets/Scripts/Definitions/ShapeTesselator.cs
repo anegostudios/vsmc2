@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-
+using VSMC;
 public class ShapeTesselator
 {
 
@@ -111,7 +111,7 @@ public class ShapeTesselator
             0, 1, 2,      0, 2, 3
         };
 
-    public List<VSMeshData> TesselateShape(ShapeJSON shape)
+    public List<MeshData> TesselateShape(Shape shape)
     {
         /*
          * Generating each shape's box is slightly different to how the game does it.
@@ -137,7 +137,7 @@ public class ShapeTesselator
          * The mesh data takes slightly longer, averaging at a few milliseconds for a complex model.
          * Very promising for the live editor working at 60fps.
          */
-        List<VSMeshData> meshData = new List<VSMeshData>();
+        List<MeshData> meshData = new List<MeshData>();
 
         System.DateTime pre = System.DateTime.Now;
         ResolveAllMatricesForShape(shape);
@@ -149,12 +149,12 @@ public class ShapeTesselator
         return meshData;
     }
         
-    private void TesselateShapeElements(List<VSMeshData> meshData, ShapeElementJSON[] elements, Vector2[] textureSizes)
+    private void TesselateShapeElements(List<MeshData> meshData, ShapeElement[] elements, Vector2[] textureSizes)
     {
-        foreach (ShapeElementJSON element in elements)
+        foreach (ShapeElement element in elements)
         {
             //Tesselate element now.
-            VSMeshData elementMeshData = new VSMeshData();
+            MeshData elementMeshData = new MeshData();
             TesselateShapeElement(elementMeshData, element, textureSizes);
             elementMeshData.MatrixTransform(element.cachedMatrix);
             meshData.Add(elementMeshData);
@@ -167,7 +167,7 @@ public class ShapeTesselator
         }
     }
 
-    private void TesselateShapeElement(VSMeshData meshData, ShapeElementJSON element, Vector2[] textureSizes)
+    private void TesselateShapeElement(MeshData meshData, ShapeElement element, Vector2[] textureSizes)
     {
         Vector3 size = new Vector3(
             ((float)element.To[0] - (float)element.From[0]) / 16f,
@@ -179,7 +179,7 @@ public class ShapeTesselator
 
         for (int f = 0; f < 6; f++)
         {
-            ShapeElementFaceJSON face = element.FacesResolved[f];
+            ShapeElementFace face = element.FacesResolved[f];
             if (face == null) continue;
             BlockFacing facing = BlockFacing.ALLFACES[f];
 
@@ -193,7 +193,7 @@ public class ShapeTesselator
         }
     }
 
-    private void AddFace(VSMeshData modeldata, BlockFacing facing, Vector3 relativeCenter, Vector3 size, Vector2 uvStart, Vector2 uvSize, int faceTextureIndex, int uvRotation, Vector2[] textureSizes)
+    private void AddFace(MeshData modeldata, BlockFacing facing, Vector3 relativeCenter, Vector3 size, Vector2 uvStart, Vector2 uvSize, int faceTextureIndex, int uvRotation, Vector2[] textureSizes)
     {
         int coordPos = facing.index * 12; // 4 * 3 xyz's perface
         int uvPos = facing.index * 8;     // 4 * 2 uvs per face
@@ -206,7 +206,7 @@ public class ShapeTesselator
                 relativeCenter.y + size.y * CubeVertices[coordPos++] / 2,
                 relativeCenter.z + size.z * CubeVertices[coordPos++] / 2));
             modeldata.uvs.Add(new Vector2(uvStart.x + uvSize.x * CubeUvCoords[uvIndex],
-                uvStart.y + uvSize.y * CubeUvCoords[uvIndex + 1]) / (ShapeJSON.MaxTextureSize * textureSizes[faceTextureIndex]));
+                uvStart.y + uvSize.y * CubeUvCoords[uvIndex + 1]) / (Shape.MaxTextureSize * textureSizes[faceTextureIndex]));
             modeldata.textureIndices.Add(faceTextureIndex);
         }
 
@@ -220,16 +220,16 @@ public class ShapeTesselator
 
     }
 
-    public void ResolveAllMatricesForShape(ShapeJSON shape)
+    public void ResolveAllMatricesForShape(Shape shape)
     {
         stackMatrix.Clear();
         stackMatrix.PushIdentity();
         ResolveMatricesForShapeElements(shape.Elements);
     }
 
-    private void ResolveMatricesForShapeElements(ShapeElementJSON[] elements)
+    private void ResolveMatricesForShapeElements(ShapeElement[] elements)
     {
-        foreach (ShapeElementJSON element in elements)
+        foreach (ShapeElement element in elements)
         {
             stackMatrix.Push();
             if (element.RotationOrigin == null)

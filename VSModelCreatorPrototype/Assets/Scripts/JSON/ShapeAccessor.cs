@@ -1,12 +1,13 @@
-    using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.IO;
+using VSMC;
 using UnityEngine;
 
 public class ShapeAccessor
 {
     
-    public static void SerializeShapeToFile(ShapeJSON shape, string filePath)
+    public static void SerializeShapeToFile(Shape shape, string filePath)
     {
         File.WriteAllText(filePath, JsonConvert.SerializeObject(shape));
     }
@@ -16,7 +17,7 @@ public class ShapeAccessor
     /// </summary>
     /// <param name="filePath"></param>
     /// <returns></returns>
-    public static ShapeJSON DeserializeShapeFromFile(string filePath)
+    public static Shape DeserializeShapeFromFile(string filePath)
     {
         //Load file.
         string contents;
@@ -31,7 +32,7 @@ public class ShapeAccessor
         }
         
         //Deserialize.
-        return JsonConvert.DeserializeObject<ShapeJSON>(contents);
+        return JsonConvert.DeserializeObject<Shape>(contents);
     }
 
 
