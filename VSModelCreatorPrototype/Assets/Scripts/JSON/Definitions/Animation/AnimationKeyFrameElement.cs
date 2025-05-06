@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-
+    
 namespace VSMC
 {
     [JsonObject(MemberSerialization.OptIn)]

@@ -10375,13 +10375,6 @@ MonoBehaviour:
   shapeDetails: {fileID: 0}
   errorDetails: {fileID: 0}
   shapePrefab: {fileID: 987282006562597139, guid: 3f2c61870fa3cbf4d8e13c067f0e55ca, type: 3}
-  shape:
-    Elements: []
-    Animations: []
-    TextureWidth: 16
-    TextureHeight: 16
-    TextureSizeMultipliers: []
-    loadedTextures: {fileID: 0}
   hierachy: {fileID: 17008878}
 --- !u!4 &2132726834
 Transform:
