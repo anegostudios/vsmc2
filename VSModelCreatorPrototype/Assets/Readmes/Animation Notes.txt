@@ -76,3 +76,26 @@ Next thing is figuring out how joints work...
 /// 
 /// 3. done
 /// </summary>"
+
+
+
+
+
+	
+	Mat4f.Identity(ModelMat);
+	Mat4f.Translate(ModelMat, ModelMat, (float)(pos.X - entityPlayer.CameraPos.X), (float)(pos.Y - entityPlayer.CameraPos.Y), (float)(pos.Z - entityPlayer.CameraPos.Z));
+
+	if (CustomTransform != null)
+	{
+	 Mat4f.Multiply(ModelMat, ModelMat, CustomTransform);
+	}
+	else
+	{
+	 Mat4f.Translate(ModelMat, ModelMat, 0.5f, 0, 0.5f);
+	 Mat4f.Scale(ModelMat, ModelMat, ScaleX, ScaleY, ScaleZ);
+	 Mat4f.RotateY(ModelMat, ModelMat, rotationDeg.Y * GameMath.DEG2RAD);
+	 Mat4f.Translate(ModelMat, ModelMat, -0.5f, 0, -0.5f);
+	}
+	
+	
+	https://github.com/anegostudios/vsmodelcreator/blob/master/src/at/vintagestory/modelcreator/model/Element.java#L647
