@@ -10,6 +10,7 @@ namespace VSMC
         public List<Vector3> vertices;
         public List<Vector2> uvs;
         public List<int> indices;
+        public int jointID;
 
         //One texture index per vertex.
         public List<int> textureIndices;

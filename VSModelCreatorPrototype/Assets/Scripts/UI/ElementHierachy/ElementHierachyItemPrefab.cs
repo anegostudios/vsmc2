@@ -16,7 +16,8 @@ public class ElementHierachyItemPrefab : MonoBehaviour
     public void InitializePrefab(ShapeElement element, int parentCount)
     {
         Color c = GetComponent<Image>().color;
-        GetComponent<Image>().color = new Color(c.r, c.g, c.b, AlternateColor ? 0.15f : 0.25f); 
+        GetComponent<Image>().color = new Color(c.r, c.g, c.b, AlternateColor ? 0.15f : 0.25f);
+        AlternateColor = !AlternateColor;
         emptySpace.GetComponent<LayoutElement>().preferredWidth = parentCount * 16;
         parentedObject.SetActive(parentCount != 0);
         elementName.text = element.Name;

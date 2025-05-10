@@ -20,7 +20,14 @@ public class HorizontalSizeDragger : MonoBehaviour
                 return;
             }
 
-            parentLayoutElement.preferredWidth = Screen.width - Input.mousePosition.x;
+            if (fromRightHandSide)
+            {
+                parentLayoutElement.preferredWidth = Screen.width - Input.mousePosition.x;
+            }
+            else
+            {
+                parentLayoutElement.preferredWidth = Input.mousePosition.x;
+            }
         }
     }
 

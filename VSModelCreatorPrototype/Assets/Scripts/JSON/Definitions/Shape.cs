@@ -358,8 +358,8 @@ namespace VSMC
         /// <param name="requireJointsForElements"></param>
         public void InitForAnimations(string shapeNameForLogging, params string[] requireJointsForElements)
         {
-            CacheInvTransforms();
             Dictionary<string, ShapeElement> elementsByName = CollectAndResolveReferences(shapeNameForLogging);
+            CacheInvTransforms();
             ResolveAndFindJoints(shapeNameForLogging, elementsByName, requireJointsForElements);
         }
 

@@ -157,7 +157,9 @@ public class ShapeTesselator
             MeshData elementMeshData = new MeshData();
             TesselateShapeElement(elementMeshData, element, textureSizes);
             elementMeshData.MatrixTransform(element.cachedMatrix);
+            elementMeshData.jointID = element.JointId;
             meshData.Add(elementMeshData);
+            
 
             //Now do children.
             if (element.Children != null)

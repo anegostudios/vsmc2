@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace VSMC
@@ -15,10 +16,12 @@ namespace VSMC
         public Matrix4x4[] TransformationMatrices = new Matrix4x4[GlobalConstants.MaxAnimatedElements];
         public Matrix4x4[] TransformationMatricesDefaultPose = new Matrix4x4[GlobalConstants.MaxAnimatedElements];
 
-        //Although we're only going to play one animation at a time...
+        //Specific to VSMC. We only play a single animation at a time; So no need for the  
         public RunningAnimation[] CurAnims = new RunningAnimation[20];
 
         public bool CalculateMatrices { get; set; } = true;
+
+        public float walkSpeed;
 
         public Matrix4x4[] Matrices
         {
@@ -74,6 +77,8 @@ namespace VSMC
             }
         }
 
+
+
         public virtual void OnFrame(Dictionary<string, AnimationMetaData> activeAnimationsByAnimCode, float dt)
         {
             activeAnimCount = 0;
@@ -90,6 +95,7 @@ namespace VSMC
                 // Animation got started
                 if (!wasActive && anim.Active)
                 {
+                    Debug.Log("Animation started: "+anim.Animation.Code);
                     AnimNowActive(anim, animData);
                 }
 
@@ -105,7 +111,6 @@ namespace VSMC
                     {
                         anim.Stop();
                         activeAnimationsByAnimCode.Remove(anim.Animation.Code);
-                        onAnimationStoppedListener?.Invoke(anim.Animation.Code);
                     }
 
                     if (anim.Animation.OnActivityStopped == EnumEntityActivityStoppedHandling.PlayTillEnd)
@@ -133,7 +138,6 @@ namespace VSMC
                     if (anim.Animation.OnAnimationEnd == EnumEntityAnimationEndHandling.Stop || anim.Animation.OnAnimationEnd == EnumEntityAnimationEndHandling.EaseOut)
                     {
                         activeAnimationsByAnimCode.Remove(anim.Animation.Code);
-                        onAnimationStoppedListener?.Invoke(anim.Animation.Code);
                     }
                     continue;
                 }
@@ -152,6 +156,53 @@ namespace VSMC
 
 
             calculateMatrices(dt);
+        }
+
+        public virtual string DumpCurrentState()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < anims.Length; i++)
+            {
+                RunningAnimation anim = anims[i];
+
+                if (anim.Active && anim.Running) sb.Append("Active&Running: " + anim.Animation.Code);
+                else if (anim.Active) sb.Append("Active: " + anim.Animation.Code);
+                else if (anim.Running) sb.Append("Running: " + anim.Animation.Code);
+                else continue;
+
+                sb.Append(", easing: " + anim.EasingFactor);
+                sb.Append(", currentframe: " + anim.CurrentFrame);
+                sb.Append(", iterations: " + anim.Iterations);
+                sb.Append(", blendedweight: " + anim.BlendedWeight);
+                sb.Append(", animmetacode: " + anim.meta.Code);
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
+        }
+
+        protected virtual void AnimNowActive(RunningAnimation anim, AnimationMetaData animData)
+        {
+            anim.Running = true;
+            anim.Active = true;
+            anim.meta = animData;
+            anim.ShouldRewind = false;
+            anim.ShouldPlayTillEnd = false;
+            anim.CurrentFrame = animData.StartFrameOnce;
+            animData.StartFrameOnce = 0;
+        }
+
+        protected abstract void calculateMatrices(float dt);
+
+        public virtual ElementPose GetPosebyName(string name, StringComparison stringComparison = StringComparison.InvariantCultureIgnoreCase)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void ReloadAttachmentPoints()
+        {
+            throw new NotImplementedException();
         }
 
     }

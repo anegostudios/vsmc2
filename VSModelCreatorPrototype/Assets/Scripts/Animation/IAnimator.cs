@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System;
+using UnityEngine;
 
 namespace VSMC
 {
@@ -11,7 +12,7 @@ namespace VSMC
         /// <summary>
         /// The 30 pose transformation matrices that go to the shader
         /// </summary>
-        float[] Matrices { get; }
+        Matrix4x4[] Matrices { get; }
 
         /// <summary>
         /// Amount of currently active animations
@@ -44,7 +45,7 @@ namespace VSMC
         /// </summary>
         /// <param name="activeAnimationsByAnimCode"></param>
         /// <param name="dt"></param>
-        void OnFrame(float dt);
+        void OnFrame(Dictionary<string, AnimationMetaData> activeAnimationsByAnimCode, float dt);
 
         string DumpCurrentState();
         //void ReloadAttachmentPoints();

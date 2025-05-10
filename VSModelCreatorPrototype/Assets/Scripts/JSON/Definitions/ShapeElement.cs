@@ -128,7 +128,7 @@ namespace VSMC
         /// <summary>
         /// The cached inverse model transform for the element.
         /// </summary>
-        public Matrix4x4 inverseModelTransform;
+        public Matrix4x4 inverseModelTransform = Matrix4x4.zero;
 
         /// <summary>
         /// The cached matrix for this elements transformation.
@@ -169,7 +169,7 @@ namespace VSMC
 
         public void CacheInverseTransformMatrix()
         {
-            if (inverseModelTransform == null)
+            if (inverseModelTransform == Matrix4x4.zero)
             {
                 inverseModelTransform = GetInverseModelMatrix();
             }
@@ -259,26 +259,27 @@ namespace VSMC
             //Force anim version of 0.
 
 
-            if (animVersion == 1)
+            if (animVersion != -1)
             {
                 output *= Matrix4x4.Translate(origin);
 
-                Vector3 rotation = new Vector3();
+                //Vector3 rotation = new Vector3();
                 if (elem.RotationX + tf.degX + tf.degOffX != 0)
                 {
-                    rotation.x = (float)(elem.RotationX + tf.degX + tf.degOffX);
+                    output *= Matrix4x4.Rotate(Quaternion.Euler(new Vector3((float)(elem.RotationX + tf.degX + tf.degOffX), 0, 0)));
                 }
                 if (elem.RotationY + tf.degY + tf.degOffY != 0)
                 {
-                    rotation.y = (float)(elem.RotationY + tf.degY + tf.degOffY);
+                    output *= Matrix4x4.Rotate(Quaternion.Euler(new Vector3(0, (float)(elem.RotationY + tf.degY + tf.degOffY), 0)));
                 }
                 if (elem.RotationZ + tf.degZ + tf.degOffZ != 0)
                 {
-                    rotation.z = (float)(elem.RotationZ + tf.degZ + tf.degOffZ);
+                    output *= Matrix4x4.Rotate(Quaternion.Euler(new Vector3(0, 0, (float)(elem.RotationZ + tf.degZ + tf.degOffZ))));
                 }
 
                 //Rotation. May be source of problems, as base game splits this to X, then Y, then Z. Should be fine though.
-                output *= Matrix4x4.Rotate(Quaternion.Euler(rotation.x, rotation.y, rotation.z));
+                //Turns out it is absolutely not fine. Do them individually.
+                //output *= Matrix4x4.Rotate(Quaternion.Euler(rotation.x, rotation.y, rotation.z));
 
                 //Scale...
                 output *= Matrix4x4.Scale(new Vector3((float)elem.ScaleX * tf.scaleX, (float)elem.ScaleY * tf.scaleY, (float)elem.ScaleZ * tf.scaleZ));

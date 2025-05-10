@@ -14,7 +14,7 @@ namespace VSMC
         /// <summary>
         /// The model matrix of this element.
         /// </summary>
-        public float[] AnimModelMatrix;
+        public Matrix4x4 AnimModelMatrix;
 
         public List<ElementPose> ChildElementPoses = new List<ElementPose>();
 
@@ -90,12 +90,9 @@ namespace VSMC
             translateZ += (tf.translateZ * (1 - l) + tfNext.translateZ * l) * weight;
         }
 
-        internal void SetMat(float[] modelMatrix)
+        internal void SetMat(Matrix4x4 modelMatrix)
         {
-            for (int i = 0; i < 16; i++)
-            {
-                AnimModelMatrix[i] = modelMatrix[i];
-            }
+            AnimModelMatrix = modelMatrix * Matrix4x4.identity;
         }
 
         public override string ToString()
