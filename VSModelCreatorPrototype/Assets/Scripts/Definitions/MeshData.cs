@@ -6,7 +6,7 @@ namespace VSMC
 {
     public class MeshData
     {
-
+        public string meshName;
         public List<Vector3> vertices;
         public List<Vector2> uvs;
         public List<int> indices;
@@ -19,6 +19,7 @@ namespace VSMC
 
         public MeshData()
         {
+            meshName = "New Object";
             vertices = new List<Vector3>();
             uvs = new List<Vector2>();
             indices = new List<int>();

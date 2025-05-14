@@ -155,6 +155,7 @@ public class ShapeTesselator
         {
             //Tesselate element now.
             MeshData elementMeshData = new MeshData();
+            elementMeshData.meshName = element.Name;
             TesselateShapeElement(elementMeshData, element, textureSizes);
             elementMeshData.MatrixTransform(element.cachedMatrix);
             elementMeshData.jointID = element.JointId;

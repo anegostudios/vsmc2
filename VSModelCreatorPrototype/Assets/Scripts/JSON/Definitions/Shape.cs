@@ -48,6 +48,7 @@ namespace VSMC
         
         //Texture stuff.
         public static int MaxTextureSize = 512;
+        public static string TexturesPath;
         public Vector2[] TextureSizeMultipliers;
         public Texture2DArray loadedTextures;
 
@@ -70,6 +71,12 @@ namespace VSMC
                 elem.ResolveFacesAndTextures(Textures);
             }
 
+            if (Textures.Count < 1)
+            {
+                TextureSizeMultipliers = new Vector2[] { Vector2.one };
+                return;
+            }
+
             //This actually loads the textures. 
             // Yes, I'm very aware that this is hardcoded to use my own filepaths. Later this will be in a completely seperate class (i.e. TextureManager)
             loadedTextures = new Texture2DArray(MaxTextureSize, MaxTextureSize, Textures.Count, TextureFormat.RGBA32, false);
@@ -78,7 +85,7 @@ namespace VSMC
             int i = 0;
             foreach (var pair in Textures)
             {
-                string path = "C:\\Games\\Vintagestory120\\assets\\survival\\textures\\" + pair.Value + ".png";
+                string path = TexturesPath+"\\" + pair.Value + ".png";
                 if (File.Exists(path))
                 {
                     try

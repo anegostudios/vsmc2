@@ -15,7 +15,7 @@ public class FitRenderTextureToRawImage : MonoBehaviour
         RectTransform rect = GetComponent<RectTransform>();
         
         //Removes an error caused by the rect not being created yet.
-        if (rect.rect.width == 0 || rect.rect.height == 0) return;
+        if ((int)rect.rect.width <= 0 || (int)rect.rect.height <= 0) return;
 
         //RendTex sizes can't be changed while they exist. So release the texture, change the size, and recreate it.
         //Camera doesn't always update automatically - Refreshing the target texture should fix this.
