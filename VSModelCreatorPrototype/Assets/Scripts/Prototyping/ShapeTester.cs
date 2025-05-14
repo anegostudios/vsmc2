@@ -221,7 +221,7 @@ public class ShapeTester : MonoBehaviour
                 Destroy(t.gameObject);
             }
              
-            animator.OnFrame(activeAnimations, Time.deltaTime / 2);
+            animator.OnFrame(activeAnimations, Time.deltaTime);
 
             foreach (MeshData meshData in meshes)
             {

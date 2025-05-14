@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -11,23 +12,34 @@ using UnityEngine.UIElements;
 public class CameraController : MonoBehaviour
 {
 
+    enum CameraMode
+    {
+        Orbital = 0,
+        Free = 1
+    }
+
+    [Header("Unity References")]
     public GameObject cameraChild;
     public GameObject pivotChild;
     public GameObject cameraCompass;
     public RawImage sceneViewRawImage;
 
-    public float rotX;
-    public float rotY;
+    [Header("Button References")]
+    public TMP_Text cameraModeButtonText;
 
-    public Vector3 cameraAnchorPos;
-    public float distFromAnchor;
+    float rotX;
+    float rotY;
 
+    Vector3 cameraAnchorPos;
+    float distFromAnchor = 1;
+
+    [Header("Orbital Settings")]
     public Vector2 minMaxRotX;
     public Vector2 minMaxDistance;
 
     [Header("Speeds")]
-    public float lmbMovementSpeed = 0.1f;
-    public float rmbRotationSpeed = 0.5f;
+    public float movementSpeed = 0.1f;
+    public float rotationSpeed = 0.5f;
     public float zoomSpeed = 0.2f;
 
     InputAction mousePosAction;
@@ -39,6 +51,7 @@ public class CameraController : MonoBehaviour
     {
         mousePosAction = InputSystem.actions.FindAction("Look");
         cameraAnchorPos = new Vector3();
+        cameraModeButtonText.text = CurrentCameraMode.ToString();
     }
 
     // Update is called once per frame
@@ -47,8 +60,14 @@ public class CameraController : MonoBehaviour
         DoMouseUpdates();
         gameObject.transform.localPosition = cameraAnchorPos;
         gameObject.transform.localEulerAngles = new Vector3(rotX, rotY, 0);
-        cameraChild.transform.localPosition = new Vector3(0, 0, -distFromAnchor);
+
+        cameraChild.transform.localPosition = new Vector3(0, 0, CurrentCameraMode == CameraMode.Orbital ? -distFromAnchor : 0);
         cameraCompass.transform.localEulerAngles = new Vector3(0,0,rotY);
+        if (pivotChild != null)
+        {
+            pivotChild.SetActive(CurrentCameraMode == CameraMode.Orbital);
+            pivotChild.transform.rotation = Quaternion.identity;
+        }
     }
 
     public void SceneViewMouseDown(BaseEventData data)
@@ -65,8 +84,15 @@ public class CameraController : MonoBehaviour
 
     public void SceneViewMouseScroll(BaseEventData data)
     {
-        distFromAnchor -= (data as PointerEventData).scrollDelta.y * zoomSpeed;
-        distFromAnchor = Mathf.Clamp(distFromAnchor, minMaxDistance.x, minMaxDistance.y);
+        if (CurrentCameraMode == CameraMode.Orbital)
+        {
+            distFromAnchor -= (data as PointerEventData).scrollDelta.y * zoomSpeed;
+            distFromAnchor = Mathf.Clamp(distFromAnchor, minMaxDistance.x, minMaxDistance.y);
+        }
+        else
+        {
+            cameraAnchorPos += (data as PointerEventData).scrollDelta.y * zoomSpeed * (cameraChild.transform.forward);
+        }
     }
 
     void DoMouseUpdates()
@@ -75,17 +101,32 @@ public class CameraController : MonoBehaviour
         if (lmbDown)
         {
             //Using 'transform.right' and up here allow us to move the camera anchor in reference to the camera's angle.
-            cameraAnchorPos += cameraChild.transform.right * mouseMovement.x * lmbMovementSpeed;
-            cameraAnchorPos += cameraChild.transform.up * mouseMovement.y * lmbMovementSpeed;
+            cameraAnchorPos += cameraChild.transform.right * mouseMovement.x * movementSpeed;
+            cameraAnchorPos += cameraChild.transform.up * mouseMovement.y * movementSpeed;
         }
 
         if (rmbDown)
         {
-            rotY = (rotY + (mouseMovement.x * rmbRotationSpeed)) % 360;
-            rotX -= (mouseMovement.y * rmbRotationSpeed);
+            rotY = (rotY + (mouseMovement.x * rotationSpeed)) % 360;
+            rotX -= (mouseMovement.y * rotationSpeed);
         }
 
         rotX = Mathf.Clamp(rotX, minMaxRotX.x, minMaxRotX.y);
+    }
+
+    public void SwapCameraType()
+    {
+        if (CurrentCameraMode == CameraMode.Orbital)
+        {
+            CurrentCameraMode = CameraMode.Free;
+            cameraAnchorPos -= (cameraChild.transform.forward) * distFromAnchor;
+        }
+        else
+        {
+            CurrentCameraMode = CameraMode.Orbital;
+            cameraAnchorPos += (cameraChild.transform.forward) * distFromAnchor;
+        }
+        cameraModeButtonText.text = CurrentCameraMode.ToString();
     }
 
     public void ResetCamera()
@@ -95,4 +136,18 @@ public class CameraController : MonoBehaviour
         distFromAnchor = 10;
         cameraAnchorPos = Vector3.zero;
     }
+
+    CameraMode CurrentCameraMode
+    {
+        get
+        {
+            return (CameraMode)ProgramPreferences.CurrentCameraMode.GetValue();
+        }
+        set
+        {
+            ProgramPreferences.CurrentCameraMode.SetValue((int)value);
+        }
+    }
+
+
 }

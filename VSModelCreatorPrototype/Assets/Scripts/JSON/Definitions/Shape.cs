@@ -47,7 +47,7 @@ namespace VSMC
         public Dictionary<string, int[]> TextureSizes = new Dictionary<string, int[]>();
         
         //Texture stuff.
-        public static int MaxTextureSize = 128;
+        public static int MaxTextureSize = 512;
         public Vector2[] TextureSizeMultipliers;
         public Texture2DArray loadedTextures;
 
@@ -93,7 +93,7 @@ namespace VSMC
                         }
                         else
                         {
-                            TextureSizeMultipliers[i] = Vector2.one;
+                            TextureSizeMultipliers[i] = new Vector2((float)TextureWidth / load.width, (float)TextureHeight / load.height);
                         }
 
                         // This may seem to be quite odd code - And again, is going to be rewritten. But...
@@ -109,6 +109,10 @@ namespace VSMC
                             for (int y = 0; y < load.height; y++)
                             {
                                 created.SetPixel(x, load.height - 1 - y, load.GetPixel(x, y));
+                                if (load.GetPixel(x, y).a < 0.5)
+                                {
+                                    created.SetPixel(x, load.height - 1 - y, new Color(0, 0, 0, 0));
+                                }
                             }
                         }
                         created.Apply();
