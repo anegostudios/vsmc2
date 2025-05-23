@@ -26,6 +26,12 @@ public class ShapeTester : MonoBehaviour
     public Dictionary<string, AnimationMetaData> allAnimations;
     public Dictionary<string, AnimationMetaData> activeAnimations;
 
+    public Material outlineMat;
+    public Gradient outlineGrad;
+    public float outlineGradSpeed = 1;
+    float outlineGradVal = 0;
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -187,6 +193,25 @@ public class ShapeTester : MonoBehaviour
                 ch.GetComponent<MeshFilter>().mesh = unityMesh;
                 ch.GetComponent<MeshRenderer>().material.SetTexture("_AvailableTextures", shape.loadedTextures);
                 ch.GetComponent<MeshCollider>().sharedMesh = unityMesh;
+
+
+                //Do Object Lines
+                LineRenderer linesBase = ch.GetComponentInChildren<LineRenderer>();
+                foreach (int[] lineSet in meshData.lineIndices)
+                {
+                    //This is getting a little convoluted...
+                    LineRenderer lines = Instantiate(linesBase.gameObject, ch.transform).GetComponentInChildren<LineRenderer>();
+
+                    Vector3[] linePoses = new Vector3[lineSet.Length];
+                    for (int li = 0; li < lineSet.Length; li++)
+                    {
+                        linePoses[li] = meshData.vertices[lineSet[li]];
+                    }
+                    lines.positionCount = linePoses.Length;
+                    lines.SetPositions(linePoses);
+                }
+                Destroy(linesBase.gameObject);
+
             }
             
         }
@@ -226,6 +251,10 @@ public class ShapeTester : MonoBehaviour
             }
         }
         */
+
+        outlineGradVal += Time.deltaTime * outlineGradSpeed;
+        outlineGradVal = outlineGradVal % 1;
+        outlineMat.color = outlineGrad.Evaluate(outlineGradVal);
 
         if (animator != null && animate)
         {

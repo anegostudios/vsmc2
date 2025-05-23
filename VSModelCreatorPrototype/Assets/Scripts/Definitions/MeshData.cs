@@ -11,6 +11,7 @@ namespace VSMC
         public List<Vector2> uvs;
         public List<int> indices;
         public int jointID;
+        public List<int[]>  lineIndices;
 
         //One texture index per vertex.
         public List<int> textureIndices;
@@ -24,6 +25,7 @@ namespace VSMC
             uvs = new List<Vector2>();
             indices = new List<int>();
             textureIndices = new List<int>();
+            lineIndices = new List<int[]>();
         }
 
         public void MatrixTransform(Matrix4x4 matrix)
