@@ -1,8 +1,9 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace VSMC
 {
-    public class ShapeEditor : MonoBehaviour
+    public class ShapeEditor : ISceneRaycaster
     {
         [Header("Unity References")]
         public CameraController cameraController;
@@ -35,12 +36,47 @@ namespace VSMC
             editPulleys.gameObject.SetActive(false);
         }
 
-        public void OnSceneRaycast()
+        public override bool OnSceneViewMouseDown(Vector2 mouseClickScenePositionForCamera, PointerEventData data)
         {
+            if (data.button != 0 || !objectSelector.IsAnySelected()) return false;
+            if (Physics.Raycast(Camera.main.ScreenPointToRay(mouseClickScenePositionForCamera), out RaycastHit hit, float.MaxValue, LayerMask.GetMask("Edit Pulleys")))
+            {
+                ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
+                if (hit.collider.gameObject.name.StartsWith("X"))
+                {
+                    Debug.Log("Inc X by 1");
+                    cElem.From[0] += 1;
+                    cElem.To[0] += 1;
+                }
+                else if (hit.collider.gameObject.name.StartsWith("Y"))
+                {
+                    Debug.Log("Inc Y by 1");
+                    cElem.From[1] += 1;
+                    cElem.To[1] += 1;
+                }
+                else if (hit.collider.gameObject.name.StartsWith("Z"))
+                {
+                    Debug.Log("Inc Z by 1");
+                    cElem.From[2] += 1;
+                    cElem.To[2] += 1;
+                }
+                
+                ShapeTesselator.ResolveMatricesForShapeElementAndChildren(cElem);
+                objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().ReapplyTransformsFromMeshData(true);
+                return true;
+            }
+            return false;
 
-            //if no valid raycast...
-            //cameraController.SceneViewMouseDown
         }
 
+        public override bool OnSceneViewMouseScroll(PointerEventData data)
+        {
+            return false;
+        }
+
+        public override bool OnSceneViewMouseUp(PointerEventData data)
+        {
+            return false;
+        }
     }
 }

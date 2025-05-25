@@ -9,6 +9,7 @@ namespace VSMC
     public class ShapeElement
     {
 
+        #region JSON Properties
         /// <summary>
         /// The name of the ShapeElement
         /// </summary>
@@ -34,11 +35,6 @@ namespace VSMC
         /// </summary>
         [JsonProperty]
         public Dictionary<string, ShapeElementFace> Faces;
-
-        /// <summary>
-        /// An array holding the faces of this shape element in BlockFacing order: North, East, South, West, Up, Down.  May be null if not present or not enabled.
-        /// </summary>
-        public ShapeElementFace[] FacesResolved = new ShapeElementFace[6];
 
         /// <summary>
         /// The origin point for rotation.
@@ -114,6 +110,28 @@ namespace VSMC
         /// </summary>
         [JsonProperty]
         public string StepParentName;
+        #endregion
+
+        #region Runtime Properties
+        /// <summary>
+        /// The unique ID for this element.
+        /// </summary>
+        public int elementUID;
+        
+        /// <summary>
+        /// The stored mesh data for this element.
+        /// </summary>
+        public MeshData meshData;
+
+        /// <summary>
+        /// The game object for this element.
+        /// </summary>
+        public ShapeElementGameObject gameObject;
+
+        /// <summary>
+        /// An array holding the faces of this shape element in BlockFacing order: North, East, South, West, Up, Down.  May be null if not present or not enabled.
+        /// </summary>
+        public ShapeElementFace[] FacesResolved = new ShapeElementFace[6];
 
         /// <summary>
         /// The parent element reference for this shape.
@@ -129,11 +147,8 @@ namespace VSMC
         /// The cached inverse model transform for the element.
         /// </summary>
         public Matrix4x4 inverseModelTransform = Matrix4x4.zero;
-
-        /// <summary>
-        /// The cached matrix for this elements transformation.
-        /// </summary>
-        public Matrix4x4 cachedMatrix;
+                
+        #endregion
 
         /// <summary>
         /// Walks the element tree and collects all parents, starting with the root element
@@ -198,14 +213,9 @@ namespace VSMC
             return modelTransform.inverse;
         }
 
-        [Obsolete("Use SetJointIdRecursive instead.")]
-        internal void SetJointId(int jointId)
+        internal void ResolveReferncesAndUIDs()
         {
-            SetJointIdRecursive(jointId);
-        }
-
-        internal void ResolveRefernces()
-        {
+            elementUID = ShapeElementRegistry.main.AddShapeElement(this);
             var Children = this.Children;
             if (Children != null)
             {
@@ -213,7 +223,7 @@ namespace VSMC
                 {
                     ShapeElement child = Children[i];
                     child.ParentElement = this;
-                    child.ResolveRefernces();
+                    child.ResolveReferncesAndUIDs();
                 }
             }
 

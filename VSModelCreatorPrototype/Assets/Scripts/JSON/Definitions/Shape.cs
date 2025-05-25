@@ -171,7 +171,7 @@ namespace VSMC
 
             for (int i = 0; i < Elements.Length; i++)
             {
-                Elements[i].ResolveRefernces();
+                Elements[i].ResolveReferncesAndUIDs();
             }
 
             return elementsByName;

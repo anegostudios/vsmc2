@@ -34,5 +34,10 @@ namespace VSMC
         /// <param name="data">The passed event data.</param>
         public abstract bool OnSceneViewMouseUp(PointerEventData data);
 
+        public virtual void OnUpdateOverSceneView(Vector2 mouseScenePositionForCamera)
+        {
+
+        }
+
     }
 }

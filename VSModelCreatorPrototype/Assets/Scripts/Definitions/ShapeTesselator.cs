@@ -6,9 +6,10 @@ namespace VSMC
     public class ShapeTesselator
     {
 
-        StackMatrix4 stackMatrix = new StackMatrix4(64);
-        Vector3 rotationOrigin;
+        static StackMatrix4 stackMatrix = new StackMatrix4(64);
+        
 
+        #region Mesh Data Arrays
         /// <summary>
         /// XYZ Vertex positions for every vertex in a cube. Origin is the cube middle point.
         /// </summary>
@@ -121,8 +122,13 @@ namespace VSMC
         {
             0, 1, 2,      0, 2, 3
         };
+        #endregion
 
-        public List<MeshData> TesselateShape(Shape shape)
+        /// <summary>
+        /// This will fill in all shape elements mesh data fields.
+        /// </summary>
+        /// <param name="shape"></param>
+        public static void TesselateShape(Shape shape)
         {
             /*
              * Generating each shape's box is slightly different to how the game does it.
@@ -148,39 +154,44 @@ namespace VSMC
              * The mesh data takes slightly longer, averaging at a few milliseconds for a complex model.
              * Very promising for the live editor working at 60fps.
              */
-            List<MeshData> meshData = new List<MeshData>();
-
             System.DateTime pre = System.DateTime.Now;
+            TesselateShapeElements(shape.Elements, shape.TextureSizeMultipliers);
+            Debug.Log("Calculating mesh data for shape took " + (DateTime.Now - pre).TotalMilliseconds + "ms.");
+    
+            pre = System.DateTime.Now;
             ResolveAllMatricesForShape(shape);
             Debug.Log("Calculating full shape matrices took " + (DateTime.Now - pre).TotalMilliseconds + "ms.");
 
-            pre = System.DateTime.Now;
-            TesselateShapeElements(meshData, shape.Elements, shape.TextureSizeMultipliers);
-            Debug.Log("Calculating mesh data for shape took " + (DateTime.Now - pre).TotalMilliseconds + "ms.");
-            return meshData;
         }
 
-        private void TesselateShapeElements(List<MeshData> meshData, ShapeElement[] elements, Vector2[] textureSizes)
+        public static void ResolveMatricesForShapeElementAndChildren(ShapeElement element)
+        {
+            stackMatrix.Clear();
+            stackMatrix.PushIdentity();
+            stackMatrix.Push(element.ParentElement.meshData.storedMatrix);
+            ResolveMatricesForShapeElements(new ShapeElement[] { element });
+        }
+
+        private static void TesselateShapeElements(ShapeElement[] elements, Vector2[] textureSizes)
         {
             foreach (ShapeElement element in elements)
             {
                 //Tesselate element now.
                 MeshData elementMeshData = new MeshData();
                 elementMeshData.meshName = element.Name;
+                element.meshData = elementMeshData;
                 TesselateShapeElement(elementMeshData, element, textureSizes);
-                elementMeshData.MatrixTransform(element.cachedMatrix);
                 elementMeshData.jointID = element.JointId;
-                meshData.Add(elementMeshData);
 
                 //Now do children.
                 if (element.Children != null)
                 {
-                    TesselateShapeElements(meshData, element.Children, textureSizes);
+                    TesselateShapeElements(element.Children, textureSizes);
                 }
             }
         }
 
-        private void TesselateShapeElement(MeshData meshData, ShapeElement element, Vector2[] textureSizes)
+        private static void TesselateShapeElement(MeshData meshData, ShapeElement element, Vector2[] textureSizes)
         {
             Vector3 size = new Vector3(
                 ((float)element.To[0] - (float)element.From[0]) / 16f,
@@ -206,7 +217,7 @@ namespace VSMC
             }
         }
 
-        private void AddFace(MeshData modeldata, BlockFacing facing, Vector3 relativeCenter, Vector3 size, Vector2 uvStart, Vector2 uvSize, int faceTextureIndex, int uvRotation, Vector2[] textureSizes)
+        private static void AddFace(MeshData modeldata, BlockFacing facing, Vector3 relativeCenter, Vector3 size, Vector2 uvStart, Vector2 uvSize, int faceTextureIndex, int uvRotation, Vector2[] textureSizes)
         {
             int coordPos = facing.index * 12; // 4 * 3 xyz's perface
             int uvPos = facing.index * 8;     // 4 * 2 uvs per face
@@ -240,15 +251,16 @@ namespace VSMC
 
         }
 
-        public void ResolveAllMatricesForShape(Shape shape)
+        public static void ResolveAllMatricesForShape(Shape shape)
         {
             stackMatrix.Clear();
             stackMatrix.PushIdentity();
             ResolveMatricesForShapeElements(shape.Elements);
         }
 
-        private void ResolveMatricesForShapeElements(ShapeElement[] elements)
+        private static void ResolveMatricesForShapeElements(ShapeElement[] elements)
         {
+            Vector3 rotationOrigin = Vector3.zero;
             foreach (ShapeElement element in elements)
             {
                 stackMatrix.Push();
@@ -267,7 +279,7 @@ namespace VSMC
                 stackMatrix.Translate((element.From[0] - rotationOrigin.x) / 16.0f, (element.From[1] - rotationOrigin.y) / 16.0f, (element.From[2] - rotationOrigin.z) / 16.0);
 
                 //Clone the matrix for the element.
-                element.cachedMatrix = stackMatrix.Top * Matrix4x4.identity;
+                element.meshData.storedMatrix = stackMatrix.Top * Matrix4x4.identity;
 
                 //Now do children.
                 if (element.Children != null)

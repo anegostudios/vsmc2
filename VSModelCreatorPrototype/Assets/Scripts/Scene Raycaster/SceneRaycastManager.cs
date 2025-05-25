@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -24,18 +25,24 @@ namespace VSMC {
     public class SceneRaycastManager : MonoBehaviour
     {
         [Header("Unity References")]
-        public RawImage sceneViewRawImage;
+        public RectTransform sceneViewRawImage;
         public Camera sceneViewCamera;
+        public ShapeEditor shapeEditor;
         public CameraController cameraController;
         public ObjectSelector objectSelector;
 
         ISceneRaycaster[] sceneRaycastersByPriority;
 
+        //Cached scene values.
+        bool hasCache = false;
+        bool cachedIsMouseInScene = false;
+        Vector2 cachedMouseScenePos;
+
         private void Start()
         {
             sceneRaycastersByPriority = new ISceneRaycaster[]
             {
-                //Edit Controls
+                shapeEditor,
                 cameraController,
                 objectSelector
             };
@@ -65,9 +72,8 @@ namespace VSMC {
         {
             PointerEventData pData = data as PointerEventData;
             Vector2 pos;
-            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(sceneViewRawImage.GetComponent<RectTransform>(), pData.position, GetComponent<Camera>(), out pos))
+            if (GetMouseScenePositionForRaycast(out pos))
             {
-                pos += sceneViewRawImage.GetComponent<RectTransform>().rect.size / 2;
                 for (int i = 0; i < sceneRaycastersByPriority.Length; i++)
                 {
                     if (sceneRaycastersByPriority[i].OnSceneViewMouseDown(pos, pData))
@@ -93,5 +99,39 @@ namespace VSMC {
                 }
             }
         }
+
+        /// <summary>
+        /// This converts the current mouse position into a scene position, for a raycast. Returns false if the mouse is not in scene.
+        /// RectTransform calculations can sometimes be a bit more complex, and we may be using this multiple times per frame, so the result gets cached per frame.
+        /// </summary>
+        public bool GetMouseScenePositionForRaycast(out Vector2 pos)
+        {
+            //Check if we have the value cached for this frame already.
+            if (hasCache)
+            {
+                pos = cachedMouseScenePos;
+                return cachedIsMouseInScene;
+            }
+
+            //If not inside the scene view, this will return false and pos will be Vector2.zero.
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(sceneViewRawImage, Input.mousePosition, GetComponent<Camera>(), out pos))
+            {
+                pos += sceneViewRawImage.rect.size / 2;
+                hasCache = true;
+                cachedMouseScenePos = pos;
+                cachedIsMouseInScene = true;
+                return true;
+            }
+            hasCache = true;
+            cachedMouseScenePos = pos;
+            cachedIsMouseInScene = false;
+            return false;
+        }
+
+        private void Update()
+        {
+            hasCache = false;
+        }
+
     }
 }
