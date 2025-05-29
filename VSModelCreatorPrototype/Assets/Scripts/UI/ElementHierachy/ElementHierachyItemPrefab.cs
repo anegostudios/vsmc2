@@ -7,6 +7,7 @@ public class ElementHierachyItemPrefab : MonoBehaviour
 {
 
     static bool AlternateColor = false;
+    int elementUID;
     public GameObject emptySpace;
     public GameObject minMaxButton;
     public GameObject hideShowButton;
@@ -15,12 +16,18 @@ public class ElementHierachyItemPrefab : MonoBehaviour
 
     public void InitializePrefab(ShapeElement element, int parentCount)
     {
+        elementUID = element.elementUID;
         Color c = GetComponent<Image>().color;
         GetComponent<Image>().color = new Color(c.r, c.g, c.b, AlternateColor ? 0.15f : 0.25f);
         AlternateColor = !AlternateColor;
         emptySpace.GetComponent<LayoutElement>().preferredWidth = parentCount * 16;
         parentedObject.SetActive(parentCount != 0);
         elementName.text = element.Name;
+    }
+
+    public void OnElementNameClicked()
+    {
+        ObjectSelector.main.SelectFromUIElement(this);
     }
 
 }

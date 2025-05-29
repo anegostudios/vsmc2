@@ -7,7 +7,7 @@ namespace VSMC
     {
 
         static StackMatrix4 stackMatrix = new StackMatrix4(64);
-        
+        static Vector2[] storedTextureSizes;
 
         #region Mesh Data Arrays
         /// <summary>
@@ -155,6 +155,7 @@ namespace VSMC
              * Very promising for the live editor working at 60fps.
              */
             System.DateTime pre = System.DateTime.Now;
+            storedTextureSizes = shape.TextureSizeMultipliers;
             TesselateShapeElements(shape.Elements, shape.TextureSizeMultipliers);
             Debug.Log("Calculating mesh data for shape took " + (DateTime.Now - pre).TotalMilliseconds + "ms.");
     
@@ -168,8 +169,22 @@ namespace VSMC
         {
             stackMatrix.Clear();
             stackMatrix.PushIdentity();
-            stackMatrix.Push(element.ParentElement.meshData.storedMatrix);
+            //Add the parents stored matrix first, if it exists.
+            if (element.ParentElement != null)
+            {
+                stackMatrix.Push(element.ParentElement.meshData.storedMatrix);
+            }
             ResolveMatricesForShapeElements(new ShapeElement[] { element });
+        }
+
+        public static void RecreateMeshesForShapeElement(ShapeElement element)
+        {
+            //Tesselate element now.
+            MeshData elementMeshData = element.meshData;
+            elementMeshData.Clear();
+            elementMeshData.meshName = element.Name;
+            TesselateShapeElement(elementMeshData, element, storedTextureSizes);
+            elementMeshData.jointID = element.JointId;
         }
 
         private static void TesselateShapeElements(ShapeElement[] elements, Vector2[] textureSizes)

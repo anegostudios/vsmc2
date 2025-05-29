@@ -28,6 +28,15 @@ namespace VSMC
             lineIndices = new List<int[]>();
         }
 
+        public void Clear()
+        {
+            vertices = new List<Vector3>();
+            uvs = new List<Vector2>();
+            indices = new List<int>();
+            textureIndices = new List<int>();
+            lineIndices = new List<int[]>();
+        }
+
         public void MatrixTransform(Matrix4x4 matrix)
         {
             storedMatrix = matrix;

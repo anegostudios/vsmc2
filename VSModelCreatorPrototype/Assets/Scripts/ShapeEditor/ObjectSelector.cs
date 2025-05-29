@@ -12,9 +12,13 @@ namespace VSMC
     /// </summary>
     public class ObjectSelector : ISceneRaycaster
     {
+        public static ObjectSelector main;
+
         UnityEvent<GameObject> OnObjectSelected;
         UnityEvent<GameObject> OnObjectDeSelected;
         GameObject cSelected;
+
+        List<GameObject> cSelectedList;
 
         Vector2 storedMouseClickPosForObjectScrolling;
         RaycastHit[] storedRaycastHits;
@@ -23,20 +27,22 @@ namespace VSMC
 
         private void Awake()
         {
+            main = this;
             //Allow object scrolling of 32 objects
             storedRaycastHits = new RaycastHit[32];
+            cSelectedList = new List<GameObject>();
             OnObjectSelected = new UnityEvent<GameObject>();
             OnObjectDeSelected = new UnityEvent<GameObject>();
         }
 
         public bool IsAnySelected()
         {
-            return cSelected != null;
+            return cSelectedList.Count > 0;
         }
 
         public GameObject GetCurrentlySelected()
         {
-            return cSelected;
+            return cSelectedList[0];
         }
 
         public void RegisterForObjectSelectedEvent(UnityAction<GameObject> toCall)
@@ -91,38 +97,73 @@ namespace VSMC
         public override bool OnSceneViewMouseUp(PointerEventData data)
         {
             if (data.button != 0) return false;
-            if (storedRaycastHitCount <= 0) return false;
+            if (storedRaycastHitCount <= 0)
+            {
+                DeselectAll();
+                return true;
+            }
+            bool groupObjects = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftControl);
             if (scrollingObjectCounter >= storedRaycastHitCount)
             {
-                DeselectCurrentObject();
+                DeselectLast();
                 storedRaycastHitCount = 0;
                 scrollingObjectCounter = 0;
                 return true;
             }
-            SelectObject(storedRaycastHits[scrollingObjectCounter].collider.gameObject, true);
+            SelectObject(storedRaycastHits[scrollingObjectCounter].collider.gameObject, true, groupObjects);
             return true;
         }
 
-        public void SelectObject(GameObject newlySelected, bool deselectIfAlreadySelected = true)
+        public void SelectFromUIElement(ElementHierachyItemPrefab item)
         {
-            if (cSelected == newlySelected)
+            
+        }
+
+        public void DeselectObject(GameObject selected)
+        {
+            if (!cSelectedList.Remove(selected))
             {
+                Debug.LogError("Could not find selected object in list to deselect.");
+            }
+            OnObjectDeSelected.Invoke(selected);
+        }
+
+        public void DeselectLast()
+        {
+            if (cSelectedList.Count > 0)
+            {
+                DeselectObject(cSelectedList.Last());
+            }
+        }
+
+        public void DeselectAll()
+        {
+            foreach (GameObject g in cSelectedList)
+            {
+                OnObjectDeSelected.Invoke(g);
+            }
+            cSelectedList.Clear();
+        }
+
+        public void SelectObject(GameObject select, bool deselectIfAlreadySelected = true, bool group = false)
+        {
+            //Switch off grouping, for now. I'm unsure how to make it work with actual editing.
+            group = false;
+            if (cSelectedList.Contains(select))
+            {
+                //Object already selected...
                 if (deselectIfAlreadySelected)
                 {
-                    DeselectCurrentObject();
+                    DeselectObject(select);
                 }
                 return;
             }
-            DeselectCurrentObject();
-            cSelected = newlySelected;
-            OnObjectSelected.Invoke(cSelected);
-        }
-
-        public void DeselectCurrentObject()
-        {
-            if (cSelected == null) return;
-            OnObjectDeSelected.Invoke(cSelected);
-            cSelected = null;
+            if (cSelectedList.Count > 0 && !group)
+            {
+                DeselectAll();
+            }
+            cSelectedList.Add(select);
+            OnObjectSelected.Invoke(select);
         }
     }
 }

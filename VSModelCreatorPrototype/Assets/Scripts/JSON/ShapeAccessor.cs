@@ -9,7 +9,12 @@ public class ShapeAccessor
     
     public static void SerializeShapeToFile(Shape shape, string filePath)
     {
-        File.WriteAllText(filePath, JsonConvert.SerializeObject(shape));
+        JsonSerializerSettings settings = new JsonSerializerSettings()
+        {
+            NullValueHandling = NullValueHandling.Ignore,
+            DefaultValueHandling = DefaultValueHandling.Ignore,
+        };
+        File.WriteAllText(filePath, JsonConvert.SerializeObject(shape,Formatting.Indented,settings));
     }
 
     /// <summary>

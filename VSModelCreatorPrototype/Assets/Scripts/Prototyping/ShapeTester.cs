@@ -72,6 +72,17 @@ public class ShapeTester : MonoBehaviour
         Invoke("RecalculatePolyCount", 0);
     }
 
+    public void SaveShapeFile()
+    {
+        string saveTo = StandaloneFileBrowser.SaveFilePanel("Save file path", "", "shape.json", "json");
+        if (saveTo == null || saveTo.Length < 1)
+        {
+            return;
+        }
+        ShapeAccessor.SerializeShapeToFile(shape, saveTo);
+        Debug.Log("Exported successfully.");
+    }
+
     void RecalculatePolyCount()
     {
         int pCount = 0;
@@ -174,7 +185,6 @@ public class ShapeTester : MonoBehaviour
 
     void ListElementJoints(ShapeElement elem)
     {
-        Debug.Log("Got joint " + elem.JointId + " for elem " + elem.Name);
         if (elem.Children != null)
         {
             foreach (ShapeElement t in elem.Children)
@@ -186,18 +196,6 @@ public class ShapeTester : MonoBehaviour
 
     private void Update()
     {
-        /*
-        // Silly code, literally just to showcase how the elements can be moved in the program.
-        if (Input.GetMouseButtonDown(0))
-        {
-            RaycastHit hit;
-            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit))
-            {
-                hit.collider.transform.position += Vector3.up;
-            }
-        }
-        */
-
         outlineGradVal += Time.deltaTime * outlineGradSpeed;
         outlineGradVal = outlineGradVal % 1;
         outlineMat.color = outlineGrad.Evaluate(outlineGradVal);

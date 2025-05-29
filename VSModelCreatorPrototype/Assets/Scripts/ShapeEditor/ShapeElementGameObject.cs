@@ -49,7 +49,6 @@ namespace VSMC {
             gameObject.GetComponent<MeshCollider>().sharedMesh = unityMesh;
 
             RegenerateSelectionLinesFromMeshData();
-            RegenerateSelectionLinesFromMeshData();
         }
 
         /// <summary>
