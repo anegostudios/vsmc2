@@ -37,10 +37,21 @@ public class ShapeEditorUIElements : MonoBehaviour
 
     private void RegisterUIEvents()
     {
-        sizeX.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.X, float.Parse(val)); Debug.Log("Edited."); });
-        sizeY.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.Y, float.Parse(val)); Debug.Log("Edited."); });
-        sizeZ.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.Z, float.Parse(val)); Debug.Log("Edited."); });
-        Debug.Log("Events set.");
+        sizeX.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.X, float.Parse(val));});
+        sizeY.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.Y, float.Parse(val));});
+        sizeZ.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.Z, float.Parse(val));});
+
+        posX.onEndEdit.AddListener(val => { shapeEditor.SetPosition(EnumAxis.X, float.Parse(val)); });
+        posY.onEndEdit.AddListener(val => { shapeEditor.SetPosition(EnumAxis.Y, float.Parse(val)); });
+        posZ.onEndEdit.AddListener(val => { shapeEditor.SetPosition(EnumAxis.Z, float.Parse(val)); });
+
+        originX.onEndEdit.AddListener(val => { shapeEditor.SetRotationOrigin(EnumAxis.X, float.Parse(val)); });
+        originY.onEndEdit.AddListener(val => { shapeEditor.SetRotationOrigin(EnumAxis.Y, float.Parse(val)); });
+        originZ.onEndEdit.AddListener(val => { shapeEditor.SetRotationOrigin(EnumAxis.Z, float.Parse(val)); });
+
+        rotX.onEndEdit.AddListener(val => { shapeEditor.SetRotation(EnumAxis.X, float.Parse(val)); });
+        rotY.onEndEdit.AddListener(val => { shapeEditor.SetRotation(EnumAxis.Y, float.Parse(val)); });
+        rotZ.onEndEdit.AddListener(val => { shapeEditor.SetRotation(EnumAxis.Z, float.Parse(val)); });
     }
 
     public void OnElementSelected(ShapeElementGameObject element)

@@ -37,10 +37,10 @@ namespace VSMC
         public Dictionary<string, ShapeElementFace> Faces;
 
         /// <summary>
-        /// The origin point for rotation.
+        /// The origin point for rotation.0
         /// </summary>
         [JsonProperty]
-        public double[] RotationOrigin;
+        public double[] RotationOrigin = new double[3];
 
         /// <summary>
         /// The forward vertical rotation of the shape element.
