@@ -10,6 +10,9 @@ public class ShapeEditorUIElements : MonoBehaviour
 {
     public ShapeEditor shapeEditor;
 
+    [Header("Misc")]
+    public TMP_InputField elemName;
+
     [Header("Size")]
     public TMP_InputField sizeX;
     public TMP_InputField sizeY;
@@ -29,6 +32,9 @@ public class ShapeEditorUIElements : MonoBehaviour
     public TMP_InputField rotX;
     public TMP_InputField rotY;
     public TMP_InputField rotZ;
+    public RotationSlider rotXSlider;
+    public RotationSlider rotYSlider;
+    public RotationSlider rotZSlider;
 
     private void Start()
     {
@@ -37,6 +43,8 @@ public class ShapeEditorUIElements : MonoBehaviour
 
     private void RegisterUIEvents()
     {
+
+
         sizeX.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.X, float.Parse(val));});
         sizeY.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.Y, float.Parse(val));});
         sizeZ.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.Z, float.Parse(val));});
@@ -49,15 +57,22 @@ public class ShapeEditorUIElements : MonoBehaviour
         originY.onEndEdit.AddListener(val => { shapeEditor.SetRotationOrigin(EnumAxis.Y, float.Parse(val)); });
         originZ.onEndEdit.AddListener(val => { shapeEditor.SetRotationOrigin(EnumAxis.Z, float.Parse(val)); });
 
-        rotX.onEndEdit.AddListener(val => { shapeEditor.SetRotation(EnumAxis.X, float.Parse(val)); });
-        rotY.onEndEdit.AddListener(val => { shapeEditor.SetRotation(EnumAxis.Y, float.Parse(val)); });
-        rotZ.onEndEdit.AddListener(val => { shapeEditor.SetRotation(EnumAxis.Z, float.Parse(val)); });
+        //Rotation fields will also set their respective sliders.
+        rotX.onEndEdit.AddListener(val => { shapeEditor.SetRotation(EnumAxis.X, float.Parse(val)); rotXSlider.SetToRotationValue(float.Parse(val)); });
+        rotY.onEndEdit.AddListener(val => { shapeEditor.SetRotation(EnumAxis.Y, float.Parse(val)); rotZSlider.SetToRotationValue(float.Parse(val)); });
+        rotZ.onEndEdit.AddListener(val => { shapeEditor.SetRotation(EnumAxis.Z, float.Parse(val)); rotYSlider.SetToRotationValue(float.Parse(val)); });
+
+        rotXSlider.rotSlider.onValueChanged.AddListener(val => { shapeEditor.SetRotation(EnumAxis.X, rotXSlider.Val); rotX.SetTextWithoutNotify(rotXSlider.Val.ToString()); });
+        rotYSlider.rotSlider.onValueChanged.AddListener(val => { shapeEditor.SetRotation(EnumAxis.Y, rotYSlider.Val); rotY.SetTextWithoutNotify(rotYSlider.Val.ToString()); });
+        rotZSlider.rotSlider.onValueChanged.AddListener(val => { shapeEditor.SetRotation(EnumAxis.Z, rotZSlider.Val); rotZ.SetTextWithoutNotify(rotZSlider.Val.ToString()); });
     }
 
     public void OnElementSelected(ShapeElementGameObject element)
     {
         //Funtime naming of variables here.
         ShapeElement elem = element.element;
+        elemName.text = elem.Name;
+
         Vector3 size = new Vector3(
             (float)(elem.To[0] - elem.From[0]),
             (float)(elem.To[1] - elem.From[1]),
@@ -77,6 +92,9 @@ public class ShapeEditorUIElements : MonoBehaviour
         rotX.SetTextWithoutNotify(elem.RotationX.ToString());
         rotY.SetTextWithoutNotify(elem.RotationY.ToString());
         rotZ.SetTextWithoutNotify(elem.RotationZ.ToString());
+        rotXSlider.SetToRotationValue((float)elem.RotationX);
+        rotYSlider.SetToRotationValue((float)elem.RotationY);
+        rotZSlider.SetToRotationValue((float)elem.RotationZ);
     }
 
 

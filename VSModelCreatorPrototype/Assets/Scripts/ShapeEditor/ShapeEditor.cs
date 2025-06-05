@@ -43,6 +43,8 @@ namespace VSMC
 
         public override bool OnSceneViewMouseDown(Vector2 mouseClickScenePositionForCamera, PointerEventData data)
         {
+            return false;
+            //Temp removed. Come back to later.
             if (data.button != 0 || !objectSelector.IsAnySelected()) return false;
             if (Physics.Raycast(Camera.main.ScreenPointToRay(mouseClickScenePositionForCamera), out RaycastHit hit, float.MaxValue, LayerMask.GetMask("Edit Pulleys")))
             {

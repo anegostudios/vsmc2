@@ -30,4 +30,9 @@ public class ShapeElementRegistry : MonoBehaviour
         shapeElementByUID[prevUID] = element;
         return prevUID;
     }
+
+    public ShapeElement GetShapeElementByUID(int uid)
+    {
+        return shapeElementByUID[uid];
+    }
 }
