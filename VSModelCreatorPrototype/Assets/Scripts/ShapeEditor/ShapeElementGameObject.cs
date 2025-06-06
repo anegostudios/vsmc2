@@ -17,6 +17,10 @@ namespace VSMC {
             this.element = shapeElement;
             element.gameObject = this;
             gameObject.name = element.meshData.meshName;
+            if (element.ShouldHideFromView())
+            {
+                gameObject.SetActive(false);
+            }
             RegenerateMeshFromMeshData();
             ReapplyTransformsFromMeshData();
         }

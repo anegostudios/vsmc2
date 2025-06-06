@@ -114,7 +114,7 @@ namespace VSMC
             return true;
         }
 
-        public void SelectFromUIElement(ElementHierachyItemPrefab item)
+        public void SelectFromUIElement(ElementHierarchyItemPrefab item)
         {
             SelectObject(ShapeElementRegistry.main.GetShapeElementByUID(item.GetUID()).gameObject.gameObject, false);
         }

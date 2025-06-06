@@ -147,7 +147,17 @@ namespace VSMC
         /// The cached inverse model transform for the element.
         /// </summary>
         public Matrix4x4 inverseModelTransform = Matrix4x4.zero;
-                
+
+        /// <summary>
+        /// Is this object hidden in the editor?
+        /// </summary>
+        public bool hiddenFromView = false;
+
+        /// <summary>
+        /// Should this object be minimized in the element hierarchy?
+        /// </summary>
+        public bool minimizeFromThisObject = false;
+
         #endregion
 
         /// <summary>
@@ -165,6 +175,48 @@ namespace VSMC
             }
             path.Reverse();
             return path;
+        }
+
+        /// <summary>
+        /// Should this object be hidden in the editor? Will return yes if this or any parents are set to hide.
+        /// </summary>
+        /// <returns></returns>
+        public bool ShouldHideFromView()
+        {
+            if (hiddenFromView) return true;
+            if (ParentElement == null) return false;
+            return ParentElement.ShouldHideFromView();
+        }
+
+        /// <summary>
+        /// Should this object be completely hidden in the hierarchy? Will return yes only if a parent is set to hide.
+        /// </summary>
+        public bool ShouldMinimizeInUI()
+        {
+            if (ParentElement == null) return false;
+            if (ParentElement.minimizeFromThisObject) return true;
+            return ParentElement.ShouldMinimizeInUI();
+        }
+
+        public void RecalculateHiddenStatus()
+        {
+            //There is a more efficient way of doing this by caching the stored hidden status, but this is more robust and easier to code.
+            //After testing - It's actually pretty quick.
+            if (ShouldHideFromView() && gameObject != null)
+            {
+                gameObject.gameObject.SetActive(false);
+            }
+            else if (gameObject != null)
+            {
+                gameObject.gameObject.SetActive(true);
+            }
+            if (Children != null)
+            {
+                foreach (ShapeElement child in Children)
+                {
+                    child.RecalculateHiddenStatus();
+                }
+            }
         }
 
         /// <summary>

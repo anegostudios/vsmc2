@@ -11,7 +11,7 @@ public class ShapeTester : MonoBehaviour
     public TMP_Text errorDetails;
     public GameObject shapePrefab;
     public Shape shape;
-    public ElementHierachyManager hierachy;
+    public ElementHierarchyManager hierarchy;
     public bool animate = false;
 
     List<MeshData> meshes;
@@ -125,8 +125,8 @@ public class ShapeTester : MonoBehaviour
                 ListElementJoints(elem);
             }
 
-            //Create the element hierachy.
-            hierachy.StartCreatingElementPrefabs(shape);
+            //Create the element hierarchy.
+            hierarchy.StartCreatingElementPrefabs(shape);
 
             //Create the animator.
             if (shape.Animations != null)
