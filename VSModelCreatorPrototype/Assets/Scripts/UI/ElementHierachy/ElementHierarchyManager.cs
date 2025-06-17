@@ -13,11 +13,17 @@ public class ElementHierarchyManager : MonoBehaviour
     public Sprite HiddenSprite;
     public Sprite ShownSprite;
 
-    Dictionary<int, GameObject> uiElementsByUID;
+    Dictionary<int, GameObject> uiElementsByUID = new Dictionary<int, GameObject>();
 
     public void StartCreatingElementPrefabs(Shape shape)
     {
-        uiElementsByUID = new Dictionary<int, GameObject>();
+        //Remove existing elements.
+        foreach (Transform t in hierarchyParent.transform)
+        {
+            Destroy(t.gameObject);
+        }
+        uiElementsByUID.Clear();
+
         foreach (ShapeElement elem in shape.Elements)
         {
             CreateElementPrefabs(elem, 0);

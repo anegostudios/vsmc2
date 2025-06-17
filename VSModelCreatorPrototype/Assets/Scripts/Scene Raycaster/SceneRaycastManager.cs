@@ -29,6 +29,7 @@ namespace VSMC {
         public ShapeEditor shapeEditor;
         public CameraController cameraController;
         public ObjectSelector objectSelector;
+        public CanvasScaler mainCanvasScaler;
 
         ISceneRaycaster[] sceneRaycastersByPriority;
 
@@ -116,6 +117,10 @@ namespace VSMC {
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(sceneViewRawImage, Input.mousePosition, GetComponent<Camera>(), out pos))
             {
                 pos += sceneViewRawImage.rect.size / 2;
+
+                //The render texture is multiplied by the UI scale, so we need to do that here to for the mouse pos.
+                pos *= mainCanvasScaler.scaleFactor;
+
                 hasCache = true;
                 cachedMouseScenePos = pos;
                 cachedIsMouseInScene = true;

@@ -1,11 +1,12 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using VSMC;
 
 public class ShapeElementRegistry : MonoBehaviour
 {
     public static ShapeElementRegistry main;
-    public Dictionary<int, ShapeElement> shapeElementByUID;
+        Dictionary<int, ShapeElement> shapeElementByUID;
     int prevUID = -1;
 
     private void Awake()
@@ -34,5 +35,20 @@ public class ShapeElementRegistry : MonoBehaviour
     public ShapeElement GetShapeElementByUID(int uid)
     {
         return shapeElementByUID[uid];
+    }
+
+    /// <summary>
+    /// Finds and returns a shape element by its name.
+    /// Will search all elements until one matches - Use with caution for efficiency reasons.
+    /// Should return null if not found.
+    /// </summary>
+    public ShapeElement GetShapeElementByName(string name)
+    {
+        return shapeElementByUID.Values.FirstOrDefault(x => x.Name.Equals(name, System.StringComparison.CurrentCultureIgnoreCase));
+    }
+
+    public IEnumerable<ShapeElement> GetAllShapeElements()
+    {
+        return shapeElementByUID.Values;
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class HorizontalSizeDragger : MonoBehaviour
 {
 
+    public CanvasScaler mainCanvasScaler;
     public bool fromRightHandSide;
     public LayoutElement parentLayoutElement;
 
@@ -22,11 +23,11 @@ public class HorizontalSizeDragger : MonoBehaviour
 
             if (fromRightHandSide)
             {
-                parentLayoutElement.preferredWidth = Screen.width - Input.mousePosition.x;
+                parentLayoutElement.preferredWidth = (Screen.width - Input.mousePosition.x) / mainCanvasScaler.scaleFactor;
             }
             else
             {
-                parentLayoutElement.preferredWidth = Input.mousePosition.x;
+                parentLayoutElement.preferredWidth = Input.mousePosition.x / mainCanvasScaler.scaleFactor;
             }
         }
     }

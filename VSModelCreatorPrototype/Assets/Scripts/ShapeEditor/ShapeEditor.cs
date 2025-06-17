@@ -209,14 +209,12 @@ namespace VSMC
             objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().ReapplyTransformsFromMeshData(true);
         }
 
-        public override bool OnSceneViewMouseScroll(PointerEventData data)
+        public void CreateNewShapeElement()
         {
-            return false;
+            
         }
 
-        public override bool OnSceneViewMouseUp(PointerEventData data)
-        {
-            return false;
-        }
+        public override bool OnSceneViewMouseScroll(PointerEventData data) { return false; }
+        public override bool OnSceneViewMouseUp(PointerEventData data) { return false; }
     }
 }
