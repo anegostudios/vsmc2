@@ -3,7 +3,7 @@ Welcome to the VSMC2 (Vintage Story Model Creator 2) repository.
 # Intro - Please Read! #
 VSMC2 is primarily being developed by Nat from Anego Studios, and is currently not suitable or recommended for general use. It is provided to you to monitor development and explore the program as it progresses. 
 
-Please keep in mind that some issues will be present in the prerelease versions. If you find any major issues (e.g. program not loading or consistent crashes) then please contact Nat via the Vintage Story discord to report these, but please use some hesitation in regard to minor bug reports. Many of these are due to the program being still in a prototype stage for certain features.
+Please keep in mind that some issues will be present in the prerelease versions. If you find any major issues (e.g. program not loading or consistent crashes) then please use the GitHub issue reporter to report these, but please use some hesitation in regard to minor bug reports. Many of these are due to the program being still in a prototype stage for certain features.
 
 # Running VSMC2 #
 If you just want to use VSMC2 and are not interested in editing any code, then hop over to the [releases](https://github.com/anegostudios/VSModelCreatorProto/releases) and download the appropriate file for your operating system (currently Windows & Linux are supported).
