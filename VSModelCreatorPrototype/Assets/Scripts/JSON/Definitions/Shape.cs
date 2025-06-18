@@ -85,7 +85,8 @@ namespace VSMC
             int i = 0;
             foreach (var pair in Textures)
             {
-                string path = TexturesPath+"\\" + pair.Value + ".png";
+
+                string path = Path.Combine(TexturesPath, pair.Value + ".png");
                 if (File.Exists(path))
                 {
                     try

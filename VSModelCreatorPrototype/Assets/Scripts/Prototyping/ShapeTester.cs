@@ -50,11 +50,10 @@ public class ShapeTester : MonoBehaviour
         string vsPath = selectedFiles[0];
         while (!vsPath.EndsWith("assets"))
         {
-            Debug.Log(vsPath);
             vsPath = Directory.GetParent(vsPath).FullName;
         }
-        Shape.TexturesPath = vsPath + "//survival//textures";
-
+        Shape.TexturesPath = Path.Combine(vsPath, "survival", "textures");
+        
         foreach (GameObject joint in joints)
         {
             foreach (Transform child in joint.transform)

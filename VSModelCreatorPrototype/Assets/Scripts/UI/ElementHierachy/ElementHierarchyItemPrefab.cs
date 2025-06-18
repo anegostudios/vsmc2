@@ -2,7 +2,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using VSMC;
-using static UnityEditor.Rendering.FilterWindow;
 
 public class ElementHierarchyItemPrefab : MonoBehaviour
 {
