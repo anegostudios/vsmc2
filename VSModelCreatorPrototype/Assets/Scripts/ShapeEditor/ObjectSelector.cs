@@ -119,13 +119,17 @@ namespace VSMC
             SelectObject(ShapeElementRegistry.main.GetShapeElementByUID(item.GetUID()).gameObject.gameObject, false);
         }
 
-        public void DeselectObject(GameObject selected)
+        public void DeselectObject(GameObject deselected)
         {
-            if (!cSelectedList.Remove(selected))
+            if (!cSelectedList.Remove(deselected))
             {
                 Debug.LogError("Could not find selected object in list to deselect.");
             }
-            OnObjectDeSelected.Invoke(selected);
+            foreach (LineRenderer lines in deselected.GetComponentsInChildren<LineRenderer>())
+            {
+                lines.enabled = false;
+            }
+            OnObjectDeSelected.Invoke(deselected);
         }
 
         public void DeselectLast()
@@ -138,11 +142,10 @@ namespace VSMC
 
         public void DeselectAll()
         {
-            foreach (GameObject g in cSelectedList)
+            while (cSelectedList.Count > 0)
             {
-                OnObjectDeSelected.Invoke(g);
+                DeselectObject(cSelectedList.First());
             }
-            cSelectedList.Clear();
         }
 
         public void SelectObject(GameObject select, bool deselectIfAlreadySelected = true, bool group = false)
@@ -163,6 +166,13 @@ namespace VSMC
                 DeselectAll();
             }
             cSelectedList.Add(select);
+
+            //Highlight Object
+            foreach (LineRenderer lines in select.GetComponentsInChildren<LineRenderer>())
+            {
+                lines.enabled = true;
+            }
+
             OnObjectSelected.Invoke(select);
         }
     }

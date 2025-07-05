@@ -1,15 +1,17 @@
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Animations;
 using UnityEngine.EventSystems;
 
 namespace VSMC
 {
-    public class ShapeEditor : ISceneRaycaster
+    public class ShapeModelEditor : ISceneRaycaster
     {
         [Header("Unity References")]
         public CameraController cameraController;
         public GameObject editPulleys;
         public ObjectSelector objectSelector;
+        public ElementHierarchyManager elementHierarchyManager;
 
         [Header("UI References")]
         public ShapeEditorUIElements uiElements;
@@ -18,14 +20,14 @@ namespace VSMC
         {
             objectSelector.RegisterForObjectSelectedEvent(OnObjectSelected);
             objectSelector.RegisterForObjectDeselectedEvent(OnObjectDeselcted);
+            EditModeManager.RegisterForOnModeSelect(OnEditModeSelect);
+            EditModeManager.RegisterForOnModeDeselect(OnEditModeDeselect);
         }
 
         private void OnObjectSelected(GameObject cSelected)
         {
-            foreach (LineRenderer lines in cSelected.GetComponentsInChildren<LineRenderer>())
-            {
-                lines.enabled = true;
-            }
+            if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
+            
             editPulleys.transform.position = cSelected.transform.position;
             editPulleys.transform.rotation = cSelected.transform.rotation;
             editPulleys.SetActive(true);
@@ -34,10 +36,8 @@ namespace VSMC
 
         private void OnObjectDeselcted(GameObject deSelected)
         {
-            foreach (LineRenderer lines in deSelected.GetComponentsInChildren<LineRenderer>())
-            {
-                lines.enabled = false;
-            }
+            if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
+            
             editPulleys.gameObject.SetActive(false);
         }
 
@@ -209,9 +209,135 @@ namespace VSMC
             objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().ReapplyTransformsFromMeshData(true);
         }
 
+        void OnEditModeSelect(VSEditMode sel)
+        {
+            if (sel != VSEditMode.Model) return;
+        }
+
+        void OnEditModeDeselect(VSEditMode desel)
+        {
+            if (desel != VSEditMode.Model) return;
+        }
+
         public void CreateNewShapeElement()
         {
-            
+            /*
+             * Okay, this function is quite a horrid bit of code.
+             * I feel like it should be much more streamlined to add a new element.
+             */
+            if (!objectSelector.IsAnySelected()) return;
+            ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
+            ShapeElement newElem = new ShapeElement()
+            {
+                From = new double[] { 0, 0, 0 },
+                To = new double[] { 1, 1, 1 },
+                ParentElement = cElem,
+                Name = "New Object",
+            };
+            newElem.ResolveReferncesAndUIDs();
+            newElem.FacesResolved = new ShapeElementFace[6];
+            for (int i = 0; i < 6; i++)
+            {
+                newElem.FacesResolved[i] = new ShapeElementFace()
+                {
+                    Enabled = true,
+                    Uv = new float[] { 0, 0, 1, 1}
+                };
+            }
+            ShapeElement[] newChildren = new ShapeElement[cElem.Children == null ? 1 : cElem.Children.Length + 1];
+            cElem.Children?.CopyTo(newChildren, 0);
+            newChildren[newChildren.Length - 1] = newElem;
+            cElem.Children = newChildren;
+            ShapeTesselator.TesselateShapeElements(new ShapeElement[] { newElem }, ShapeLoader.main.shapeHolder.cLoadedShape.TextureSizeMultipliers);
+            ShapeTesselator.ResolveMatricesForShapeElementAndChildren(newElem);
+            ShapeLoader.main.shapeHolder.CreateShapeElementGameObject(newElem);
+            elementHierarchyManager.StartCreatingElementPrefabs(ShapeLoader.main.shapeHolder.cLoadedShape);
+            objectSelector.SelectObject(newElem.gameObject.gameObject, false, false);
+        }
+
+        public void DeleteSelectedShapeElement()
+        {
+            if (!objectSelector.IsAnySelected()) return;
+            ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
+            List<string> removedElements = new List<string>();
+            DeleteShapeElement(cElem, removedElements);
+
+            //Now delete animation entries which were in removedElements.
+            foreach (Animation anim in ShapeLoader.main.shapeHolder.cLoadedShape.Animations)
+            {
+                foreach (AnimationKeyFrame keyFrame in anim.KeyFrames)
+                {
+                    foreach (string s in removedElements)
+                    {
+                        if (keyFrame.Elements.ContainsKey(s))
+                        {
+                            keyFrame.Elements.Remove(s);
+                        }
+                    }
+                }
+            }
+
+            //Only need to remove the parent. GC should clear the rest. Also will make undo code easier.
+            cElem.ParentElement.Children = cElem.ParentElement.Children.Remove(cElem);
+
+        }
+
+        private void DeleteShapeElement(ShapeElement elem, List<string> removedElements)
+        {
+            /* Deletion is a little more complex.
+             * We need to delete all children first, and the childrens children, so on, so call this recursively.
+             * We need to remove the animation entries - This will be done after all the deletions.
+             * We need to then remove the elements from the UI.
+             * Then deregister in the element registry.
+             * Then delete the gameobject.
+             * And finally remove the entry from the shape - Also only done with the selected element, after deletions.
+             */
+            if (elem.Children != null)
+            {
+                foreach (ShapeElement child in elem.Children)
+                {
+                    DeleteShapeElement(child, removedElements);
+                }
+            }
+            removedElements.Add(elem.Name);
+            Destroy(elementHierarchyManager.GetElementHierarchyItem(elem).gameObject);
+            ShapeElementRegistry.main.UnregisterShapeElement(elem);
+            Destroy(elem.gameObject.gameObject);
+        }
+
+        /// <summary>
+        /// Renames an element, if possible. Returns either the new name if success, or the old name if failed.
+        /// </summary>
+        public string RenameElement(string newName)
+        {
+            //Need to rename the element, but then swap all names in the shape animations too...
+            if (!objectSelector.IsAnySelected()) return "";
+            ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
+            string oldName = cElem.Name;
+
+            //Check for name set fails.
+            if (ShapeElementRegistry.main.GetShapeElementByName(newName) != null) return oldName;
+            if (newName.Length < 1) return oldName;
+
+            cElem.Name = newName;
+            cElem.gameObject.name = newName;
+
+            //Rename element in UI.
+            elementHierarchyManager.GetElementHierarchyItem(cElem).elementName.text = newName;
+
+            foreach (Animation anim in ShapeLoader.main.shapeHolder.cLoadedShape.Animations)
+            {
+                foreach (AnimationKeyFrame keyFrame in anim.KeyFrames)
+                {
+                    if (keyFrame.Elements.ContainsKey(oldName))
+                    {
+                        keyFrame.Elements[newName] = keyFrame.Elements[oldName];
+                        keyFrame.Elements.Remove(oldName);
+                    }
+                }
+            }
+
+            return newName;
         }
 
         public override bool OnSceneViewMouseScroll(PointerEventData data) { return false; }

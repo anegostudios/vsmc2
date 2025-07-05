@@ -3,21 +3,20 @@ using UnityEngine;
 using static UnityEngine.Rendering.ProbeAdjustmentVolume;
 
 namespace VSMC {
+
     /// <summary>
     /// This is a physical representation of a ShapeElement in Unity.
     /// </summary>
     public class ShapeElementGameObject : MonoBehaviour
     {
-        public Shape shape;
         public ShapeElement element;
 
-        public void InitializeElement(ShapeElement shapeElement, Shape shape)
+        public void InitializeElement(ShapeElement shapeElement)
         {
-            this.shape = shape;
             this.element = shapeElement;
             element.gameObject = this;
-            gameObject.name = element.meshData.meshName;
-            if (element.ShouldHideFromView())
+            gameObject.name = element.Name;
+            if (element.ShouldHideFromView() || !element.Shade)
             {
                 gameObject.SetActive(false);
             }
@@ -49,7 +48,7 @@ namespace VSMC {
 
             //Now apply the sections to the Unity object.
             gameObject.GetComponent<MeshFilter>().mesh = unityMesh;
-            gameObject.GetComponent<MeshRenderer>().material.SetTexture("_AvailableTextures", shape.loadedTextures);
+            gameObject.GetComponent<MeshRenderer>().material.SetTexture("_AvailableTextures", ShapeLoader.main.shapeHolder.cLoadedShape.loadedTextures);
             gameObject.GetComponent<MeshCollider>().sharedMesh = unityMesh;
 
             RegenerateSelectionLinesFromMeshData();

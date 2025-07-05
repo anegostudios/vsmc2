@@ -32,7 +32,7 @@ public class ShapeAccessor
         }
         catch (Exception e)
         {
-            Console.Error.WriteLine("Could not read file contents at " + filePath + ". Exception:" + e.Message);
+            Debug.LogError("Could not read file contents at " + filePath + ". Exception:" + e.Message);
             return null;
         }
         

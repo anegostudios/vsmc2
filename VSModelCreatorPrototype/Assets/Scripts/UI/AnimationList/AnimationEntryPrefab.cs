@@ -12,9 +12,9 @@ public class AnimationEntryPrefab : MonoBehaviour
     public bool isPlaying = false;
     public TMP_Text animationPlaying;
 
-    private ShapeTester shapeTester;
+    private AnimationEditorManager animEditor;
 
-    public void InitializePrefab(string animName, string animID, ShapeTester shapeTester)
+    public void InitializePrefab(string animName, string animID, AnimationEditorManager animEditor)
     {
         Color c = GetComponent<Image>().color;
         GetComponent<Image>().color = new Color(c.r, c.g, c.b, AlternateColor ? 0.15f : 0.25f);
@@ -22,13 +22,13 @@ public class AnimationEntryPrefab : MonoBehaviour
         animationPlaying.text = "Play";
         animationName.text = animName;
         this.animID = animID;
-        this.shapeTester = shapeTester;
+        this.animEditor = animEditor;
     }
 
     public void OnPlayPausePressed()
     {
         isPlaying = !isPlaying;
-        shapeTester.SetAnimationPlaying(animID, isPlaying);
+        animEditor.SetAnimationPlaying(animID, isPlaying);
         animationPlaying.text = isPlaying ? "Pause" : "Play";
     }
 

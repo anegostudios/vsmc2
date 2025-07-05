@@ -8,7 +8,7 @@ using VSMC;
 /// </summary>
 public class ShapeEditorUIElements : MonoBehaviour
 {
-    public ShapeEditor shapeEditor;
+    public ShapeModelEditor shapeEditor;
 
     [Header("Misc")]
     public TMP_InputField elemName;
@@ -44,6 +44,7 @@ public class ShapeEditorUIElements : MonoBehaviour
     private void RegisterUIEvents()
     {
 
+        elemName.onEndEdit.AddListener(val => { elemName.SetTextWithoutNotify(shapeEditor.RenameElement(val)); });
 
         sizeX.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.X, float.Parse(val));});
         sizeY.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.Y, float.Parse(val));});

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using VSMC;
@@ -58,6 +59,16 @@ public class ElementHierarchyManager : MonoBehaviour
                 DetermineIfElementIsMinimized(child);
             }
         }
+    }
+
+    public ElementHierarchyItemPrefab GetElementHierarchyItem(ShapeElement element)
+    {
+        if (!uiElementsByUID.ContainsKey(element.elementUID))
+        {
+            Debug.LogError("Trying to access element hierarchy UI element when one does not exist.");
+            return null;
+        }
+        return uiElementsByUID[element.elementUID].GetComponent<ElementHierarchyItemPrefab>();
     }
 
 

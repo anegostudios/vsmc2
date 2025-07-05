@@ -63,6 +63,7 @@ namespace VSMC
         [OnDeserialized()]
         public void ResolveFacesAndTextures(StreamingContext context)
         {
+            ResolveReferencesAndUIDs();
             // This code is testing crap that will be rewritten.
             // We resolve all the textures and whatnot for each element.
             TextureSizeMultipliers = new Vector2[Textures.Count];
@@ -139,7 +140,7 @@ namespace VSMC
             loadedTextures.Apply();
         }
 
-        public Dictionary<string, ShapeElement> CollectAndResolveReferences(string shapeNameForLogging)
+        public Dictionary<string, ShapeElement> CollectAndResolveReferencesForAnimation(string shapeNameForLogging)
         {
             Dictionary<string, ShapeElement> elementsByName = new Dictionary<string, ShapeElement>();
             var Elements = this.Elements;
@@ -155,7 +156,7 @@ namespace VSMC
                     for (int j = 0; j < KeyFrames.Length; j++)
                     {
                         AnimationKeyFrame keyframe = KeyFrames[j];
-                        ResolveReferences(shapeNameForLogging, elementsByName, keyframe);
+                        ResolveReferencesForAnimation(shapeNameForLogging, elementsByName, keyframe);
 
                         foreach (AnimationKeyFrameElement kelem in keyframe.Elements.Values)
                         {
@@ -170,14 +171,17 @@ namespace VSMC
                 }
             }
 
+            
+            return elementsByName;
+        }
+
+        public void ResolveReferencesAndUIDs()
+        {
             for (int i = 0; i < Elements.Length; i++)
             {
                 Elements[i].ResolveReferncesAndUIDs();
             }
-
-            return elementsByName;
         }
-
 
         private AnimationKeyFrame getOrCreateKeyFrame(Animation entityAnim, int frame)
         {
@@ -370,12 +374,12 @@ namespace VSMC
         /// <param name="requireJointsForElements"></param>
         public void InitForAnimations(string shapeNameForLogging, params string[] requireJointsForElements)
         {
-            Dictionary<string, ShapeElement> elementsByName = CollectAndResolveReferences(shapeNameForLogging);
+            Dictionary<string, ShapeElement> elementsByName = CollectAndResolveReferencesForAnimation(shapeNameForLogging);
             CacheInvTransforms();
             ResolveAndFindJoints(shapeNameForLogging, elementsByName, requireJointsForElements);
         }
 
-        private void ResolveReferences(string shapeName, Dictionary<string, ShapeElement> elementsByName, AnimationKeyFrame kf)
+        private void ResolveReferencesForAnimation(string shapeName, Dictionary<string, ShapeElement> elementsByName, AnimationKeyFrame kf)
         {
             if (kf?.Elements == null) return;
 

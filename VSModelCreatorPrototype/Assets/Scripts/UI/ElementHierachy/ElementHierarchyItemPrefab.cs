@@ -29,7 +29,7 @@ public class ElementHierarchyItemPrefab : MonoBehaviour
         elementName.text = element.Name;
 
         //Set element buttons
-        hideShowButton.sprite = element.hiddenFromView ? hierarchyManager.HiddenSprite : hierarchyManager.ShownSprite;
+        hideShowButton.sprite = element.renderInEditor ? hierarchyManager.ShownSprite : hierarchyManager.HiddenSprite;
         minMaxButton.sprite = element.minimizeFromThisObject ? hierarchyManager.ExpandChildrenSprite : hierarchyManager.CollapseChildrenSprite;
         if (element.Children == null || element.Children.Length == 0)
         {
@@ -81,8 +81,8 @@ public class ElementHierarchyItemPrefab : MonoBehaviour
     public void OnShowOrHideClicked()
     {
         ShapeElement elem = ShapeElementRegistry.main.GetShapeElementByUID(elementUID);
-        elem.hiddenFromView = !elem.hiddenFromView;
-        hideShowButton.sprite = elem.hiddenFromView ? hierarchyManager.HiddenSprite : hierarchyManager.ShownSprite;
+        elem.renderInEditor = !elem.renderInEditor;
+        hideShowButton.sprite = elem.renderInEditor ? hierarchyManager.ShownSprite : hierarchyManager.HiddenSprite;
         ShapeElementRegistry.main.GetShapeElementByUID(elementUID).RecalculateHiddenStatus();
     }
 

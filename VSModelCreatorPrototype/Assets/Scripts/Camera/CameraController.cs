@@ -45,7 +45,7 @@ namespace VSMC
         public float zoomSpeed = 0.2f;
 
 
-        public ShapeEditor editor;
+        public ShapeModelEditor editor;
         InputAction mousePosAction;
 
         bool lmbDown = false;

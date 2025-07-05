@@ -110,6 +110,12 @@ namespace VSMC
         /// </summary>
         [JsonProperty]
         public string StepParentName;
+
+        /// <summary>
+        /// Is this object shown in the editor?
+        /// </summary>
+        [JsonProperty]
+        public bool renderInEditor = true;
         #endregion
 
         #region Runtime Properties
@@ -148,10 +154,6 @@ namespace VSMC
         /// </summary>
         public Matrix4x4 inverseModelTransform = Matrix4x4.zero;
 
-        /// <summary>
-        /// Is this object hidden in the editor?
-        /// </summary>
-        public bool hiddenFromView = false;
 
         /// <summary>
         /// Should this object be minimized in the element hierarchy?
@@ -183,7 +185,7 @@ namespace VSMC
         /// <returns></returns>
         public bool ShouldHideFromView()
         {
-            if (hiddenFromView) return true;
+            if (!renderInEditor) return true;
             if (ParentElement == null) return false;
             return ParentElement.ShouldHideFromView();
         }
@@ -291,6 +293,7 @@ namespace VSMC
             */
         }
 
+
         static ElementPose noTransform = new ElementPose();
 
 
@@ -384,7 +387,7 @@ namespace VSMC
                     Children[i].CacheInverseTransformMatrixRecursive();
                 }
             }
-        }
+        } 
 
 
         /// <summary>

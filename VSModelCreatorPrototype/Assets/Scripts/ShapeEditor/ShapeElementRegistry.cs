@@ -6,7 +6,7 @@ using VSMC;
 public class ShapeElementRegistry : MonoBehaviour
 {
     public static ShapeElementRegistry main;
-        Dictionary<int, ShapeElement> shapeElementByUID;
+    Dictionary<int, ShapeElement> shapeElementByUID;
     int prevUID = -1;
 
     private void Awake()
@@ -18,6 +18,12 @@ public class ShapeElementRegistry : MonoBehaviour
 
     private void Start()
     {
+    }
+
+    public void ClearForNewModel()
+    {
+        shapeElementByUID.Clear();
+        prevUID = -1;
     }
 
     /// <summary>
@@ -50,5 +56,10 @@ public class ShapeElementRegistry : MonoBehaviour
     public IEnumerable<ShapeElement> GetAllShapeElements()
     {
         return shapeElementByUID.Values;
+    }
+
+    public void UnregisterShapeElement(ShapeElement element)
+    {
+        shapeElementByUID.Remove(element.elementUID);
     }
 }

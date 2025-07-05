@@ -26,7 +26,7 @@ namespace VSMC {
         [Header("Unity References")]
         public RectTransform sceneViewRawImage;
         public Camera sceneViewCamera;
-        public ShapeEditor shapeEditor;
+        public ShapeModelEditor shapeEditor;
         public CameraController cameraController;
         public ObjectSelector objectSelector;
         public CanvasScaler mainCanvasScaler;

@@ -7,11 +7,12 @@ using System.IO;
 public class ShapeTester : MonoBehaviour
 {
 
+    public ShapeHolder shapeHolder;
+
     public TMP_Text shapeDetails;
     public TMP_Text errorDetails;
     public GameObject shapePrefab;
     public Shape shape;
-    public ElementHierarchyManager hierarchy;
     public bool animate = false;
 
     List<MeshData> meshes;
@@ -20,10 +21,6 @@ public class ShapeTester : MonoBehaviour
 
     public GameObject[] joints;
     public int maxJoints = 60;
-    public GameObject animPrefab;
-    public Transform animListParent;
-    public Dictionary<string, AnimationMetaData> allAnimations;
-    public Dictionary<string, AnimationMetaData> activeAnimations;
 
     public Material outlineMat;
     public Gradient outlineGrad;
@@ -48,7 +45,7 @@ public class ShapeTester : MonoBehaviour
         if (selectedFiles == null || selectedFiles.Length == 0) { return; }
 
         string vsPath = selectedFiles[0];
-        while (!vsPath.EndsWith("assets"))
+        while (!vsPath.EndsWith("assets") && Directory.GetParent(vsPath) != null)
         {
             vsPath = Directory.GetParent(vsPath).FullName;
         }
@@ -64,7 +61,8 @@ public class ShapeTester : MonoBehaviour
 
         foreach (string s in selectedFiles)
         {
-            AddNewShapeFromPath(s);
+            //AddNewShapeFromPath(s);
+            ShapeLoader.main.LoadShape(s);
         }
 
         //Do this on the next frame. Gives Unity time to actually destroy the old game objects if it needs to, since the earlier "Destroy" is not immediate.
@@ -78,7 +76,7 @@ public class ShapeTester : MonoBehaviour
         {
             return;
         }
-        ShapeAccessor.SerializeShapeToFile(shape, saveTo);
+        ShapeAccessor.SerializeShapeToFile(ShapeLoader.main.shapeHolder.cLoadedShape, saveTo);
         Debug.Log("Exported successfully.");
     }
 
@@ -125,37 +123,13 @@ public class ShapeTester : MonoBehaviour
             }
 
             //Create the element hierarchy.
-            hierarchy.StartCreatingElementPrefabs(shape);
+            //hierarchy.StartCreatingElementPrefabs(shape);
 
             //Create the animator.
-            if (shape.Animations != null)
-            {
-                animator = ClientAnimator.Create(shape.Animations, shape.Elements, shape.JointsById);
-
-                //Create animation lists
-                allAnimations = new Dictionary<string, AnimationMetaData>();
-                activeAnimations = new Dictionary<string, AnimationMetaData>();
-                int animID = 0;
-
-                foreach (Transform child in animListParent)
-                {
-                    Destroy(child.gameObject);
-                }
-
-                foreach (var anim in shape.Animations)
-                {
-                    AnimationMetaData meta = new AnimationMetaData(anim.Name, anim.Code);
-                    allAnimations.Add(anim.Code, meta);
-                    Instantiate(animPrefab, animListParent).GetComponent<AnimationEntryPrefab>().InitializePrefab(anim.Name, anim.Code, this);
-                    animID++;
-                }
-
-                animator.OnFrame(activeAnimations, 1 / 30f);
-                
-            }
+            
             //VSMeshData stores a single 'box' in the modeler.
             ShapeTesselator.TesselateShape(shape);
-            CreateShapes(shape.Elements);
+            //CreateShapes(shape.Elements);
             
         }
         catch (System.Exception e)
@@ -165,19 +139,6 @@ public class ShapeTester : MonoBehaviour
             {
                 errorDetails.text = "Failed to add shape from path: " + filePath + " with following exception: " + e.Message;
                 errorDetails.color = Color.red;
-            }
-        }
-    }
-
-    void CreateShapes(ShapeElement[] elements)
-    {
-        foreach (ShapeElement element in elements)
-        {
-            GameObject ch = GameObject.Instantiate(shapePrefab, joints[element.meshData.jointID].transform);
-            ch.GetComponent<ShapeElementGameObject>().InitializeElement(element, shape);
-            if (element.Children != null)
-            {
-                CreateShapes(element.Children);
             }
         }
     }
@@ -206,7 +167,6 @@ public class ShapeTester : MonoBehaviour
                 Destroy(t.gameObject);
             }
              
-            animator.OnFrame(activeAnimations, Time.deltaTime);
 
 
             int maxVal = Mathf.Min(animator.Matrices.Length, maxJoints);
@@ -220,16 +180,6 @@ public class ShapeTester : MonoBehaviour
         }
     }
 
-    public void SetAnimationPlaying(string animID, bool isPlaying)
-    {
-        if (isPlaying)
-        {
-            activeAnimations.Add(animID, allAnimations[animID]);
-        }
-        else
-        {
-            activeAnimations.Remove(animID);
-        }
-    }
+    
 
 }

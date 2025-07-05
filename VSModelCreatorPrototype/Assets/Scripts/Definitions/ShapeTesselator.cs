@@ -187,7 +187,7 @@ namespace VSMC
             elementMeshData.jointID = element.JointId;
         }
 
-        private static void TesselateShapeElements(ShapeElement[] elements, Vector2[] textureSizes)
+        public static void TesselateShapeElements(ShapeElement[] elements, Vector2[] textureSizes)
         {
             foreach (ShapeElement element in elements)
             {
