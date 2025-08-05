@@ -119,11 +119,15 @@ namespace VSMC
             SelectObject(ShapeElementRegistry.main.GetShapeElementByUID(item.GetUID()).gameObject.gameObject, false);
         }
 
-        public void DeselectObject(GameObject deselected)
+        public void DeselectObject(GameObject deselected, bool logErrorIfNotSelected = true)
         {
             if (!cSelectedList.Remove(deselected))
             {
-                Debug.LogError("Could not find selected object in list to deselect.");
+                if (logErrorIfNotSelected)
+                {
+                    Debug.LogError("Could not find selected object ("+deselected.name+") in list to deselect.");
+                }
+                return;
             }
             foreach (LineRenderer lines in deselected.GetComponentsInChildren<LineRenderer>())
             {

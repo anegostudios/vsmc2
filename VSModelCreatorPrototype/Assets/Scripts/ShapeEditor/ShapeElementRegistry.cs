@@ -62,4 +62,9 @@ public class ShapeElementRegistry : MonoBehaviour
     {
         shapeElementByUID.Remove(element.elementUID);
     }
+
+    public void ReregisterShapeElement(ShapeElement element)
+    {
+        shapeElementByUID.Add(element.elementUID, element);
+    }
 }

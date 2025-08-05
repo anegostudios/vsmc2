@@ -5,8 +5,12 @@ using VSMC;
 
 public class ElementHierarchyManager : MonoBehaviour
 {
+    public static ElementHierarchyManager AnimationHierarchy;
+    public static ElementHierarchyManager ElementHierarchy;
+
     public GameObject elementPrefab;
     public Transform hierarchyParent;
+    public bool isForAnimation = false;
 
     [Header("Sprites for Elements")]
     public Sprite CollapseChildrenSprite;
@@ -15,6 +19,12 @@ public class ElementHierarchyManager : MonoBehaviour
     public Sprite ShownSprite;
 
     Dictionary<int, GameObject> uiElementsByUID = new Dictionary<int, GameObject>();
+
+    private void Awake()
+    {
+        if (isForAnimation) AnimationHierarchy = this;
+        else ElementHierarchy = this; 
+    }
 
     public void StartCreatingElementPrefabs(Shape shape)
     {

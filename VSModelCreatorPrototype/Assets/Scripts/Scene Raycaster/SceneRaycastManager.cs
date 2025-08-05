@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using static UnityEditor.PlayerSettings;
 
 namespace VSMC {
 
@@ -26,7 +27,7 @@ namespace VSMC {
         [Header("Unity References")]
         public RectTransform sceneViewRawImage;
         public Camera sceneViewCamera;
-        public ShapeModelEditor shapeEditor;
+        public GizmoController gizmoController;
         public CameraController cameraController;
         public ObjectSelector objectSelector;
         public CanvasScaler mainCanvasScaler;
@@ -42,7 +43,7 @@ namespace VSMC {
         {
             sceneRaycastersByPriority = new ISceneRaycaster[]
             {
-                shapeEditor,
+                gizmoController,
                 cameraController,
                 objectSelector
             };
@@ -135,6 +136,14 @@ namespace VSMC {
         private void Update()
         {
             hasCache = false;
+            Vector2 pos;
+            if (GetMouseScenePositionForRaycast(out pos))
+            {
+                for (int i = 0; i < sceneRaycastersByPriority.Length; i++)
+                {
+                    sceneRaycastersByPriority[i].OnUpdateOverSceneView(pos);
+                }
+            }
         }
 
     }

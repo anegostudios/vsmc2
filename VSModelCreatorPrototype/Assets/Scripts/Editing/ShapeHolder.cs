@@ -18,6 +18,9 @@ namespace VSMC
         [Tooltip("The parent of the joint parents.")]
         public Transform jointParentParent;
 
+        [Tooltip("Limbo for shape elements.")]
+        public Transform deletedElementParent;
+
         /// <summary>
         /// Load a shape and creates its model in the noJoint parent.
         /// </summary>
@@ -100,6 +103,27 @@ namespace VSMC
                 }
                 cElem.gameObject.transform.parent = jointParents[cElem.JointId];
             }
+        }
+
+        /// <summary>
+        /// Sends an object to a semi-deleted state parent. Will also deselect the object.
+        /// </summary>
+        /// <param name="elem"></param>
+        public void SendElementToDeletionLimbo(ShapeElement elem)
+        {
+            //When an object is deleted, we definitely don't want it to remain selected.
+            ObjectSelector.main.DeselectObject(elem.gameObject.gameObject, false);
+            
+            elem.gameObject.transform.SetParent(deletedElementParent, true);
+        }
+
+        /// <summary>
+        /// Restores an object that's in the semi-deleted state parent.
+        /// </summary>
+        /// <param name="elem"></param>
+        public void RestoreElementFromDeletionLimbo(ShapeElement elem)
+        {
+            elem.gameObject.transform.SetParent(noJointParent, true);
         }
 
     }

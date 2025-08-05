@@ -103,5 +103,15 @@ namespace VSMC {
             Destroy(linesBase.gameObject);
         }
 
+        public Vector3 RotateFromWorldToLocalPosition(Vector3 worldVector)
+        {
+            return transform.rotation * worldVector;
+        }
+
+        public Vector3 RotateFromLocalToWorldPosition(Vector3 localVector)
+        {
+            return Quaternion.Inverse(transform.rotation) * localVector;
+        }
+
     }
 }

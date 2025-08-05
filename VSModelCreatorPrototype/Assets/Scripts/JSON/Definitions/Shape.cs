@@ -179,7 +179,7 @@ namespace VSMC
         {
             for (int i = 0; i < Elements.Length; i++)
             {
-                Elements[i].ResolveReferncesAndUIDs();
+                Elements[i].ResolveReferencesAndUIDs();
             }
         }
 

@@ -36,6 +36,8 @@ public class ShapeEditorUIElements : MonoBehaviour
     public RotationSlider rotYSlider;
     public RotationSlider rotZSlider;
 
+    string dpString = "0.###";
+
     private void Start()
     {
         RegisterUIEvents();
@@ -78,24 +80,30 @@ public class ShapeEditorUIElements : MonoBehaviour
             (float)(elem.To[0] - elem.From[0]),
             (float)(elem.To[1] - elem.From[1]),
             (float)(elem.To[2] - elem.From[2]));
-        sizeX.SetTextWithoutNotify(size.x.ToString());
-        sizeY.SetTextWithoutNotify(size.y.ToString());
-        sizeZ.SetTextWithoutNotify(size.z.ToString());
+        sizeX.SetTextWithoutNotify(size.x.ToString(dpString));
+        sizeY.SetTextWithoutNotify(size.y.ToString(dpString));
+        sizeZ.SetTextWithoutNotify(size.z.ToString(dpString));
 
-        posX.SetTextWithoutNotify(elem.From[0].ToString());
-        posY.SetTextWithoutNotify(elem.From[1].ToString());
-        posZ.SetTextWithoutNotify(elem.From[2].ToString());
+        posX.SetTextWithoutNotify(elem.From[0].ToString(dpString));
+        posY.SetTextWithoutNotify(elem.From[1].ToString(dpString));
+        posZ.SetTextWithoutNotify(elem.From[2].ToString(dpString));
 
-        originX.SetTextWithoutNotify(elem.RotationOrigin[0].ToString());
-        originY.SetTextWithoutNotify(elem.RotationOrigin[1].ToString());
-        originZ.SetTextWithoutNotify(elem.RotationOrigin[2].ToString());
+        originX.SetTextWithoutNotify(elem.RotationOrigin[0].ToString(dpString));
+        originY.SetTextWithoutNotify(elem.RotationOrigin[1].ToString(dpString));
+        originZ.SetTextWithoutNotify(elem.RotationOrigin[2].ToString(dpString));
 
-        rotX.SetTextWithoutNotify(elem.RotationX.ToString());
-        rotY.SetTextWithoutNotify(elem.RotationY.ToString());
-        rotZ.SetTextWithoutNotify(elem.RotationZ.ToString());
+        rotX.SetTextWithoutNotify(elem.RotationX.ToString(dpString));
+        rotY.SetTextWithoutNotify(elem.RotationY.ToString(dpString));
+        rotZ.SetTextWithoutNotify(elem.RotationZ.ToString(dpString));
         rotXSlider.SetToRotationValue((float)elem.RotationX);
         rotYSlider.SetToRotationValue((float)elem.RotationY);
         rotZSlider.SetToRotationValue((float)elem.RotationZ);
+    }
+
+    public void RefreshSelectionValues()
+    {
+        if (!ObjectSelector.main.IsAnySelected()) return;
+        OnElementSelected(ObjectSelector.main.GetCurrentlySelected().GetComponent<ShapeElementGameObject>());
     }
 
 

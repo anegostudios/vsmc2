@@ -2,13 +2,16 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 using Newtonsoft.Json;
+using UnityEditor.SearchService;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
+using UnityEngine.LightTransport;
 
 namespace VSMC
 {
     [JsonObject(MemberSerialization.OptIn)]
     public class ShapeElement
     {
-
+        //These properties should be saved/loaded in JSON files.
         #region JSON Properties
         /// <summary>
         /// The name of the ShapeElement
@@ -118,6 +121,7 @@ namespace VSMC
         public bool renderInEditor = true;
         #endregion
 
+        //These properties will be set at runtime, and do not need to be saved to a JSON file.
         #region Runtime Properties
         /// <summary>
         /// The unique ID for this element.
@@ -154,12 +158,95 @@ namespace VSMC
         /// </summary>
         public Matrix4x4 inverseModelTransform = Matrix4x4.zero;
 
-
         /// <summary>
         /// Should this object be minimized in the element hierarchy?
         /// </summary>
         public bool minimizeFromThisObject = false;
+        #endregion
 
+        //These functions will interact with the ShapeAccessors and Tesellators to regenerate a shape game object.
+        #region Runtime Editing Functions
+
+        /// <summary>
+        /// Create a completely new element. This will register it with a UID, but you will need to use SetParent to set an appropriate parent.
+        /// </summary>
+        public ShapeElement()
+        {
+            From = new double[] { 0, 0, 0 };
+            To = new double[] { 1, 1, 1 };
+            Name = "New Object";
+            ResolveReferencesAndUIDs();
+            
+            FacesResolved = new ShapeElementFace[6];
+            for (int i = 0; i < 6; i++)
+            {
+                FacesResolved[i] = new ShapeElementFace()
+                {
+                    Enabled = true,
+                    Uv = new float[] { 0, 0, 1, 1 }
+                };
+            }
+        }
+
+        /// <summary>
+        /// Sets the parent for this element, and also adds this element to the parents child array.
+        /// You will likely need to recalculate transforms after doing this.
+        /// </summary>
+        /// <param name="parent"></param>
+        public void SetParent(ShapeElement parent)
+        {
+            RemoveParent();
+            this.ParentElement = parent;
+            if (parent == null) return;
+
+            //Children array cannot be added to easily, so we essentially clone it with this at the end.
+            //parent.Children?.Append(this) had a panic attack when I did it, so it's a more primitive method.
+            ShapeElement[] newChildren = new ShapeElement[parent.Children == null ? 1 : parent.Children.Length + 1];
+            parent.Children?.CopyTo(newChildren, 0);
+            newChildren[newChildren.Length - 1] = this;
+            parent.Children = newChildren;
+        }
+
+        /// <summary>
+        /// Removes this object's parents, and removes it from its parent array.
+        /// </summary>
+        public void RemoveParent()
+        {
+            if (ParentElement == null) return;
+            ParentElement.Children = ParentElement.Children.Remove(this);
+            ParentElement = null;
+        }
+
+        /// <summary>
+        /// Recreates and applies the transforms for this shape element and its children.
+        /// </summary>
+        public void RecreateTransforms()
+        {
+            //Retesselate the shapes, and then reapply the transforms for the object.
+            ShapeTesselator.ResolveMatricesForShapeElementAndChildren(this);
+            gameObject.ReapplyTransformsFromMeshData(true);
+        }
+
+        /// <summary>
+        /// Recreates and applies the objects mesh. Has no effect on children.
+        /// </summary>
+        public void RecreateObjectMesh()
+        {
+            //Retesselate the shapes, and then reapply the meshes.
+            ShapeTesselator.RecreateMeshesForShapeElement(this);
+            gameObject.RegenerateMeshFromMeshData();
+        }
+
+        /// <summary>
+        /// Recreates and applies both the transforms and object mesh. Will also alter children's transforms.
+        /// </summary>
+        public void RecreateObjectMeshAndTransforms()
+        {
+            ShapeTesselator.RecreateMeshesForShapeElement(this);
+            ShapeTesselator.ResolveMatricesForShapeElementAndChildren(this);
+            gameObject.RegenerateMeshFromMeshData();
+            gameObject.ReapplyTransformsFromMeshData(true);
+        }
         #endregion
 
         /// <summary>
@@ -177,6 +264,44 @@ namespace VSMC
             }
             path.Reverse();
             return path;
+        }
+
+        public List<string> GetNamesOfThisAndAllChildren()
+        {
+            List<string> names = new List<string>();
+            AddNamesOfThisAndChildren(names);
+            return names;
+        }
+
+        void AddNamesOfThisAndChildren(List<string> names)
+        {
+            names.Add(Name);
+            if (Children != null)
+            {
+                foreach (ShapeElement child in Children)
+                {
+                    child.AddNamesOfThisAndChildren(names);
+                }
+            }
+        }
+
+        public List<ShapeElement> GetThisAndAllChildrenRecursively()
+        {
+            List<ShapeElement> allElements = new List<ShapeElement>();
+            AddThisAndChildrenToList(allElements);
+            return allElements;
+        }
+
+        void AddThisAndChildrenToList(List<ShapeElement> allElements)
+        {
+            allElements.Add(this);
+            if (Children != null)
+            {
+                foreach (ShapeElement child in Children)
+                {
+                    child.AddThisAndChildrenToList(allElements);
+                }
+            }
         }
 
         /// <summary>
@@ -267,7 +392,7 @@ namespace VSMC
             return modelTransform.inverse;
         }
 
-        internal void ResolveReferncesAndUIDs()
+        internal void ResolveReferencesAndUIDs()
         {
             elementUID = ShapeElementRegistry.main.AddShapeElement(this);
             var Children = this.Children;
@@ -277,7 +402,7 @@ namespace VSMC
                 {
                     ShapeElement child = Children[i];
                     child.ParentElement = this;
-                    child.ResolveReferncesAndUIDs();
+                    child.ResolveReferencesAndUIDs();
                 }
             }
 
@@ -413,6 +538,21 @@ namespace VSMC
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// A specific function to rotate a vector only by this objects rotation values.
+        /// Used when working with rotation origins.
+        /// </summary>
+        public Vector3 RotateFromWorldToLocalForThisObjectsRotation(Vector3 world)
+        {
+            return Quaternion.Euler((float)RotationX, (float)RotationY, (float)RotationZ) * world;
+        }
+
+        public Vector3 RotateFromLocalToWorldForThisObjectsRotation(Vector3 local)
+        {
+            return Quaternion.Inverse(Quaternion.Euler((float)RotationX, (float)RotationY, (float)RotationZ)) * local;
+
         }
     }
 }

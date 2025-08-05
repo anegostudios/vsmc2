@@ -1,11 +1,13 @@
+using JetBrains.Annotations;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace VSMC
 {
-    public class ShapeModelEditor : ISceneRaycaster
+    public class ShapeModelEditor : MonoBehaviour
     {
         [Header("Unity References")]
         public CameraController cameraController;
@@ -15,6 +17,8 @@ namespace VSMC
 
         [Header("UI References")]
         public ShapeEditorUIElements uiElements;
+
+        
 
         private void Start()
         {
@@ -28,9 +32,9 @@ namespace VSMC
         {
             if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
             
-            editPulleys.transform.position = cSelected.transform.position;
-            editPulleys.transform.rotation = cSelected.transform.rotation;
-            editPulleys.SetActive(true);
+            //editPulleys.transform.position = cSelected.transform.position;
+            //editPulleys.transform.rotation = cSelected.transform.rotation;
+            //editPulleys.SetActive(true);
             uiElements.OnElementSelected(cSelected.GetComponent<ShapeElementGameObject>());
         }
 
@@ -41,116 +45,73 @@ namespace VSMC
             editPulleys.gameObject.SetActive(false);
         }
 
-        public override bool OnSceneViewMouseDown(Vector2 mouseClickScenePositionForCamera, PointerEventData data)
+        public void OnUpdateOverSceneView(Vector2 mouseScenePositionForCamera)
         {
-            return false;
+            //base.OnUpdateOverSceneView(mouseScenePositionForCamera);
+            /*if (isXGizmoDown)
+            {
+                //Okay, so far we have a "perceived translation" value, which is (in pixels) the increase (or decrease) that the object should be moved by.
+                //We want to move that amount along the appropriate axis, and then convert back into world space. I think.
+                Vector2 diff = mouseScenePositionForCamera - sceneMousePosOnGizmoDown;
+                Vector2 relDiff = diff * xGizmoPositiveDirection;
+                float relDiffFloat = (relDiff.x + relDiff.y);
+                SetPosition(EnumAxis.X, (float)(cXVal + (relDiffFloat * (1 / 16f))));
+            }*/
+        }
+
+        public bool OnSceneViewMouseDown(Vector2 mouseClickScenePositionForCamera, PointerEventData data)
+        {
+            //return false;
             //Temp removed. Come back to later.
+            /*
             if (data.button != 0 || !objectSelector.IsAnySelected()) return false;
             if (Physics.Raycast(Camera.main.ScreenPointToRay(mouseClickScenePositionForCamera), out RaycastHit hit, float.MaxValue, LayerMask.GetMask("Edit Pulleys")))
             {
                 ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
                 if (hit.collider.gameObject.name.StartsWith("X"))
                 {
-                    Debug.Log("Inc X by 1");
-                    cElem.From[0] += 1;
-                    cElem.To[0] += 1;
+                    isXGizmoDown = true;
+                    sceneMousePosOnGizmoDown = mouseClickScenePositionForCamera;
+                    Vector3 screenSpaceOfObject = Camera.main.WorldToScreenPoint(cElem.gameObject.transform.position);
+                    distFromCam = screenSpaceOfObject.z;
+                    Vector3 screenSpaceOfPointOfMovement = Camera.main.WorldToScreenPoint(cElem.gameObject.transform.position + cElem.gameObject.transform.right);
+                    xGizmoPositiveDirection = (screenSpaceOfPointOfMovement - screenSpaceOfObject).normalized;
+                    cXVal = cElem.From[0];
+                    Debug.Log("X Gizmo down with a positive direction of " + xGizmoPositiveDirection);
                 }
-                else if (hit.collider.gameObject.name.StartsWith("Y"))
-                {
-                    Debug.Log("Inc Y by 1");
-                    cElem.From[1] += 1;
-                    cElem.To[1] += 1;
-                }
-                else if (hit.collider.gameObject.name.StartsWith("Z"))
-                {
-                    Debug.Log("Inc Z by 1");
-                    cElem.From[2] += 1;
-                    cElem.To[2] += 1;
-                }
-                
-                ShapeTesselator.ResolveMatricesForShapeElementAndChildren(cElem);
-                objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().ReapplyTransformsFromMeshData(true);
                 return true;
             }
+            */
             return false;
-
         }
 
         public void SetSize(EnumAxis axis, float value)
         {
             if (!objectSelector.IsAnySelected()) return;
             ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
-            //Add the size based on the axis to the 'to' array.
-            int index = (int)axis;
-            cElem.To[index] = cElem.From[index] + value;
-            
-            //Recreate the mesh from the selected object.
-            RecreateObjectMeshAndTransforms();
+            TaskSetElementSize ssTask = new TaskSetElementSize(cElem, axis, value);
+            ssTask.DoTask();
+            UndoManager.main.CommitTask(ssTask);
         }
 
-        public void SetSize(Vector3 value)
+        public void SetPosition(EnumAxis axis, float value, int translationUid = 0)
         {
             if (!objectSelector.IsAnySelected()) return;
             ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
-            //Get existing from value, then add to size to find to.
-            Vector3 temp = new Vector3((float)cElem.From[0], (float)cElem.From[1], (float)cElem.From[2]);
-            temp += value;
-            cElem.To = new double[] { temp.x, temp.y, temp.z };
 
-            //Recreate the mesh from the selected object.
-            RecreateObjectMeshAndTransforms();
-        }
-
-        public void SetPosition(EnumAxis axis, float value)
-        {
-            if (!objectSelector.IsAnySelected()) return;
-            ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
-            //Position needs to add to the 'from' and 'to' values whilst keeping the size the same.
-            int index = (int)axis;
-            double size = cElem.To[index] - cElem.From[index];
-            cElem.From[index] = value;
-            cElem.To[index] = cElem.From[index] + size;
-
-            //Recreate the mesh from the selected object.
-            RecreateObjectTransforms();
-        }
-
-        public void SetPosition(Vector3 value)
-        {
-            if (!objectSelector.IsAnySelected()) return;
-            ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
-            //Position needs to add to the 'from' and 'to' values whilst keeping the size the same.
-            Vector3 size = new Vector3(
-                (float)(cElem.To[0] - cElem.From[0]),
-                (float)(cElem.To[1] - cElem.From[1]),
-                (float)(cElem.To[2] - cElem.From[2]));
-            cElem.From = new double[] { value.x, value.y, value.z };
-            cElem.To = new double[] { value.x + size.x, value.y + size.y, value.z + size.z };
-
-            //Recreate the mesh from the selected object.
-            RecreateObjectTransforms();
+            TaskSetElementPosition spTask = new TaskSetElementPosition(cElem, axis, value, translationUid);
+            spTask.DoTask();
+            UndoManager.main.CommitTask(spTask);
         }
 
         public void SetRotationOrigin(EnumAxis axis, float value)
         {
             if (!objectSelector.IsAnySelected()) return;
             ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
-            //Origin nice and easy.
-            cElem.RotationOrigin[(int)axis] = value;
-
-            //Recreate the mesh from the selected object.
-            RecreateObjectTransforms();
-        }
-
-        public void SetRotationOrigin(Vector3 value)
-        {
-            if (!objectSelector.IsAnySelected()) return;
-            ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
-            //Origin nice and easy.
-            cElem.RotationOrigin = new double[] { value.x, value.y, value.z };
-
-            //Recreate the mesh from the selected object.
-            RecreateObjectTransforms();
+            
+            TaskSetElementRotationOrigin soTask = new TaskSetElementRotationOrigin(cElem, axis, value);
+            soTask.DoTask();
+            UndoManager.main.CommitTask(soTask);
         }
 
         public void SetRotation(EnumAxis axis, float value)
@@ -158,55 +119,9 @@ namespace VSMC
             if (!objectSelector.IsAnySelected()) return;
             ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
 
-            if (axis == EnumAxis.X) cElem.RotationX = value;
-            else if (axis == EnumAxis.Y) cElem.RotationY = value;
-            else if (axis == EnumAxis.Z) cElem.RotationZ = value;
-
-            //Recreate the mesh from the selected object.
-            RecreateObjectTransforms();
-        }
-
-        public void SetRotation(Vector3 value)
-        {
-            if (!objectSelector.IsAnySelected()) return;
-            ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
-            //Origin nice and easy.
-
-            cElem.RotationX = value.x;
-            cElem.RotationY = value.y;
-            cElem.RotationZ = value.z;
-
-            //Recreate the mesh from the selected object.
-            RecreateObjectTransforms();
-        }
-
-        public void RecreateObjectTransforms()
-        {
-            if (!objectSelector.IsAnySelected()) return;
-            ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
-            //Retesselate the shapes, and then reapply the transforms for the object.
-            ShapeTesselator.ResolveMatricesForShapeElementAndChildren(cElem);
-            objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().ReapplyTransformsFromMeshData(true);
-        }
-
-        public void RecreateObjectMesh()
-        {
-            if (!objectSelector.IsAnySelected()) return;
-            ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
-            //Retesselate the shapes, and then reapply the meshes.
-            ShapeTesselator.RecreateMeshesForShapeElement(cElem);
-            objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().RegenerateMeshFromMeshData();
-        }
-
-        public void RecreateObjectMeshAndTransforms()
-        {
-            if (!objectSelector.IsAnySelected()) return;
-            ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
-            //Retesselate the shapes, and then reapply the transforms for the object.
-            ShapeTesselator.RecreateMeshesForShapeElement(cElem);
-            ShapeTesselator.ResolveMatricesForShapeElementAndChildren(cElem);
-            objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().RegenerateMeshFromMeshData();
-            objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().ReapplyTransformsFromMeshData(true);
+            TaskSetElementRotation srTask = new TaskSetElementRotation(cElem, axis, value);
+            srTask.DoTask();
+            UndoManager.main.CommitTask(srTask);
         }
 
         void OnEditModeSelect(VSEditMode sel)
@@ -221,88 +136,22 @@ namespace VSMC
 
         public void CreateNewShapeElement()
         {
-            /*
-             * Okay, this function is quite a horrid bit of code.
-             * I feel like it should be much more streamlined to add a new element.
-             */
             if (!objectSelector.IsAnySelected()) return;
             ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
-            ShapeElement newElem = new ShapeElement()
-            {
-                From = new double[] { 0, 0, 0 },
-                To = new double[] { 1, 1, 1 },
-                ParentElement = cElem,
-                Name = "New Object",
-            };
-            newElem.ResolveReferncesAndUIDs();
-            newElem.FacesResolved = new ShapeElementFace[6];
-            for (int i = 0; i < 6; i++)
-            {
-                newElem.FacesResolved[i] = new ShapeElementFace()
-                {
-                    Enabled = true,
-                    Uv = new float[] { 0, 0, 1, 1}
-                };
-            }
-            ShapeElement[] newChildren = new ShapeElement[cElem.Children == null ? 1 : cElem.Children.Length + 1];
-            cElem.Children?.CopyTo(newChildren, 0);
-            newChildren[newChildren.Length - 1] = newElem;
-            cElem.Children = newChildren;
-            ShapeTesselator.TesselateShapeElements(new ShapeElement[] { newElem }, ShapeLoader.main.shapeHolder.cLoadedShape.TextureSizeMultipliers);
-            ShapeTesselator.ResolveMatricesForShapeElementAndChildren(newElem);
-            ShapeLoader.main.shapeHolder.CreateShapeElementGameObject(newElem);
-            elementHierarchyManager.StartCreatingElementPrefabs(ShapeLoader.main.shapeHolder.cLoadedShape);
-            objectSelector.SelectObject(newElem.gameObject.gameObject, false, false);
+
+            TaskCreateNewElement cnTask = new TaskCreateNewElement(cElem);
+            cnTask.DoTask();
+            UndoManager.main.CommitTask(cnTask);
         }
 
         public void DeleteSelectedShapeElement()
         {
             if (!objectSelector.IsAnySelected()) return;
             ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
-            List<string> removedElements = new List<string>();
-            DeleteShapeElement(cElem, removedElements);
-
-            //Now delete animation entries which were in removedElements.
-            foreach (Animation anim in ShapeLoader.main.shapeHolder.cLoadedShape.Animations)
-            {
-                foreach (AnimationKeyFrame keyFrame in anim.KeyFrames)
-                {
-                    foreach (string s in removedElements)
-                    {
-                        if (keyFrame.Elements.ContainsKey(s))
-                        {
-                            keyFrame.Elements.Remove(s);
-                        }
-                    }
-                }
-            }
-
-            //Only need to remove the parent. GC should clear the rest. Also will make undo code easier.
-            cElem.ParentElement.Children = cElem.ParentElement.Children.Remove(cElem);
-
-        }
-
-        private void DeleteShapeElement(ShapeElement elem, List<string> removedElements)
-        {
-            /* Deletion is a little more complex.
-             * We need to delete all children first, and the childrens children, so on, so call this recursively.
-             * We need to remove the animation entries - This will be done after all the deletions.
-             * We need to then remove the elements from the UI.
-             * Then deregister in the element registry.
-             * Then delete the gameobject.
-             * And finally remove the entry from the shape - Also only done with the selected element, after deletions.
-             */
-            if (elem.Children != null)
-            {
-                foreach (ShapeElement child in elem.Children)
-                {
-                    DeleteShapeElement(child, removedElements);
-                }
-            }
-            removedElements.Add(elem.Name);
-            Destroy(elementHierarchyManager.GetElementHierarchyItem(elem).gameObject);
-            ShapeElementRegistry.main.UnregisterShapeElement(elem);
-            Destroy(elem.gameObject.gameObject);
+                
+            TaskDeleteElement deTask = new TaskDeleteElement(cElem);
+            deTask.DoTask();
+            UndoManager.main.CommitTask(deTask);
         }
 
         /// <summary>
@@ -339,8 +188,5 @@ namespace VSMC
 
             return newName;
         }
-
-        public override bool OnSceneViewMouseScroll(PointerEventData data) { return false; }
-        public override bool OnSceneViewMouseUp(PointerEventData data) { return false; }
     }
 }
