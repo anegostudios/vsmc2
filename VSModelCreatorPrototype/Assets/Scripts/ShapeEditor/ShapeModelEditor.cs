@@ -1,7 +1,3 @@
-using JetBrains.Annotations;
-using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -18,8 +14,6 @@ namespace VSMC
         [Header("UI References")]
         public ShapeEditorUIElements uiElements;
 
-        
-
         private void Start()
         {
             objectSelector.RegisterForObjectSelectedEvent(OnObjectSelected);
@@ -31,10 +25,6 @@ namespace VSMC
         private void OnObjectSelected(GameObject cSelected)
         {
             if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
-            
-            //editPulleys.transform.position = cSelected.transform.position;
-            //editPulleys.transform.rotation = cSelected.transform.rotation;
-            //editPulleys.SetActive(true);
             uiElements.OnElementSelected(cSelected.GetComponent<ShapeElementGameObject>());
         }
 
@@ -43,46 +33,6 @@ namespace VSMC
             if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
             
             editPulleys.gameObject.SetActive(false);
-        }
-
-        public void OnUpdateOverSceneView(Vector2 mouseScenePositionForCamera)
-        {
-            //base.OnUpdateOverSceneView(mouseScenePositionForCamera);
-            /*if (isXGizmoDown)
-            {
-                //Okay, so far we have a "perceived translation" value, which is (in pixels) the increase (or decrease) that the object should be moved by.
-                //We want to move that amount along the appropriate axis, and then convert back into world space. I think.
-                Vector2 diff = mouseScenePositionForCamera - sceneMousePosOnGizmoDown;
-                Vector2 relDiff = diff * xGizmoPositiveDirection;
-                float relDiffFloat = (relDiff.x + relDiff.y);
-                SetPosition(EnumAxis.X, (float)(cXVal + (relDiffFloat * (1 / 16f))));
-            }*/
-        }
-
-        public bool OnSceneViewMouseDown(Vector2 mouseClickScenePositionForCamera, PointerEventData data)
-        {
-            //return false;
-            //Temp removed. Come back to later.
-            /*
-            if (data.button != 0 || !objectSelector.IsAnySelected()) return false;
-            if (Physics.Raycast(Camera.main.ScreenPointToRay(mouseClickScenePositionForCamera), out RaycastHit hit, float.MaxValue, LayerMask.GetMask("Edit Pulleys")))
-            {
-                ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
-                if (hit.collider.gameObject.name.StartsWith("X"))
-                {
-                    isXGizmoDown = true;
-                    sceneMousePosOnGizmoDown = mouseClickScenePositionForCamera;
-                    Vector3 screenSpaceOfObject = Camera.main.WorldToScreenPoint(cElem.gameObject.transform.position);
-                    distFromCam = screenSpaceOfObject.z;
-                    Vector3 screenSpaceOfPointOfMovement = Camera.main.WorldToScreenPoint(cElem.gameObject.transform.position + cElem.gameObject.transform.right);
-                    xGizmoPositiveDirection = (screenSpaceOfPointOfMovement - screenSpaceOfObject).normalized;
-                    cXVal = cElem.From[0];
-                    Debug.Log("X Gizmo down with a positive direction of " + xGizmoPositiveDirection);
-                }
-                return true;
-            }
-            */
-            return false;
         }
 
         public void SetSize(EnumAxis axis, float value)
