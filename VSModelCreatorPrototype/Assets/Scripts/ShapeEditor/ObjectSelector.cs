@@ -81,7 +81,7 @@ namespace VSMC
             {
                 temp.Add(storedRaycastHits[i]);
             }
-            temp.OrderByDescending(x => x.distance);
+            temp = temp.OrderBy(x => x.distance).ToList();
             for (int i = 0; i < storedRaycastHitCount; i++)
             {
                 storedRaycastHits[i] = temp[i];

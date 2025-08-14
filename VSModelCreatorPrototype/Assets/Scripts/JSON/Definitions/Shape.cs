@@ -183,6 +183,19 @@ namespace VSMC
             }
         }
 
+        #region Root Shape Element Management
+        public void AddRootShapeElement(ShapeElement elem)
+        {
+            Elements = Elements.Append(elem);
+        }
+
+        public void RemoveRootShapeElement(ShapeElement elem)
+        {
+            Elements = Elements.Remove(elem);
+        }
+        #endregion
+
+
         private AnimationKeyFrame getOrCreateKeyFrame(Animation entityAnim, int frame)
         {
             for (int ei = 0; ei < entityAnim.KeyFrames.Length; ei++)

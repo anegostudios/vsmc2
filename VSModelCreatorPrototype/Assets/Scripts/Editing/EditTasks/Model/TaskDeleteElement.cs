@@ -36,22 +36,25 @@ namespace VSMC
         List<AnimationEntryAndLocation> CalculateAnimationEntries(List<string> elemNames)
         {
             List<AnimationEntryAndLocation> animationEntries = new List<AnimationEntryAndLocation>();
-            for (int i = 0; i < ShapeLoader.main.shapeHolder.cLoadedShape.Animations.Length; i++)
+            if (ShapeLoader.main.shapeHolder.cLoadedShape.Animations != null)
             {
-                Animation anim = ShapeLoader.main.shapeHolder.cLoadedShape.Animations[i];
-                for (int j = 0; j < anim.KeyFrames.Length; j++)
+                for (int i = 0; i < ShapeLoader.main.shapeHolder.cLoadedShape.Animations.Length; i++)
                 {
-                    foreach (string s in elemNames)
+                    Animation anim = ShapeLoader.main.shapeHolder.cLoadedShape.Animations[i];
+                    for (int j = 0; j < anim.KeyFrames.Length; j++)
                     {
-                        if (anim.KeyFrames[j].Elements.ContainsKey(s))
+                        foreach (string s in elemNames)
                         {
-                            animationEntries.Add(new AnimationEntryAndLocation()
+                            if (anim.KeyFrames[j].Elements.ContainsKey(s))
                             {
-                                elemName = s,
-                                animIndex = i,
-                                keyFrameIndex = j,
-                                keyFrameElement = anim.KeyFrames[j].Elements[s]
-                            });
+                                animationEntries.Add(new AnimationEntryAndLocation()
+                                {
+                                    elemName = s,
+                                    animIndex = i,
+                                    keyFrameIndex = j,
+                                    keyFrameElement = anim.KeyFrames[j].Elements[s]
+                                });
+                            }
                         }
                     }
                 }
@@ -87,8 +90,14 @@ namespace VSMC
 
             //Remove the child from its parent.
             //Note that we do not use the 'RemoveParent' function since that'll lose the reference to the existing parent. 
-            elemToDelete.ParentElement.Children = elemToDelete.ParentElement.Children.Remove(elemToDelete);
-
+            if (elemToDelete.ParentElement != null)
+            {
+                elemToDelete.ParentElement.Children = elemToDelete.ParentElement.Children.Remove(elemToDelete);
+            }
+            else
+            {
+                ShapeLoader.main.shapeHolder.cLoadedShape.RemoveRootShapeElement(elemToDelete);
+            }
         }
 
         public override void UndoTask()
@@ -97,7 +106,15 @@ namespace VSMC
 
             //Re-Add element as child.
             //The position in the child array doesn't matter, so we are free to add it to the end.
-            elemToDelete.ParentElement.Children = elemToDelete.ParentElement.Children.Append(elemToDelete);
+            if (elemToDelete.ParentElement != null)
+            {
+                elemToDelete.ParentElement.Children = elemToDelete.ParentElement.Children.Append(elemToDelete);
+            }
+            else
+            {
+                ShapeLoader.main.shapeHolder.cLoadedShape.AddRootShapeElement(elemToDelete);
+            }
+
 
             //Re-Add the animation entries.
             foreach (AnimationEntryAndLocation animEntry in animationEntries)

@@ -18,7 +18,7 @@ public class UIScaleManager : MonoBehaviour
     private void Awake()
     {
         //Setup events.
-        scaleSlider.onValueChanged.AddListener(x => { scaleText.text = "UI Scale: " + x.ToString("0.00") + "x"; 
+        scaleSlider.onValueChanged.AddListener(x => { scaleText.text = "UI Scale: " + x.ToString("0.00") + "x.\nDetected width: "+ highestWidth.ToString(); 
             mainCanvasScaler.scaleFactor = x;
             ProgramPreferences.UIScale.SetValue(x);
         });
@@ -53,6 +53,10 @@ public class UIScaleManager : MonoBehaviour
 
     void CalcHighestSupportedWidth()
     {
+        //This will adapt to the width of whatever screen the window is currently on.
+        highestWidth = Screen.mainWindowDisplayInfo.width;
+        return;
+        /* In a world of virtual upscaled resolutions, this is not an ideal solution.
         highestWidth = 0;
         foreach (Resolution r in Screen.resolutions)
         {
@@ -61,11 +65,12 @@ public class UIScaleManager : MonoBehaviour
                 highestWidth = r.width;
             }
         }
+        */
     }
 
     public float GetRecommendedScale()
     {
-        if (highestWidth < 1) CalcHighestSupportedWidth();
+        CalcHighestSupportedWidth();
         if (highestWidth > recommendedWidth)
         {
             return highestWidth / recommendedWidth;

@@ -86,8 +86,11 @@ namespace VSMC
 
         public void CreateNewShapeElement()
         {
-            if (!objectSelector.IsAnySelected()) return;
-            ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
+            ShapeElement cElem = null;
+            if (objectSelector.IsAnySelected())
+            {
+                cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
+            }
 
             TaskCreateNewElement cnTask = new TaskCreateNewElement(cElem);
             cnTask.DoTask();

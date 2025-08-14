@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-using UnityEditor.SearchService;
 using UnityEngine;
 
 namespace VSMC
@@ -9,7 +7,7 @@ namespace VSMC
     /// </summary>
     public class TaskCreateNewElement : IEditTask
     {
-        public int parentUID;
+        public int parentUID = -1;
         public ShapeElement createdElement;
 
         public TaskCreateNewElement(ShapeElement parent)
@@ -27,8 +25,11 @@ namespace VSMC
              */
             createdElement = new ShapeElement();
             ShapeElementRegistry.main.UnregisterShapeElement(createdElement);
-            parentUID = parent.elementUID;
-            createdElement.SetParent(parent);
+            if (parent != null)
+            {
+                parentUID = parent.elementUID;
+                createdElement.SetParent(parent);
+            }
 
             //We will tesselate the object and create its game object, but will move it immediately to the deletion state.
             ShapeTesselator.TesselateShapeElements(new ShapeElement[] { createdElement }, ShapeLoader.main.shapeHolder.cLoadedShape.TextureSizeMultipliers);
@@ -44,8 +45,15 @@ namespace VSMC
         {
             //The element has already been created in the constructor. We just need to register it here and make it available.
             //Set the parent of the new element.
-            ShapeElement parent = ShapeElementRegistry.main.GetShapeElementByUID(parentUID);
-            createdElement.SetParent(parent);
+            if (parentUID != -1)
+            {
+                ShapeElement parent = ShapeElementRegistry.main.GetShapeElementByUID(parentUID);
+                createdElement.SetParent(parent);
+            }
+            else
+            {
+                ShapeLoader.main.shapeHolder.cLoadedShape.AddRootShapeElement(createdElement);
+            }
 
             //Add the element back into the registry.
             ShapeElementRegistry.main.ReregisterShapeElement(createdElement);
@@ -65,7 +73,14 @@ namespace VSMC
             //Essentially hide the newly created element, making it easier to restore.
             ShapeLoader.main.shapeHolder.SendElementToDeletionLimbo(createdElement);
             ShapeElementRegistry.main.UnregisterShapeElement(createdElement);
-            createdElement.RemoveParent();
+            if (parentUID != -1)
+            {
+                createdElement.RemoveParent();
+            }
+            else
+            {
+                ShapeLoader.main.shapeHolder.cLoadedShape.RemoveRootShapeElement(createdElement);
+            }
             GameObject.Destroy(ElementHierarchyManager.ElementHierarchy.GetElementHierarchyItem(createdElement));
         }
 

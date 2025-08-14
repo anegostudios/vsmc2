@@ -1,3 +1,4 @@
+using System.Runtime.Serialization;
 using UnityEngine;
 
 namespace VSMC {
@@ -16,6 +17,21 @@ namespace VSMC {
         private void Awake()
         {
             main = this;
+        }
+
+        public void CreateNewShape()
+        {
+            UnloadCurrentShape();
+            Shape newShape = new Shape();
+            newShape.Elements = new ShapeElement[0];
+
+            ShapeElement initialElem = new ShapeElement();
+            newShape.AddRootShapeElement(initialElem);
+            newShape.Textures = new System.Collections.Generic.Dictionary<string, string>();
+            newShape.ResolveFacesAndTextures(new StreamingContext());
+            shapeHolder.OnShapeLoaded(newShape);
+            hierarchy.StartCreatingElementPrefabs(newShape);
+            EditModeManager.main.SelectMode(VSEditMode.Model);
         }
 
         public void LoadShape(string filePath)

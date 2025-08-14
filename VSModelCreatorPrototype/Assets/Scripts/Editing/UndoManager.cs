@@ -24,7 +24,6 @@ public class UndoManager : MonoBehaviour
     {
         completedEditTasks.AddFirst(newTask);
         undoneEditTasks.Clear();
-        Debug.Log("Task History now contains " + GetSizeOfTaskList() + " bytes.");
         //uiElements.RefreshSelectionValues();
     }
 

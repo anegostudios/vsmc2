@@ -38,6 +38,11 @@ public class ShapeTester : MonoBehaviour
         }
     }
 
+    public void CreateNewShape()
+    {
+
+    }
+
     public void OnAddShapeFromFile(bool deleteCurrent)
     {
 

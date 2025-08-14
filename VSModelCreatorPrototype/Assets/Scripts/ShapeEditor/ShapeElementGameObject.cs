@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.Rendering.ProbeAdjustmentVolume;
 
 namespace VSMC {
 
@@ -60,8 +59,8 @@ namespace VSMC {
         public void ReapplyTransformsFromMeshData(bool doChildren = false)
         {
             //The stored matrix gets applied.
-            gameObject.transform.position = element.meshData.storedMatrix.GetPosition();
-            gameObject.transform.rotation = element.meshData.storedMatrix.rotation;
+            gameObject.transform.localPosition = element.meshData.storedMatrix.GetPosition();
+            gameObject.transform.localRotation = element.meshData.storedMatrix.rotation;
             gameObject.transform.localScale = element.meshData.storedMatrix.lossyScale;
 
             if (doChildren && element.Children != null)

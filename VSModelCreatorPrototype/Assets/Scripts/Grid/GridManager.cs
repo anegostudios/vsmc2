@@ -111,7 +111,7 @@ namespace VSMC {
             }
 
             //If major grid lines do not precisely fit, chop off the extras.
-            if (prefs.gridSizes.x % 8 != 0)
+            if (prefs.gridSizes.x % 16 != 0)
             {
                 majorHoriLinesPositions.RemoveAt(0);
                 majorHoriLinesPositions.RemoveAt(majorHoriLinesPositions.Count - 1);
@@ -139,7 +139,7 @@ namespace VSMC {
             }
 
             //If major grid lines do not precisely fit, chop off the extras.
-            if (prefs.gridSizes.z % 8 != 0)
+            if (prefs.gridSizes.z % 16 != 0)
             {
                 majorVertLinesPositions.RemoveAt(0);
                 majorVertLinesPositions.RemoveAt(majorVertLinesPositions.Count - 1);

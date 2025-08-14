@@ -1,8 +1,6 @@
-using UnityEditor.SearchService;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using static UnityEngine.Rendering.DebugUI;
 namespace VSMC
 {
     /// <summary>
@@ -86,12 +84,21 @@ namespace VSMC
                     isAnyAxisSelected = true;
                     cSelAxis = gizmo.gizmoAxis;
                     sceneMousePosOnGizmoDown = mouseClickScenePositionForCamera;
-                    Vector3 screenSpaceOfObject  = Camera.main.WorldToScreenPoint(gizmo.transform.position);
+                    Vector3 screenSpaceOfObject = Camera.main.worldToCameraMatrix * (gizmo.transform.position);
                     distFromCam = screenSpaceOfObject.z;
-                    Vector3 screenSpaceOfPointOfMovement = Camera.main.WorldToScreenPoint(gizmo.transform.position + gizmo.PointingDirection());
+                    Vector3 screenSpaceOfPointOfMovement = Camera.main.worldToCameraMatrix * (gizmo.transform.position + gizmo.PointingDirection());
                     cGizmoPositiveDirection = (screenSpaceOfPointOfMovement - screenSpaceOfObject).normalized;
+                    Debug.Log("Current Pos Dir: " + cGizmoPositiveDirection + " with a pointing direction of "+gizmo.PointingDirection());
+                    Debug.Log("Obj Screen Space is: " + screenSpaceOfObject + " whereas movement is " + screenSpaceOfPointOfMovement);
                     cFromVal = cSelected.element.From[(int)cSelAxis];
-                    Debug.Log("Gizmo down with a positive direction of " + cGizmoPositiveDirection);
+
+                    //Need to reverse the Z axis due to model flipping.
+                    /*
+                    if (cSelAxis == EnumAxis.Z)
+                    {
+                        cGizmoPositiveDirection *= -1;
+                    }
+                    */
                 }
                 return true;
             }
