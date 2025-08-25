@@ -28,12 +28,13 @@ namespace VSMC
 
         [Header("Button References")]
         public TMP_Text cameraModeButtonText;
+        public TMP_Text uiControlledSpeedButtonText;
 
-        float rotX;
-        float rotY;
+        float rotX = 30;
+        float rotY = 30;
 
-        Vector3 cameraAnchorPos;
-        float distFromAnchor = 1;
+        Vector3 cameraAnchorPos = new Vector3(0.5f, 0.5f, 0.5f);
+        float distFromAnchor = 2;
 
         [Header("Orbital Settings")]
         public Vector2 minMaxRotX;
@@ -44,6 +45,8 @@ namespace VSMC
         public float rotationSpeed = 0.5f;
         public float zoomSpeed = 0.2f;
 
+        public float uiControlledSpeedMultiplier = 1f;
+        public float shiftControlledSpeedMultiplier = 5f;
 
         public ShapeModelEditor editor;
         InputAction mousePosAction;
@@ -56,7 +59,7 @@ namespace VSMC
         void Start()
         {
             mousePosAction = InputSystem.actions.FindAction("Look");
-            cameraAnchorPos = new Vector3();
+            uiControlledSpeedButtonText.text = uiControlledSpeedMultiplier.ToString("0.##") + "x Camera Speed";
             cameraModeButtonText.text = CurrentCameraMode.ToString();
         }
 
@@ -113,12 +116,12 @@ namespace VSMC
         {
             if (CurrentCameraMode == CameraMode.Orbital)
             {
-                distFromAnchor -= data.scrollDelta.y * zoomSpeed;
+                distFromAnchor -= data.scrollDelta.y * zoomSpeed * GetTotalSpeedMultiplier();
                 distFromAnchor = Mathf.Clamp(distFromAnchor, minMaxDistance.x, minMaxDistance.y);
             }
             else
             {
-                cameraAnchorPos += data.scrollDelta.y * zoomSpeed * (cameraChild.transform.forward);
+                cameraAnchorPos += data.scrollDelta.y * zoomSpeed * (cameraChild.transform.forward) * GetTotalSpeedMultiplier();
             }
             return true;
         }
@@ -131,16 +134,16 @@ namespace VSMC
                 //Using 'transform.right' and up here allow us to move the camera anchor in reference to the camera's angle.
                 if (mouseMovement.sqrMagnitude >= Mathf.Epsilon)
                 {
-                    cameraAnchorPos += cameraChild.transform.right * mouseMovement.x * movementSpeed;
-                    cameraAnchorPos += cameraChild.transform.up * mouseMovement.y * movementSpeed;
+                    cameraAnchorPos += cameraChild.transform.right * mouseMovement.x * movementSpeed * GetTotalSpeedMultiplier();
+                    cameraAnchorPos += cameraChild.transform.up * mouseMovement.y * movementSpeed * GetTotalSpeedMultiplier();
                     hasMovedSinceLmbDown = true;
                 }
             }
 
             if (rmbDown)
             {
-                rotY = (rotY + (mouseMovement.x * rotationSpeed)) % 360;
-                rotX -= (mouseMovement.y * rotationSpeed);
+                rotY = (rotY + (mouseMovement.x * rotationSpeed * GetTotalSpeedMultiplier())) % 360;
+                rotX -= (mouseMovement.y * rotationSpeed * GetTotalSpeedMultiplier());
             }
 
             rotX = Mathf.Clamp(rotX, minMaxRotX.x, minMaxRotX.y);
@@ -181,6 +184,23 @@ namespace VSMC
             }
         }
 
+        public void UIControlledSpeedButtonPressed()
+        {
+            uiControlledSpeedMultiplier += Input.GetKey(KeyCode.LeftShift) ? -0.25f : 0.25f;
+            if (uiControlledSpeedMultiplier > 2) uiControlledSpeedMultiplier = 0;
+            else if (uiControlledSpeedMultiplier < 0) uiControlledSpeedMultiplier = 2;
+            uiControlledSpeedButtonText.text = uiControlledSpeedMultiplier.ToString("0.##") + "x Camera Speed";
+        }
+
+        public float GetShiftHeldSpeedMultiplier()
+        {
+            return Input.GetKey(KeyCode.LeftShift) ? shiftControlledSpeedMultiplier : 1f;
+        }
+
+        public float GetTotalSpeedMultiplier()
+        {
+            return GetShiftHeldSpeedMultiplier() * uiControlledSpeedMultiplier;
+        }
 
     }
 }

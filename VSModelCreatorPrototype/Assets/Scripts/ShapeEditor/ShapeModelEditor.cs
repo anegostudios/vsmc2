@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using static UnityEngine.Rendering.DebugUI;
 
 namespace VSMC
 {
@@ -7,9 +8,9 @@ namespace VSMC
     {
         [Header("Unity References")]
         public CameraController cameraController;
-        public GameObject editPulleys;
         public ObjectSelector objectSelector;
         public ElementHierarchyManager elementHierarchyManager;
+        public ReparentElementOverlay reparentElementOverlay;
 
         [Header("UI References")]
         public ShapeEditorUIElements uiElements;
@@ -20,19 +21,26 @@ namespace VSMC
             objectSelector.RegisterForObjectDeselectedEvent(OnObjectDeselcted);
             EditModeManager.RegisterForOnModeSelect(OnEditModeSelect);
             EditModeManager.RegisterForOnModeDeselect(OnEditModeDeselect);
+            uiElements.HideAllUIElements();
+            UndoManager.RegisterForAnyActionDoneOrUndone(OnAnyAction);
+        }
+
+        public void OnAnyAction()
+        {
+            uiElements.RefreshSelectionValues();
         }
 
         private void OnObjectSelected(GameObject cSelected)
         {
             if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
             uiElements.OnElementSelected(cSelected.GetComponent<ShapeElementGameObject>());
+            uiElements.ShowAllUIElements();
         }
 
         private void OnObjectDeselcted(GameObject deSelected)
         {
             if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
-            
-            editPulleys.gameObject.SetActive(false);
+            uiElements.HideAllUIElements();
         }
 
         public void SetSize(EnumAxis axis, float value)
@@ -86,7 +94,7 @@ namespace VSMC
 
         public void CreateNewShapeElement()
         {
-            ShapeElement cElem = null;
+            ShapeElement cElem = null;  
             if (objectSelector.IsAnySelected())
             {
                 cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
@@ -140,6 +148,20 @@ namespace VSMC
             }
 
             return newName;
+        }
+
+        public void OpenReparentMenu()
+        {
+            if (!objectSelector.IsAnySelected()) return;
+            reparentElementOverlay.OpenOverlay(objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element);
+        }
+
+        public void ReparentElement(int elemToReparentUID, int newParentUID)
+        {
+            TaskReparentElement reTask = new TaskReparentElement(elemToReparentUID, newParentUID);
+            reTask.DoTask();
+            UndoManager.main.CommitTask(reTask);
+            elementHierarchyManager.StartCreatingElementPrefabs(ShapeLoader.main.shapeHolder.cLoadedShape);
         }
     }
 }

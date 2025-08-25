@@ -63,7 +63,7 @@ namespace VSMC
         [OnDeserialized()]
         public void ResolveFacesAndTextures(StreamingContext context)
         {
-            ResolveReferencesAndUIDs();
+            //ResolveReferencesAndUIDs();
             // This code is testing crap that will be rewritten.
             // We resolve all the textures and whatnot for each element.
             TextureSizeMultipliers = new Vector2[Textures.Count];

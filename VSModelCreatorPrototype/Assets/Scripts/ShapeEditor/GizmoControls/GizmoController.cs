@@ -40,6 +40,7 @@ namespace VSMC
             ObjectSelector.main.RegisterForObjectSelectedEvent(OnObjectSelected);
             ObjectSelector.main.RegisterForObjectDeselectedEvent(OnObjectDeselected);
             mainCameraPos = Camera.main.transform;
+            UndoManager.RegisterForAnyActionDoneOrUndone(OnAnyAction);
         }
 
         private void Update()
@@ -48,6 +49,12 @@ namespace VSMC
             float dist = Vector3.Distance(gizmosHolderParent.transform.position, mainCameraPos.transform.position);
             float scale = dist / initialiCorrectDistanceForGizmos;
             gizmosHolderParent.transform.localScale = scale * Vector3.one;
+        }
+
+        public void OnAnyAction()
+        {
+            if (cSelected == null || cSelected.element == null) return;
+            SetAppropriateTransformOfGizmos();
         }
 
         public void SetGizmoMode(int mode)
@@ -88,8 +95,6 @@ namespace VSMC
                     distFromCam = screenSpaceOfObject.z;
                     Vector3 screenSpaceOfPointOfMovement = Camera.main.worldToCameraMatrix * (gizmo.transform.position + gizmo.PointingDirection());
                     cGizmoPositiveDirection = (screenSpaceOfPointOfMovement - screenSpaceOfObject).normalized;
-                    Debug.Log("Current Pos Dir: " + cGizmoPositiveDirection + " with a pointing direction of "+gizmo.PointingDirection());
-                    Debug.Log("Obj Screen Space is: " + screenSpaceOfObject + " whereas movement is " + screenSpaceOfPointOfMovement);
                     cFromVal = cSelected.element.From[(int)cSelAxis];
 
                     //Need to reverse the Z axis due to model flipping.
@@ -142,7 +147,6 @@ namespace VSMC
                     nearestMultiple = (int)System.Math.Round((roundedDiff / factor), System.MidpointRounding.AwayFromZero) * factor;
                 }
                 shapeModelEditor.SetPosition(cSelAxis, (float)(cFromVal + nearestMultiple), randomTransformationUID);
-                SetAppropriateTransformOfGizmos();
             }
         }
 

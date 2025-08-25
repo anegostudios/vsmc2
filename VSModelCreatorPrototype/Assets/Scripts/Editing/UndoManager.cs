@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using VSMC;
 
 /// <summary>
@@ -13,16 +14,25 @@ public class UndoManager : MonoBehaviour
     LinkedList<IEditTask> completedEditTasks;
     LinkedList<IEditTask> undoneEditTasks;
 
+    UnityEvent OnAnyActionDoneOrUndone;
+
     private void Awake()
     {
         main = this;
         completedEditTasks = new LinkedList<IEditTask>();
         undoneEditTasks = new LinkedList<IEditTask>();
+        OnAnyActionDoneOrUndone = new UnityEvent();
+    }
+
+    public static void RegisterForAnyActionDoneOrUndone(UnityAction func)
+    {
+        main.OnAnyActionDoneOrUndone.AddListener(func);
     }
 
     public void CommitTask(IEditTask newTask)
     {
         completedEditTasks.AddFirst(newTask);
+        OnAnyActionDoneOrUndone.Invoke();
         undoneEditTasks.Clear();
         //uiElements.RefreshSelectionValues();
     }
@@ -42,6 +52,7 @@ public class UndoManager : MonoBehaviour
         if (completedEditTasks.Count < 1) return;
         IEditTask toUndo = completedEditTasks.First.Value;
         toUndo.UndoTask();
+        OnAnyActionDoneOrUndone.Invoke();
         undoneEditTasks.AddFirst(toUndo);
         completedEditTasks.RemoveFirst();
         //uiElements.RefreshSelectionValues();
@@ -52,6 +63,7 @@ public class UndoManager : MonoBehaviour
         if (undoneEditTasks.Count < 1) return;
         IEditTask toRedo = undoneEditTasks.First.Value;
         toRedo.DoTask();
+        OnAnyActionDoneOrUndone.Invoke();
         completedEditTasks.AddFirst(toRedo);
         undoneEditTasks.RemoveFirst();
         //uiElements.RefreshSelectionValues();

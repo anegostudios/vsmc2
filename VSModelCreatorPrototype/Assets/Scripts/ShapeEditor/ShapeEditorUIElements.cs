@@ -10,6 +10,8 @@ public class ShapeEditorUIElements : MonoBehaviour
 {
     public ShapeModelEditor shapeEditor;
 
+    public GameObject entireModelModeObjectGroup;
+
     [Header("Misc")]
     public TMP_InputField elemName;
 
@@ -106,5 +108,15 @@ public class ShapeEditorUIElements : MonoBehaviour
         OnElementSelected(ObjectSelector.main.GetCurrentlySelected().GetComponent<ShapeElementGameObject>());
     }
 
+
+    public void HideAllUIElements()
+    {
+        entireModelModeObjectGroup.SetActive(false);
+    }
+
+    public void ShowAllUIElements()
+    {
+        entireModelModeObjectGroup.SetActive(true);
+    }
 
 }

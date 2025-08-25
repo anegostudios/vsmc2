@@ -8,7 +8,7 @@ public class ElementHierarchyItemPrefab : MonoBehaviour
 
     static bool AlternateColor = false;
     int elementUID;
-    Color defaultColor;
+    public Color defaultColor;
     public GameObject emptySpace;
     public Image minMaxButton;
     public Image hideShowButton;
@@ -20,14 +20,18 @@ public class ElementHierarchyItemPrefab : MonoBehaviour
     {
         this.hierarchyManager = hierarchyManager;
         elementUID = element.elementUID;
+        Debug.Log(elementUID);
         Color c = GetComponent<Image>().color;
         GetComponent<Image>().color = new Color(c.r, c.g, c.b, AlternateColor ? 0.15f : 0.25f);
-        defaultColor = GetComponent<Image>().color;
+            defaultColor = GetComponent<Image>().color;
         AlternateColor = !AlternateColor;
         emptySpace.GetComponent<LayoutElement>().preferredWidth = parentCount * 16;
         parentedObject.SetActive(parentCount != 0);
         elementName.text = element.Name;
 
+        //This is important for the reparenting menu. We cannot bulk copy over IDs, so by setting the name it'll definitely be copied.
+        gameObject.name = element.elementUID.ToString();
+        
         //Set element buttons
         hideShowButton.sprite = element.renderInEditor ? hierarchyManager.ShownSprite : hierarchyManager.HiddenSprite;
         minMaxButton.sprite = element.minimizeFromThisObject ? hierarchyManager.ExpandChildrenSprite : hierarchyManager.CollapseChildrenSprite;

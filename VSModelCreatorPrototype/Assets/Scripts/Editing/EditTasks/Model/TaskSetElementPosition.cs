@@ -14,13 +14,18 @@ namespace VSMC
         public double newPosition;
         public int randomTransformationUID;
 
-        public TaskSetElementPosition(ShapeElement elem, EnumAxis axis, double newPos, int ranTranUID = 0)
+        public bool alsoMoveRotationOrigin;
+        public bool moveInGlobalSpace;
+
+        public TaskSetElementPosition(ShapeElement elem, EnumAxis axis, double newPos, int ranTranUID = 0, bool alsoMoveRotationOrigin = false, bool moveInGlobalSpace = false)
         {
             elementUID = elem.elementUID;
             this.axis = axis;
             oldPosition = elem.From[(int)axis];
             newPosition = newPos;
             randomTransformationUID = ranTranUID;
+            this.alsoMoveRotationOrigin = alsoMoveRotationOrigin;
+            this.moveInGlobalSpace = moveInGlobalSpace;
         }
 
         public override void DoTask()

@@ -28,6 +28,7 @@ namespace VSMC
         private void Awake()
         {
             main = this;
+            EditModeManager.RegisterForOnModeSelect(OnModeSelected);
             //Allow object scrolling of 32 objects
             storedRaycastHits = new RaycastHit[32];
             cSelectedList = new List<GameObject>();
@@ -154,6 +155,11 @@ namespace VSMC
 
         public void SelectObject(GameObject select, bool deselectIfAlreadySelected = true, bool group = false)
         {
+            //Do not allow selection in view or none mode.
+            if (EditModeManager.main.cEditMode == VSEditMode.View || EditModeManager.main.cEditMode == VSEditMode.None)
+            {
+                return;
+            }
             //Switch off grouping, for now. I'm unsure how to make it work with actual editing.
             group = false;
             if (cSelectedList.Contains(select))
@@ -178,6 +184,15 @@ namespace VSMC
             }
 
             OnObjectSelected.Invoke(select);
+        }
+
+        public void OnModeSelected(VSEditMode editMode)
+        {
+            //In view mode, remove any selection.
+            if (editMode == VSEditMode.View || editMode == VSEditMode.None)
+            {
+                DeselectAll();
+            }
         }
     }
 }

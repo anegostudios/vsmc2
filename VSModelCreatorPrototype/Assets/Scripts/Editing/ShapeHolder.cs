@@ -31,6 +31,7 @@ namespace VSMC
             {
                 Debug.LogError("Trying to load a shape when one is already active. Remember to call UnloadCurrentShape first!");
             }
+            loadedShape.ResolveReferencesAndUIDs();
             cLoadedShape = loadedShape;
             CreateAllShapeElementGameObjects(cLoadedShape);
         }

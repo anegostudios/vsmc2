@@ -123,7 +123,7 @@ namespace VSMC
         /// <summary>
         /// The unique ID for this element.
         /// </summary>
-        public int elementUID;
+        public int elementUID = -1;
         
         /// <summary>
         /// The stored mesh data for this element.
@@ -164,6 +164,10 @@ namespace VSMC
         //These functions will interact with the ShapeAccessors and Tesellators to regenerate a shape game object.
         #region Runtime Editing Functions
 
+        [JsonConstructor]
+        public ShapeElement(bool noparams = true)
+        {}
+
         /// <summary>
         /// Create a completely new element. This will register it with a UID, but you will need to use SetParent to set an appropriate parent.
         /// </summary>
@@ -173,7 +177,6 @@ namespace VSMC
             To = new double[] { 1, 1, 1 };
             Name = "New Object";
             ResolveReferencesAndUIDs();
-            
             FacesResolved = new ShapeElementFace[6];
             for (int i = 0; i < 6; i++)
             {
@@ -391,6 +394,7 @@ namespace VSMC
 
         internal void ResolveReferencesAndUIDs()
         {
+            Debug.Log("Resolving references...");
             elementUID = ShapeElementRegistry.main.AddShapeElement(this);
             var Children = this.Children;
             if (Children != null)

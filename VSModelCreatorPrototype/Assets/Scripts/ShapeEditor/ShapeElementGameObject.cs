@@ -72,6 +72,16 @@ namespace VSMC {
             }
         }
 
+        public void ReapplyTransformsAndMeshForReparenting(bool doChildren = false)
+        {
+            if (element.ShouldHideFromView() || !element.Shade)
+            {
+                gameObject.SetActive(false);
+            }
+            RegenerateMeshFromMeshData();
+            ReapplyTransformsFromMeshData(doChildren);
+        }
+
         /// <summary>
         /// Regenerates the selection lines. Is called when the mesh is regenerated.
         /// </summary>
