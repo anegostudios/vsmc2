@@ -20,7 +20,6 @@ public class ElementHierarchyItemPrefab : MonoBehaviour
     {
         this.hierarchyManager = hierarchyManager;
         elementUID = element.elementUID;
-        Debug.Log(elementUID);
         Color c = GetComponent<Image>().color;
         GetComponent<Image>().color = new Color(c.r, c.g, c.b, AlternateColor ? 0.15f : 0.25f);
             defaultColor = GetComponent<Image>().color;

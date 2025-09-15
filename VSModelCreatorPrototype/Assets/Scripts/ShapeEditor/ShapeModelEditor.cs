@@ -135,14 +135,17 @@ namespace VSMC
             //Rename element in UI.
             elementHierarchyManager.GetElementHierarchyItem(cElem).elementName.text = newName;
 
-            foreach (Animation anim in ShapeLoader.main.shapeHolder.cLoadedShape.Animations)
+            if (ShapeLoader.main.shapeHolder.cLoadedShape.Animations != null)
             {
-                foreach (AnimationKeyFrame keyFrame in anim.KeyFrames)
+                foreach (Animation anim in ShapeLoader.main.shapeHolder.cLoadedShape.Animations)
                 {
-                    if (keyFrame.Elements.ContainsKey(oldName))
+                    foreach (AnimationKeyFrame keyFrame in anim.KeyFrames)
                     {
-                        keyFrame.Elements[newName] = keyFrame.Elements[oldName];
-                        keyFrame.Elements.Remove(oldName);
+                        if (keyFrame.Elements.ContainsKey(oldName))
+                        {
+                            keyFrame.Elements[newName] = keyFrame.Elements[oldName];
+                            keyFrame.Elements.Remove(oldName);
+                        }
                     }
                 }
             }

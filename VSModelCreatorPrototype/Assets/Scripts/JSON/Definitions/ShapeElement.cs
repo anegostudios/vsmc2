@@ -176,6 +176,11 @@ namespace VSMC
             From = new double[] { 0, 0, 0 };
             To = new double[] { 1, 1, 1 };
             Name = "New Object";
+            int nameCheckCount = 1;
+            while (ShapeElementRegistry.main.GetShapeElementByName(Name) != null)
+            {
+                Name = "New Object (" + ++nameCheckCount+ ")";
+            }
             ResolveReferencesAndUIDs();
             FacesResolved = new ShapeElementFace[6];
             for (int i = 0; i < 6; i++)

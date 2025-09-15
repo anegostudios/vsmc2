@@ -47,7 +47,6 @@ public class ReparentElementOverlay : MonoBehaviour
         //Get the shape, if any of the children IDs match then we cannot set the child here.
         ShapeElement shape = ShapeElementRegistry.main.GetShapeElementByUID(selID);
         List<ShapeElement> toCheck = new List<ShapeElement>() { shape };
-        Debug.Log(shape.Name);
 
         while (toCheck.Count > 0)
         {
