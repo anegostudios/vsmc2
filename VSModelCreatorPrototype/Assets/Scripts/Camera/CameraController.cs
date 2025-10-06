@@ -48,7 +48,7 @@ namespace VSMC
         public float uiControlledSpeedMultiplier = 1f;
         public float shiftControlledSpeedMultiplier = 5f;
 
-        public ShapeModelEditor editor;
+        public ModelEditor editor;
         InputAction mousePosAction;
 
         bool lmbDown = false;

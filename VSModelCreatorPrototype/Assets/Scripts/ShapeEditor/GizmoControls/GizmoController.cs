@@ -13,7 +13,7 @@ namespace VSMC
         public GizmoMode cGizmoMode;
 
         [Header("Unity References")]
-        public ShapeModelEditor shapeModelEditor;
+        public ModelEditor shapeModelEditor;
         public GameObject gizmosHolderParent;
         public GameObject[] gizmoParentsByMode;
         public string XGizmoLayer;
@@ -37,6 +37,7 @@ namespace VSMC
 
         private void Start()
         {
+            EditModeManager.RegisterForOnModeSelect(OnModeSelect);
             ObjectSelector.main.RegisterForObjectSelectedEvent(OnObjectSelected);
             ObjectSelector.main.RegisterForObjectDeselectedEvent(OnObjectDeselected);
             mainCameraPos = Camera.main.transform;
@@ -49,6 +50,22 @@ namespace VSMC
             float dist = Vector3.Distance(gizmosHolderParent.transform.position, mainCameraPos.transform.position);
             float scale = dist / initialiCorrectDistanceForGizmos;
             gizmosHolderParent.transform.localScale = scale * Vector3.one;
+        }
+
+        public void OnModeSelect(VSEditMode mode)
+        {
+            if (mode != VSEditMode.Model)
+            {
+                gizmosHolderParent.gameObject.SetActive(false);
+            }
+            else
+            {
+                if (cSelected)
+                {
+                    SetAppropriateTransformOfGizmos();
+                    gizmosHolderParent.gameObject.SetActive(true);
+                }
+            }
         }
 
         public void OnAnyAction()
@@ -80,7 +97,7 @@ namespace VSMC
 
         public override bool OnSceneViewMouseDown(Vector2 mouseClickScenePositionForCamera, PointerEventData data)
         {
-            if (data.button != 0 || cSelected == null) return false;
+            if (data.button != 0 || cSelected == null || EditModeManager.main.cEditMode != VSEditMode.Model) return false;
 
             if (Physics.Raycast(Camera.main.ScreenPointToRay(mouseClickScenePositionForCamera), out RaycastHit hit, float.MaxValue, LayerMask.GetMask("Edit Pulleys")))
             {
@@ -169,6 +186,8 @@ namespace VSMC
         public void OnObjectSelected(GameObject selected)
         {
             cSelected = selected.GetComponent<ShapeElementGameObject>();
+            //Replace the selection, but if not in model mode, do not show the gizmos.
+            if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
             SetAppropriateTransformOfGizmos();
             gizmosHolderParent.gameObject.SetActive(true);
         }

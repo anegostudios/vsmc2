@@ -65,5 +65,10 @@ namespace VSMC {
         {
             return VSEditMode.Model;
         }
+
+        public override string GetTaskName()
+        {
+            return "Resize Element";
+        }
     }
 }

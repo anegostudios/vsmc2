@@ -47,7 +47,6 @@ namespace VSMC {
 
             //Now apply the sections to the Unity object.
             gameObject.GetComponent<MeshFilter>().mesh = unityMesh;
-            gameObject.GetComponent<MeshRenderer>().material.SetTexture("_AvailableTextures", ShapeLoader.main.shapeHolder.cLoadedShape.loadedTextures);
             gameObject.GetComponent<MeshCollider>().sharedMesh = unityMesh;
 
             RegenerateSelectionLinesFromMeshData();
@@ -109,7 +108,16 @@ namespace VSMC {
                 lines.positionCount = linePoses.Length;
                 lines.SetPositions(linePoses);
             }
-            Destroy(linesBase.gameObject);
+
+            //We need to have one line that exists at all times so that we can clone it.
+            if (element.meshData.lineIndices.Count == 0)
+            {
+                linesBase.positionCount = 0;
+            }
+            else
+            {
+                Destroy(linesBase.gameObject);
+            }
         }
 
         public Vector3 RotateFromWorldToLocalPosition(Vector3 worldVector)

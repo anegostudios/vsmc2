@@ -53,12 +53,18 @@ namespace VSMC
         {
             //Same as Do but just reversed.
             ShapeElement elem = ShapeElementRegistry.main.GetShapeElementByUID(elementUID);
-            //Need to edit both the from and to values, so we need a temp storage of the size.
-            double size = elem.To[(int)axis] - elem.From[(int)axis];
 
-            
-            elem.From[(int)axis] = oldPosition;
-            elem.To[(int)axis] = oldPosition + size;
+            //Just do the reverse increment.
+            double inc = oldPosition - newPosition;
+            Vector3 movement = new Vector3();
+            movement[(int)axis] = (float)inc;
+            movement = elem.RotateFromWorldToLocalForThisObjectsRotation(movement);
+            //movement = Quaternion.Inverse(elem.gameObject.transform.rotation) * movement;
+
+            elem.From = new double[] { elem.From[0] + movement.x, elem.From[1] + movement.y, elem.From[2] + movement.z };
+            elem.To = new double[] { elem.To[0] + movement.x, elem.To[1] + movement.y, elem.To[2] + movement.z };
+            elem.RotationOrigin = new double[] { elem.RotationOrigin[0] + movement.x, elem.RotationOrigin[1] + movement.y, elem.RotationOrigin[2] + movement.z };
+
             elem.RecreateTransforms();
         }
 
@@ -87,6 +93,11 @@ namespace VSMC
         public override VSEditMode GetRequiredEditMode()
         {
             return VSEditMode.Model;
+        }
+
+        public override string GetTaskName()
+        {
+            return "Move Element";
         }
     }
 }

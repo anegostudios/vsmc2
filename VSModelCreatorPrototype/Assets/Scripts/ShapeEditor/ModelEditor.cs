@@ -4,7 +4,7 @@ using static UnityEngine.Rendering.DebugUI;
 
 namespace VSMC
 {
-    public class ShapeModelEditor : MonoBehaviour
+    public class ModelEditor : MonoBehaviour
     {
         [Header("Unity References")]
         public CameraController cameraController;
@@ -13,7 +13,7 @@ namespace VSMC
         public ReparentElementOverlay reparentElementOverlay;
 
         [Header("UI References")]
-        public ShapeEditorUIElements uiElements;
+        public ModelEditorUIElements uiElements;
 
         private void Start()
         {
@@ -27,6 +27,7 @@ namespace VSMC
 
         public void OnAnyAction()
         {
+            if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
             uiElements.RefreshSelectionValues();
         }
 
@@ -57,7 +58,7 @@ namespace VSMC
             if (!objectSelector.IsAnySelected()) return;
             ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
 
-            TaskSetElementPosition spTask = new TaskSetElementPosition(cElem, axis, value, translationUid);
+            TaskSetElementPosition spTask = new TaskSetElementPosition(cElem, axis, value, translationUid, false, false);
             spTask.DoTask();
             UndoManager.main.CommitTask(spTask);
         }

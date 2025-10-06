@@ -10,7 +10,7 @@ namespace VSMC
         // <summary>
         /// The ID of the keyframe.
         /// </summary>
-        [JsonProperty]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
         public int Frame;
 
         /// <summary>

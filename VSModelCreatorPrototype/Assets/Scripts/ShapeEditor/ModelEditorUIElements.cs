@@ -6,9 +6,9 @@ using VSMC;
 /// <summary>
 /// To avoid clutter, the UI elements required and used by the ShapeEditor (since there are so many) are managed here.
 /// </summary>
-public class ShapeEditorUIElements : MonoBehaviour
+public class ModelEditorUIElements : MonoBehaviour
 {
-    public ShapeModelEditor shapeEditor;
+    public ModelEditor shapeEditor;
 
     public GameObject entireModelModeObjectGroup;
 

@@ -3,16 +3,22 @@ using System;
 using System.IO;
 using VSMC;
 using UnityEngine;
+using Newtonsoft.Json.Serialization;
 
 public class ShapeAccessor
 {
     
     public static void SerializeShapeToFile(Shape shape, string filePath)
     {
+        //Save some things to the shape itself first...
+        TextureManager.main.ApplyTexturesIntoShape(shape);
+        shape.ResolveForBeforeSerialization();
+
         JsonSerializerSettings settings = new JsonSerializerSettings()
         {
             NullValueHandling = NullValueHandling.Ignore,
             DefaultValueHandling = DefaultValueHandling.Ignore,
+            ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy(true, false) }
         };
         File.WriteAllText(filePath, JsonConvert.SerializeObject(shape,Formatting.Indented,settings));
     }

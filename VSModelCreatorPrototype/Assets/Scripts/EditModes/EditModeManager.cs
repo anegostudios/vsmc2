@@ -7,7 +7,7 @@ namespace VSMC {
 
     public class EditModeManager : MonoBehaviour
     {
-        public static EditModeManager   main;
+        public static EditModeManager main;
         
         [NonSerialized]
         public VSEditMode cEditMode = VSEditMode.None;
@@ -20,6 +20,8 @@ namespace VSMC {
         public Image[] selectedButtonImages;
         public Color deselectedModeColor;
         public Color selectedModeColor;
+        public GameObject[] blockModeChangeIfAnyAreActive;
+        public GameObject[] objectsToDeactivateUponModeChange;
 
         private void Awake()
         {
@@ -75,21 +77,34 @@ namespace VSMC {
         /// <param name="mode"></param>
         public void SelectMode(int mode)
         {
-            SelectMode((VSEditMode)mode);
+            SelectMode((VSEditMode)mode, true);
         }
 
         /// <summary>
         /// Selects a new mode, and deselects the old one. Also calls relevant events.
+        /// Returns false if there is an active gameobject blocking the mode change.
         /// </summary>
         /// <param name="mode"></param>
-        public void SelectMode(VSEditMode mode)
+        public bool SelectMode(VSEditMode mode, bool shouldCheckForBlockedObjects = false)
         {
-            if (ShapeLoader.main.shapeHolder.cLoadedShape == null) return;
-            if (mode == cEditMode) return;
+            if (ShapeLoader.main.shapeHolder.cLoadedShape == null) return true;
+            if (mode == cEditMode) return true;
+            if (shouldCheckForBlockedObjects)
+            {
+                foreach (GameObject g in blockModeChangeIfAnyAreActive)
+                {
+                    if (g.activeSelf) return false;
+                }
+            }
             VSEditMode deselMode = cEditMode;
             cEditMode = mode;
             OnModeDeselected(deselMode);
             OnModeSelected(cEditMode);
+            foreach (GameObject g in objectsToDeactivateUponModeChange)
+            {
+                g.SetActive(false);
+            }
+            return true;
         }
 
     }

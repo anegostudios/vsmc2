@@ -32,9 +32,10 @@ namespace VSMC
 
         /// <summary>
         /// The faces of the shape element by name (will normally be null except during object deserialization: use FacesResolved instead!)
+        /// Marked as private to stop accidental usage.
         /// </summary>
         [JsonProperty]
-        public Dictionary<string, ShapeElementFace> Faces;
+        private Dictionary<string, ShapeElementFace> Faces;
 
         /// <summary>
         /// The origin point for rotation.0
@@ -182,14 +183,15 @@ namespace VSMC
                 Name = "New Object (" + ++nameCheckCount+ ")";
             }
             ResolveReferencesAndUIDs();
-            FacesResolved = new ShapeElementFace[6];
+            Faces = new Dictionary<string, ShapeElementFace>();
             for (int i = 0; i < 6; i++)
             {
-                FacesResolved[i] = new ShapeElementFace()
+                Faces.Add(FaceNames[i], new ShapeElementFace()
                 {
                     Enabled = true,
-                    Uv = new float[] { 0, 0, 1, 1 }
-                };
+                    Uv = new float[] { 0, 0, 1, 1 },
+                    Texture = "#texture"
+                });
             }
         }
 
@@ -399,7 +401,7 @@ namespace VSMC
 
         internal void ResolveReferencesAndUIDs()
         {
-            Debug.Log("Resolving references...");
+            //Debug.Log("Resolving references...");
             elementUID = ShapeElementRegistry.main.AddShapeElement(this);
             var Children = this.Children;
             if (Children != null)
@@ -524,8 +526,10 @@ namespace VSMC
         /// <summary>
         /// Resolves the face indices and the texture codes for the element and its children.
         /// </summary>
-        public void ResolveFacesAndTextures(Dictionary<string, string> textures)
+        public void ResolveFacesAndTextures(List<LoadedTexture> textures)
         {
+
+            FacesResolved = new ShapeElementFace[6];
             if (Faces != null)
             {
                 foreach (var val in Faces)
@@ -536,12 +540,62 @@ namespace VSMC
                     BlockFacing facing = BlockFacing.FromFirstLetter(val.Key);
                     FacesResolved[facing.index] = f;
                 }
-                if (Children != null)
+            }
+
+            //Check all faces exist.
+            for (int i = 0; i < 6; i++)
+            {
+                if (FacesResolved[i] == null)
                 {
-                    foreach (ShapeElement child in Children)
+                    FacesResolved[i] = new ShapeElementFace();
+                    FacesResolved[i].Enabled = false;
+                }
+            }
+
+            if (Children != null)
+            {
+                foreach (ShapeElement child in Children)
+                {
+                    child.ResolveFacesAndTextures(textures);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Names for each face - Matched to <see cref="FaceEnum"/>.
+        /// </summary>
+        static string[] FaceNames = new string[] { "north", "east", "south", "west", "up", "down" };
+
+        public void ResolveBeforeSerialization()
+        {
+            //Resolve each independent face.
+            if (FacesResolved != null)
+            {
+                foreach (ShapeElementFace face in FacesResolved)
+                {
+                    face.ResolveBeforeSerialization();
+                }
+            }
+
+            //Now resolve the actual face array. This is based on face names.
+            if (FacesResolved != null)
+            {
+                Faces = new Dictionary<string, ShapeElementFace>(6);
+                for (int i = 0; i < 6; i++)
+                {
+                    if (FacesResolved[i].Enabled)
                     {
-                        child.ResolveFacesAndTextures(textures);
+                        Faces[FaceNames[i]] = FacesResolved[i];
                     }
+                }
+            }
+
+            //Now resolve child elements.
+            if (Children != null)
+            {
+                foreach (ShapeElement child in Children)
+                {
+                    child.ResolveBeforeSerialization();
                 }
             }
         }

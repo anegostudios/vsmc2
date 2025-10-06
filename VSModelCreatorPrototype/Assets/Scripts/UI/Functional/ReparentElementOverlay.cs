@@ -7,7 +7,7 @@ using VSMC;
 public class ReparentElementOverlay : MonoBehaviour
 {
 
-    public ShapeModelEditor modelEditor;
+    public ModelEditor modelEditor;
     public GameObject elementHierarchyToCopy;
     public TMP_Text reparentElementText;
     public Transform hierarchyParent;

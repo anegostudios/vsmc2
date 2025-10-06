@@ -126,15 +126,18 @@ namespace VSMC
             {
                 if (logErrorIfNotSelected)
                 {
-                    Debug.LogError("Could not find selected object ("+deselected.name+") in list to deselect.");
+                    Debug.LogError("Could not find selected object (" + deselected.name + ") in list to deselect.");
                 }
                 return;
             }
-            foreach (LineRenderer lines in deselected.GetComponentsInChildren<LineRenderer>())
+            if (deselected != null)
             {
-                lines.enabled = false;
+                foreach (LineRenderer lines in deselected.GetComponentsInChildren<LineRenderer>())
+                {
+                    lines.enabled = false;
+                }
+                OnObjectDeSelected.Invoke(deselected);
             }
-            OnObjectDeSelected.Invoke(deselected);
         }
 
         public void DeselectLast()

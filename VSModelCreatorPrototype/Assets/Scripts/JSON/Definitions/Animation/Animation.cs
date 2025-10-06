@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 using System.Runtime.Serialization;
+using Newtonsoft.Json.Converters;
 
 namespace VSMC
 {
@@ -41,7 +42,7 @@ namespace VSMC
     [JsonObject(MemberSerialization.OptIn)]
     public class Animation
     {
-        [JsonProperty]
+        [JsonProperty("quantityframes")]
         public int QuantityFrames;
 
         [JsonProperty]
@@ -56,13 +57,15 @@ namespace VSMC
         [JsonProperty]
         public bool EaseAnimationSpeed = false;
 
-        [JsonProperty]
+        [JsonProperty("keyframes")]
         public AnimationKeyFrame[] KeyFrames;
 
         [JsonProperty]
+        [JsonConverter(typeof(StringEnumConverter))]
         public EnumEntityActivityStoppedHandling OnActivityStopped = EnumEntityActivityStoppedHandling.Rewind;
 
         [JsonProperty]
+        [JsonConverter(typeof(StringEnumConverter))]
         public EnumEntityAnimationEndHandling OnAnimationEnd = EnumEntityAnimationEndHandling.Repeat;
 
 

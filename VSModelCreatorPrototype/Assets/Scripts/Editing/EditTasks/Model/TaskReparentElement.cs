@@ -93,4 +93,9 @@ public class TaskReparentElement : IEditTask
         return false;
     }
 
+    public override string GetTaskName()
+    {
+        return "Reparent Element";
+    }
+
 }

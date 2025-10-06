@@ -168,5 +168,10 @@ namespace VSMC
             //We very much need model mode for delete operations.
             return VSEditMode.Model;
         }
+
+        public override string GetTaskName()
+        {
+            return "Delete Element";
+        }
     }
 }

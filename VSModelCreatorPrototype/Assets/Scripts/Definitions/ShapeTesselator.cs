@@ -155,8 +155,7 @@ namespace VSMC
              * Very promising for the live editor working at 60fps.
              */
             System.DateTime pre = System.DateTime.Now;
-            storedTextureSizes = shape.TextureSizeMultipliers;
-            TesselateShapeElements(shape.Elements, shape.TextureSizeMultipliers);
+            TesselateShapeElements(shape.Elements);
             Debug.Log("Calculating mesh data for shape took " + (DateTime.Now - pre).TotalMilliseconds + "ms.");
     
             pre = System.DateTime.Now;
@@ -183,11 +182,11 @@ namespace VSMC
             MeshData elementMeshData = element.meshData;
             elementMeshData.Clear();
             elementMeshData.meshName = element.Name;
-            TesselateShapeElement(elementMeshData, element, storedTextureSizes);
+            TesselateShapeElement(elementMeshData, element);
             elementMeshData.jointID = element.JointId;
         }
 
-        public static void TesselateShapeElements(ShapeElement[] elements, Vector2[] textureSizes)
+        public static void TesselateShapeElements(ShapeElement[] elements)
         {
             foreach (ShapeElement element in elements)
             {
@@ -195,18 +194,18 @@ namespace VSMC
                 MeshData elementMeshData = new MeshData();
                 elementMeshData.meshName = element.Name;
                 element.meshData = elementMeshData;
-                TesselateShapeElement(elementMeshData, element, textureSizes);
+                TesselateShapeElement(elementMeshData, element);
                 elementMeshData.jointID = element.JointId;
 
                 //Now do children.
                 if (element.Children != null)
                 {
-                    TesselateShapeElements(element.Children, textureSizes);
+                    TesselateShapeElements(element.Children);
                 }
             }
         }
 
-        private static void TesselateShapeElement(MeshData meshData, ShapeElement element, Vector2[] textureSizes)
+        private static void TesselateShapeElement(MeshData meshData, ShapeElement element)
         {
             Vector3 size = new Vector3(
                 ((float)element.To[0] - (float)element.From[0]) / 16f,
@@ -228,15 +227,21 @@ namespace VSMC
                 Vector2 uvSize = uv2 - uv1;
                 int rot = (int)(face.Rotation / 90);
 
-                AddFace(meshData, facing, relativeCenter, size, uv1, uvSize, face.textureIndex, rot % 4, textureSizes);
+                AddFace(meshData, facing, relativeCenter, size, uv1, uvSize, face.textureIndex, rot % 4);
             }
         }
 
-        private static void AddFace(MeshData modeldata, BlockFacing facing, Vector3 relativeCenter, Vector3 size, Vector2 uvStart, Vector2 uvSize, int faceTextureIndex, int uvRotation, Vector2[] textureSizes)
+        private static void AddFace(MeshData modeldata, BlockFacing facing, Vector3 relativeCenter, Vector3 size, Vector2 uvStart, Vector2 uvSize, int faceTextureIndex, int uvRotation)
         {
             int coordPos = facing.index * 12; // 4 * 3 xyz's perface
             int uvPos = facing.index * 8;     // 4 * 2 uvs per face
             int lastVertexNumber = modeldata.vertices.Count;
+
+            Vector2 storedTexSize = Vector2.one;
+            if (faceTextureIndex >= 0 && faceTextureIndex < TextureManager.main.loadedTextures.Count)
+            {
+                storedTexSize = TextureManager.main.loadedTextures[faceTextureIndex].storedTextureSizeMultiplier;
+            }
 
             for (int i = 0; i < 4; i++)
             {
@@ -245,7 +250,7 @@ namespace VSMC
                     relativeCenter.y + size.y * CubeVertices[coordPos++] / 2,
                     relativeCenter.z + size.z * CubeVertices[coordPos++] / 2));
                 modeldata.uvs.Add(new Vector2(uvStart.x + uvSize.x * CubeUvCoords[uvIndex],
-                    uvStart.y + uvSize.y * CubeUvCoords[uvIndex + 1]) / (Shape.MaxTextureSize * textureSizes[faceTextureIndex]));
+                    uvStart.y + uvSize.y * CubeUvCoords[uvIndex + 1]) / (TextureManager.main.maxTextureSize * storedTexSize));
                 modeldata.textureIndices.Add(faceTextureIndex);
             }
 

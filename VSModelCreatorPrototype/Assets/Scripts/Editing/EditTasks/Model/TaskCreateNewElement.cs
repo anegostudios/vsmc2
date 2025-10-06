@@ -32,7 +32,7 @@ namespace VSMC
             }
 
             //We will tesselate the object and create its game object, but will move it immediately to the deletion state.
-            ShapeTesselator.TesselateShapeElements(new ShapeElement[] { createdElement }, ShapeLoader.main.shapeHolder.cLoadedShape.TextureSizeMultipliers);
+            ShapeTesselator.TesselateShapeElements(new ShapeElement[] { createdElement });
             ShapeTesselator.ResolveMatricesForShapeElementAndChildren(createdElement);
             ShapeLoader.main.shapeHolder.CreateShapeElementGameObject(createdElement);
 
@@ -81,7 +81,8 @@ namespace VSMC
             {
                 ShapeLoader.main.shapeHolder.cLoadedShape.RemoveRootShapeElement(createdElement);
             }
-            GameObject.Destroy(ElementHierarchyManager.ElementHierarchy.GetElementHierarchyItem(createdElement));
+            //We recreate the entire element list for easy usage.
+            ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeLoader.main.shapeHolder.cLoadedShape);    
         }
 
         public override bool MergeTasksIfPossible(IEditTask nextTask)
@@ -98,6 +99,11 @@ namespace VSMC
         public override VSEditMode GetRequiredEditMode()
         {
             return VSEditMode.Model;
+        }
+
+        public override string GetTaskName()
+        {
+            return "Create Element";
         }
 
     }

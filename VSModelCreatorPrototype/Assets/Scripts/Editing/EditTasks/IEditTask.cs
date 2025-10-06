@@ -43,5 +43,10 @@ namespace VSMC
         /// </summary>
         public abstract VSEditMode GetRequiredEditMode();
 
+        /// <summary>
+        /// Returns a readable task name, for use within the UI.
+        /// </summary>
+        public abstract string GetTaskName();
+
     }
 }

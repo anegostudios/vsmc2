@@ -49,13 +49,21 @@ public class ShapeTester : MonoBehaviour
         string[] selectedFiles = StandaloneFileBrowser.OpenFilePanel("Open Shape Files", "", "json", true);
         if (selectedFiles == null || selectedFiles.Length == 0) { return; }
 
+        //Guess the texture path from the file.
         string vsPath = selectedFiles[0];
         while (!vsPath.EndsWith("assets") && Directory.GetParent(vsPath) != null)
         {
             vsPath = Directory.GetParent(vsPath).FullName;
         }
-        Shape.TexturesPath = Path.Combine(vsPath, "survival", "textures");
-        
+        if (Directory.GetParent(vsPath) == null)
+        {
+            TextureManager.main.textureBasePath = "";
+        }
+        else
+        {
+            TextureManager.main.textureBasePath = Path.Combine(vsPath, "survival", "textures");
+        }
+
         foreach (GameObject joint in joints)
         {
             foreach (Transform child in joint.transform)

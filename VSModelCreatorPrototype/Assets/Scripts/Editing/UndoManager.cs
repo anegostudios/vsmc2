@@ -10,6 +10,7 @@ public class UndoManager : MonoBehaviour
 {
 
     public static UndoManager main;
+    public GameObject[] objectsToDeactivateWhenUndoOrRedo;
 
     LinkedList<IEditTask> completedEditTasks;
     LinkedList<IEditTask> undoneEditTasks;
@@ -51,22 +52,38 @@ public class UndoManager : MonoBehaviour
     {
         if (completedEditTasks.Count < 1) return;
         IEditTask toUndo = completedEditTasks.First.Value;
+
+        //Need to set edit mode to correct mode for undoing.
+        EditModeManager.main.SelectMode(toUndo.GetRequiredEditMode());
+
         toUndo.UndoTask();
         OnAnyActionDoneOrUndone.Invoke();
         undoneEditTasks.AddFirst(toUndo);
         completedEditTasks.RemoveFirst();
         //uiElements.RefreshSelectionValues();
+        foreach (GameObject g in objectsToDeactivateWhenUndoOrRedo)
+        {
+            g.SetActive(false);
+        }
     }
 
     public void RedoTopTask()
     {
         if (undoneEditTasks.Count < 1) return;
         IEditTask toRedo = undoneEditTasks.First.Value;
+
+        //Need to set edit mode to correct mode for redoing.
+        EditModeManager.main.SelectMode(toRedo.GetRequiredEditMode());
+
         toRedo.DoTask();
         OnAnyActionDoneOrUndone.Invoke();
         completedEditTasks.AddFirst(toRedo);
         undoneEditTasks.RemoveFirst();
         //uiElements.RefreshSelectionValues();
+        foreach (GameObject g in objectsToDeactivateWhenUndoOrRedo)
+        {
+            g.SetActive(false);
+        }
     }
 
     private void Update()
