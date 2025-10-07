@@ -10,7 +10,7 @@ namespace VSMC {
         public Color defaultColor;
         MeshRenderer mr;
 
-        private void Start()
+        private void Awake()
         {
             mr = GetComponent<MeshRenderer>();
             OnHoverEnd();

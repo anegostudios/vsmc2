@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 using VSMC;
 
 /// <summary>
@@ -11,6 +13,10 @@ public class UndoManager : MonoBehaviour
 
     public static UndoManager main;
     public GameObject[] objectsToDeactivateWhenUndoOrRedo;
+    public TMP_Text undoText;
+    public TMP_Text redoText;
+    public Color defaultTextColor;
+    public Color disabledTextColor;
 
     LinkedList<IEditTask> completedEditTasks;
     LinkedList<IEditTask> undoneEditTasks;
@@ -23,11 +29,45 @@ public class UndoManager : MonoBehaviour
         completedEditTasks = new LinkedList<IEditTask>();
         undoneEditTasks = new LinkedList<IEditTask>();
         OnAnyActionDoneOrUndone = new UnityEvent();
+        OnAnyActionDoneOrUndone.AddListener(OnAnyAction);
+        OnAnyAction();
     }
 
     public static void RegisterForAnyActionDoneOrUndone(UnityAction func)
     {
         main.OnAnyActionDoneOrUndone.AddListener(func);
+    }
+
+    /// <summary>
+    /// Will just refresh the undo and redo buttons text and interactabiity.
+    /// </summary>
+    public void OnAnyAction()
+    {
+        if (completedEditTasks.Count <= 0)
+        {
+            undoText.GetComponentInParent<Toggle>(true).interactable = false;
+            undoText.text = "Undo (Ctrl+Z)";
+            undoText.color = disabledTextColor;
+        }
+        else
+        {
+            undoText.GetComponentInParent<Toggle>(true).interactable = true;
+            undoText.text = "Undo " + completedEditTasks.First.Value.GetTaskName() + " (Ctrl+Z)";
+            undoText.color = defaultTextColor;
+        }
+
+        if (undoneEditTasks.Count <= 0)
+        {
+            redoText.GetComponentInParent<Toggle>(true).interactable = false;
+            redoText.text = "Redo (Ctrl+Y)";
+            redoText.color = disabledTextColor;
+        }
+        else
+        {
+            redoText.GetComponentInParent<Toggle>(true).interactable = true;
+            redoText.text = "Redo " + undoneEditTasks.First.Value.GetTaskName() + " (Ctrl+Y)";
+            redoText.color = defaultTextColor;
+        }
     }
 
     public void CommitTask(IEditTask newTask)
@@ -57,9 +97,9 @@ public class UndoManager : MonoBehaviour
         EditModeManager.main.SelectMode(toUndo.GetRequiredEditMode());
 
         toUndo.UndoTask();
-        OnAnyActionDoneOrUndone.Invoke();
         undoneEditTasks.AddFirst(toUndo);
         completedEditTasks.RemoveFirst();
+        OnAnyActionDoneOrUndone.Invoke();
         //uiElements.RefreshSelectionValues();
         foreach (GameObject g in objectsToDeactivateWhenUndoOrRedo)
         {
@@ -76,9 +116,9 @@ public class UndoManager : MonoBehaviour
         EditModeManager.main.SelectMode(toRedo.GetRequiredEditMode());
 
         toRedo.DoTask();
-        OnAnyActionDoneOrUndone.Invoke();
         completedEditTasks.AddFirst(toRedo);
         undoneEditTasks.RemoveFirst();
+        OnAnyActionDoneOrUndone.Invoke();
         //uiElements.RefreshSelectionValues();
         foreach (GameObject g in objectsToDeactivateWhenUndoOrRedo)
         {

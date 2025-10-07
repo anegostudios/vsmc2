@@ -53,15 +53,16 @@ namespace VSMC
             UndoManager.main.CommitTask(ssTask);
         }
 
-        public void SetPosition(EnumAxis axis, float value, int translationUid = 0)
+        public void SetPosition(EnumAxis axis, float value)
         {
             if (!objectSelector.IsAnySelected()) return;
             ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
 
-            TaskSetElementPosition spTask = new TaskSetElementPosition(cElem, axis, value, translationUid, false, false);
+            TaskSetElementPosition spTask = new TaskSetElementPosition(cElem, axis, value);
             spTask.DoTask();
             UndoManager.main.CommitTask(spTask);
         }
+
 
         public void SetRotationOrigin(EnumAxis axis, float value)
         {

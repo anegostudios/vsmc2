@@ -24,6 +24,7 @@ namespace VSMC
              * This results in us being in the exact same state before 'DoTask', giving us the ability to easily redo.
              */
             createdElement = new ShapeElement();
+            createdElement.ResolveFacesAndTextures(TextureManager.main.loadedTextures);
             ShapeElementRegistry.main.UnregisterShapeElement(createdElement);
             if (parent != null)
             {

@@ -609,10 +609,21 @@ namespace VSMC
             return Quaternion.Euler((float)RotationX, (float)RotationY, (float)RotationZ) * world;
         }
 
+        /// <summary>
+        /// Multiplies a vector by the inverse of the *parents* final rotation. Useful for getting the rotation that is truly local to this object.
+        /// </summary>
+        public Vector3 RotateFromWorldToLocalBasedOnParentRotation(Vector3 world)
+        {
+            if (ParentElement != null)
+            {
+                return ParentElement.meshData.storedMatrix.inverse.rotation * world;
+            }
+            return world;
+        }
+
         public Vector3 RotateFromLocalToWorldForThisObjectsRotation(Vector3 local)
         {
             return Quaternion.Inverse(Quaternion.Euler((float)RotationX, (float)RotationY, (float)RotationZ)) * local;
-
         }
     }
 }

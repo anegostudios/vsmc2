@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -20,6 +21,7 @@ namespace VSMC
         public string YGizmoLayer;
         public string ZGizmoLayer;
         public float initialiCorrectDistanceForGizmos;
+        public TMP_Text toggleGlobalLocalButtonText;
 
         //Each gizmo type has three axes that can be moved.
         public ShapeElementGameObject cSelected;
@@ -34,6 +36,11 @@ namespace VSMC
         double cFromVal;
         Transform mainCameraPos;
         int randomTransformationUID;
+        bool doGlobalTranslation;
+
+        double[] sFrom;
+        double[] sTo;
+        double[] sRotOrigin;
 
         private void Start()
         {
@@ -42,6 +49,7 @@ namespace VSMC
             ObjectSelector.main.RegisterForObjectDeselectedEvent(OnObjectDeselected);
             mainCameraPos = Camera.main.transform;
             UndoManager.RegisterForAnyActionDoneOrUndone(OnAnyAction);
+            toggleGlobalLocalButtonText.text = doGlobalTranslation ? "Global Gizmos" : "Local Gizmos";
         }
 
         private void Update()
@@ -82,6 +90,13 @@ namespace VSMC
             gizmoParentsByMode[mode].SetActive(true);
         }
 
+        public void ToggleGlobalLocalTranslation()
+        {
+            doGlobalTranslation = !doGlobalTranslation;
+            toggleGlobalLocalButtonText.text = doGlobalTranslation ? "Global Gizmos" : "Local Gizmos";
+            if (cSelected != null) SetAppropriateTransformOfGizmos();
+        }
+
         /// <summary>
         /// Calculates and sets the position and rotation of the gizmos.
         /// </summary>
@@ -89,10 +104,10 @@ namespace VSMC
         {
             Vector3 rotOrig = new Vector3((float)cSelected.element.RotationOrigin[0], (float)cSelected.element.RotationOrigin[1], (float)cSelected.element.RotationOrigin[2]);
             Vector3 from = new Vector3((float)cSelected.element.From[0], (float)cSelected.element.From[1], (float)cSelected.element.From[2]);
-            
+
             //This code is noteworthy - It's how we access the real rotation point from a shape element.
-            gizmosHolderParent.transform.position = cSelected.transform.position - (cSelected.transform.rotation * (from / 16f)) + (cSelected.transform.rotation * (rotOrig / 16f));
-            gizmosHolderParent.transform.rotation = cSelected.transform.rotation;
+            gizmosHolderParent.transform.position = cSelected.transform.position - (cSelected.transform.rotation * (from / 16f)) + (cSelected.transform.rotation * (rotOrig / 16f));    
+            gizmosHolderParent.transform.rotation = doGlobalTranslation ? Quaternion.identity : cSelected.transform.rotation;
         }
 
         public override bool OnSceneViewMouseDown(Vector2 mouseClickScenePositionForCamera, PointerEventData data)
@@ -113,6 +128,11 @@ namespace VSMC
                     Vector3 screenSpaceOfPointOfMovement = Camera.main.worldToCameraMatrix * (gizmo.transform.position + gizmo.PointingDirection());
                     cGizmoPositiveDirection = (screenSpaceOfPointOfMovement - screenSpaceOfObject).normalized;
                     cFromVal = cSelected.element.From[(int)cSelAxis];
+
+                    //Set task properties.
+                    sFrom = (double[])cSelected.element.From.Clone();
+                    sTo = (double[])cSelected.element.To.Clone();
+                    sRotOrigin = (double[])cSelected.element.RotationOrigin.Clone();
 
                     //Need to reverse the Z axis due to model flipping.
                     /*
@@ -163,7 +183,17 @@ namespace VSMC
                     float factor = (1 / 2f);
                     nearestMultiple = (int)System.Math.Round((roundedDiff / factor), System.MidpointRounding.AwayFromZero) * factor;
                 }
-                shapeModelEditor.SetPosition(cSelAxis, (float)(cFromVal + nearestMultiple), randomTransformationUID);
+
+                Vector3 calcMovement = new Vector3();
+                calcMovement[(int)cSelAxis] = nearestMultiple;
+                
+                if (!doGlobalTranslation) calcMovement = cSelected.element.RotateFromWorldToLocalForThisObjectsRotation(calcMovement);
+                else calcMovement = cSelected.element.RotateFromWorldToLocalBasedOnParentRotation(calcMovement);
+
+                    TaskAddToElementPosition moveTask = new TaskAddToElementPosition(cSelected.element, sFrom, sTo, sRotOrigin, new double[] { calcMovement.x, calcMovement.y, calcMovement.z }, randomTransformationUID, true);
+                moveTask.DoTask();
+                UndoManager.main.CommitTask(moveTask);
+                //shapeModelEditor.SetPosition(cSelAxis, (float)(cFromVal + nearestMultiple), randomTransformationUID);
             }
         }
 

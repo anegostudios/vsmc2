@@ -1,8 +1,6 @@
 using System;
 using System.IO;
 using UnityEngine;
-using UnityEngine.UIElements;
-using static UnityEngine.Rendering.ProbeAdjustmentVolume;
 
 namespace VSMC
 {
@@ -69,8 +67,8 @@ namespace VSMC
             /*
              * I really need to figure out the texture sizes. This is odd to me.
              */
-
-            if (shape.TextureSizes.ContainsKey(code))
+            if (shape == null) return;
+            if (shape.TextureSizes != null && shape.TextureSizes.ContainsKey(code))
             {
                 storedWidth = shape.TextureSizes[code][0];
                 storedHeight = shape.TextureSizes[code][1];

@@ -12,73 +12,105 @@ namespace VSMC
         public EnumAxis axis;
         public double oldPosition;
         public double newPosition;
-        public int randomTransformationUID;
 
-        public bool alsoMoveRotationOrigin;
-        public bool moveInGlobalSpace;
-
-        public TaskSetElementPosition(ShapeElement elem, EnumAxis axis, double newPos, int ranTranUID = 0, bool alsoMoveRotationOrigin = false, bool moveInGlobalSpace = false)
+        public TaskSetElementPosition(ShapeElement elem, EnumAxis axis, double newPos)
         {
             elementUID = elem.elementUID;
             this.axis = axis;
             oldPosition = elem.From[(int)axis];
             newPosition = newPos;
-            randomTransformationUID = ranTranUID;
-            this.alsoMoveRotationOrigin = alsoMoveRotationOrigin;
-            this.moveInGlobalSpace = moveInGlobalSpace;
         }
 
         public override void DoTask()
         {
             ShapeElement elem = ShapeElementRegistry.main.GetShapeElementByUID(elementUID);
             //Need to edit both the from and to values, so we need a temp storage of the size.
-            //double size = elem.To[(int)axis] - elem.From[(int)axis];
-            //elem.From[(int)axis] = newPosition;
-            //elem.To[(int)axis] = newPosition + size;
-
-            double inc = newPosition - oldPosition;
-            Vector3 movement = new Vector3();
-            movement[(int)axis] = (float)inc;
-            movement = elem.RotateFromWorldToLocalForThisObjectsRotation(movement);
-            //movement = Quaternion.Inverse(elem.gameObject.transform.rotation) * movement;
-
-            elem.From = new double[] { elem.From[0] + movement.x, elem.From[1] + movement.y, elem.From[2] + movement.z };
-            elem.To = new double[] { elem.To[0] + movement.x, elem.To[1] + movement.y, elem.To[2] + movement.z };
-            elem.RotationOrigin = new double[] { elem.RotationOrigin[0] + movement.x, elem.RotationOrigin[1] + movement.y, elem.RotationOrigin[2] + movement.z };
-
+            double size = elem.To[(int)axis] - elem.From[(int)axis];
+            elem.From[(int)axis] = newPosition;
+            elem.To[(int)axis] = newPosition + size;
             elem.RecreateTransforms();
+
+            /* Old code - This has been moved to IncElemenetPosition.
+            //Move pos & rot origin in local space. - 100% works.
+            if (alsoMoveRotationOrigin && !moveInGlobalSpace)
+            {
+                double inc = newPosition - oldPosition;
+                Vector3 movement = new Vector3();
+                movement[(int)axis] = (float)inc;
+                movement = elem.RotateFromWorldToLocalForThisObjectsRotation(movement);
+                movement = movement.normalized * (float)inc;
+
+                elem.From = new double[] { elem.From[0] + movement.x, elem.From[1] + movement.y, elem.From[2] + movement.z };
+                elem.To = new double[] { elem.To[0] + movement.x, elem.To[1] + movement.y, elem.To[2] + movement.z };
+                elem.RotationOrigin = new double[] { elem.RotationOrigin[0] + movement.x, elem.RotationOrigin[1] + movement.y, elem.RotationOrigin[2] + movement.z };
+            } 
+
+            //Move only pos in global space
+            else if (!alsoMoveRotationOrigin && moveInGlobalSpace)
+            {
+                double inc = newPosition - oldPosition;
+                Vector3 movement = new Vector3();
+                movement[(int)axis] = (float)inc;
+                movement = elem.RotateFromLocalToWorldForThisObjectsRotation(movement);
+
+                elem.From = new double[] { elem.From[0] + movement.x, elem.From[1] + movement.y, elem.From[2] + movement.z };
+                elem.To = new double[] { elem.To[0] + movement.x, elem.To[1] + movement.y, elem.To[2] + movement.z };
+            }
+
+            //Move only pos in local space.
+            else if (!alsoMoveRotationOrigin && !moveInGlobalSpace)
+            {
+                double inc = newPosition - oldPosition;
+                Vector3 movement = new Vector3();
+                movement[(int)axis] = (float)inc;
+
+                elem.From = new double[] { elem.From[0] + movement.x, elem.From[1] + movement.y, elem.From[2] + movement.z };
+                elem.To = new double[] { elem.To[0] + movement.x, elem.To[1] + movement.y, elem.To[2] + movement.z };
+            }
+            */
         }
 
         public override void UndoTask()
         {
             //Same as Do but just reversed.
             ShapeElement elem = ShapeElementRegistry.main.GetShapeElementByUID(elementUID);
-
-            //Just do the reverse increment.
-            double inc = oldPosition - newPosition;
-            Vector3 movement = new Vector3();
-            movement[(int)axis] = (float)inc;
-            movement = elem.RotateFromWorldToLocalForThisObjectsRotation(movement);
-            //movement = Quaternion.Inverse(elem.gameObject.transform.rotation) * movement;
-
-            elem.From = new double[] { elem.From[0] + movement.x, elem.From[1] + movement.y, elem.From[2] + movement.z };
-            elem.To = new double[] { elem.To[0] + movement.x, elem.To[1] + movement.y, elem.To[2] + movement.z };
-            elem.RotationOrigin = new double[] { elem.RotationOrigin[0] + movement.x, elem.RotationOrigin[1] + movement.y, elem.RotationOrigin[2] + movement.z };
-
+            //Need to edit both the from and to values, so we need a temp storage of the size.
+            double size = elem.To[(int)axis] - elem.From[(int)axis];            
+            elem.From[(int)axis] = oldPosition;
+            elem.To[(int)axis] = oldPosition + size;
             elem.RecreateTransforms();
+
+            /* Old code - This has been moved to IncElemenetPosition.
+            if (alsoMoveRotationOrigin && moveInGlobalSpace)
+            {
+                double inc = newPosition - oldPosition;
+                Vector3 movement = new Vector3();
+                movement[(int)axis] = (float)inc;
+
+                //Reverse the movement vector for undo.
+                movement = elem.RotateFromWorldToLocalForThisObjectsRotation(movement) * -1;
+
+                elem.From = new double[] { elem.From[0] + movement.x, elem.From[1] + movement.y, elem.From[2] + movement.z };
+                elem.To = new double[] { elem.To[0] + movement.x, elem.To[1] + movement.y, elem.To[2] + movement.z };
+                elem.RotationOrigin = new double[] { elem.RotationOrigin[0] + movement.x, elem.RotationOrigin[1] + movement.y, elem.RotationOrigin[2] + movement.z };
+            }
+
+            if (alsoMoveRotationOrigin && !moveInGlobalSpace)
+            {
+                double inc = newPosition - oldPosition;
+                Vector3 movement = new Vector3();
+                movement[(int)axis] = (float)-inc;
+
+                elem.From = new double[] { elem.From[0] + movement.x, elem.From[1] + movement.y, elem.From[2] + movement.z };
+                elem.To = new double[] { elem.To[0] + movement.x, elem.To[1] + movement.y, elem.To[2] + movement.z };
+                elem.RotationOrigin = new double[] { elem.RotationOrigin[0] + movement.x, elem.RotationOrigin[1] + movement.y, elem.RotationOrigin[2] + movement.z };
+            }
+            */
+
         }
 
         public override bool MergeTasksIfPossible(IEditTask nextTask)
         {
-            //Keep the first tasks old position, and the newTasks new position.
-            if (nextTask is TaskSetElementPosition t2)
-            {
-                if (elementUID == t2.elementUID && axis == t2.axis && randomTransformationUID == t2.randomTransformationUID)
-                {
-                    newPosition = t2.newPosition;
-                    return true;
-                }
-            }
             return false;
         }
 
@@ -97,7 +129,7 @@ namespace VSMC
 
         public override string GetTaskName()
         {
-            return "Move Element";
+            return "Set Element Position";
         }
     }
 }
