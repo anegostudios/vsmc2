@@ -57,10 +57,12 @@ namespace VSMC {
         /// </summary>
         public void ReapplyTransformsFromMeshData(bool doChildren = false)
         {
-            //The stored matrix gets applied.
-            gameObject.transform.localPosition = element.meshData.storedMatrix.GetPosition();
-            gameObject.transform.localRotation = element.meshData.storedMatrix.rotation;
-            gameObject.transform.localScale = element.meshData.storedMatrix.lossyScale;
+            Matrix4x4 flipZ = Matrix4x4.Scale(new Vector3(1f, 1f, -1f));
+            Matrix4x4 m = flipZ * element.meshData.storedMatrix * flipZ;
+
+            gameObject.transform.localPosition = m.GetPosition();
+            gameObject.transform.localRotation = m.rotation;
+            gameObject.transform.localScale = m.lossyScale;
 
             if (doChildren && element.Children != null)
             {

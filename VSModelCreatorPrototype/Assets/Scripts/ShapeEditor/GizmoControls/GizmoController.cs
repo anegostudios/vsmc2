@@ -102,11 +102,11 @@ namespace VSMC
         /// </summary>
         public void SetAppropriateTransformOfGizmos()
         {
-            Vector3 rotOrig = new Vector3((float)cSelected.element.RotationOrigin[0], (float)cSelected.element.RotationOrigin[1], (float)cSelected.element.RotationOrigin[2]);
-            Vector3 from = new Vector3((float)cSelected.element.From[0], (float)cSelected.element.From[1], (float)cSelected.element.From[2]);
+            Vector3 rotOrig = new Vector3(-(float)cSelected.element.RotationOrigin[0], -(float)cSelected.element.RotationOrigin[1], (float)cSelected.element.RotationOrigin[2]);
+            Vector3 from = new Vector3((float)cSelected.element.From[0], (float)cSelected.element.From[1], -(float)cSelected.element.From[2]);
 
             //This code is noteworthy - It's how we access the real rotation point from a shape element.
-            gizmosHolderParent.transform.position = cSelected.transform.position - (cSelected.transform.rotation * (from / 16f)) + (cSelected.transform.rotation * (rotOrig / 16f));    
+            gizmosHolderParent.transform.position = cSelected.transform.position - (cSelected.transform.rotation * (from / 16f)) + (cSelected.transform.rotation * (-rotOrig / 16f));    
             gizmosHolderParent.transform.rotation = doGlobalTranslation ? Quaternion.identity : cSelected.transform.rotation;
         }
 
@@ -135,12 +135,11 @@ namespace VSMC
                     sRotOrigin = (double[])cSelected.element.RotationOrigin.Clone();
 
                     //Need to reverse the Z axis due to model flipping.
-                    /*
                     if (cSelAxis == EnumAxis.Z)
                     {
                         cGizmoPositiveDirection *= -1;
                     }
-                    */
+                    
                 }
                 return true;
             }

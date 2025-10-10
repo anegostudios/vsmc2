@@ -248,7 +248,7 @@ namespace VSMC
                 int uvIndex = 2 * ((uvRotation + i) % 4) + uvPos;
                 modeldata.vertices.Add(new Vector3(relativeCenter.x + size.x * CubeVertices[coordPos++] / 2,
                     relativeCenter.y + size.y * CubeVertices[coordPos++] / 2,
-                    relativeCenter.z + size.z * CubeVertices[coordPos++] / 2));
+                    -(relativeCenter.z + size.z * CubeVertices[coordPos++] / 2)));
                 modeldata.uvs.Add(new Vector2(uvStart.x + uvSize.x * CubeUvCoords[uvIndex],
                     uvStart.y + uvSize.y * CubeUvCoords[uvIndex + 1]) / (TextureManager.main.maxTextureSize * storedTexSize));
                 modeldata.textureIndices.Add(faceTextureIndex);
@@ -256,11 +256,11 @@ namespace VSMC
 
             // 2 triangles = 6 indices per face
             modeldata.indices.Add(lastVertexNumber + 0);
+            modeldata.indices.Add(lastVertexNumber + 2);
             modeldata.indices.Add(lastVertexNumber + 1);
-            modeldata.indices.Add(lastVertexNumber + 2);
             modeldata.indices.Add(lastVertexNumber + 0);
-            modeldata.indices.Add(lastVertexNumber + 2);
             modeldata.indices.Add(lastVertexNumber + 3);
+            modeldata.indices.Add(lastVertexNumber + 2);
 
             int[] lines = new int[4];
             lines[0] = lastVertexNumber;

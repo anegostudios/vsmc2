@@ -43,7 +43,7 @@ namespace VSMC
         private void Update()
         {
             OnZoomOrPositionChanged();
-            if (ObjectSelector.main.GetCurrentlySelected() == null) return;
+            if (!ObjectSelector.main.IsAnySelected()) return;
             if (lmbDown || rmbDown)
             {
                 Vector2 cmpos;

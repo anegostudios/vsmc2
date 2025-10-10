@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.Rendering.FilterWindow;
 
 namespace VSMC
 {
@@ -81,9 +82,14 @@ namespace VSMC
             for (int i = 0; i < animator.MaxJointId; i++)
             {
                 Transform joint = shapeHolder.jointParents[i];
-                joint.position = animator.Matrices[i].GetPosition();
-                joint.rotation = animator.Matrices[i].rotation;
-                joint.localScale = animator.Matrices[i].lossyScale;
+                
+                //Flip animation matrices too.
+                Matrix4x4 flipZ = Matrix4x4.Scale(new Vector3(1f, 1f, -1f));
+                Matrix4x4 m = flipZ * animator.Matrices[i] * flipZ;
+
+                joint.position = m.GetPosition();
+                joint.rotation = m.rotation;
+                joint.localScale = m.lossyScale;
             }
 
         }
