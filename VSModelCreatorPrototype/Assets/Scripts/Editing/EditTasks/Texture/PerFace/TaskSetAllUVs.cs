@@ -1,26 +1,21 @@
+using UnityEngine;
+
 namespace VSMC
 {
-    public class TaskSetFaceUV : IEditTask
+    public class TaskSetAllUVs : IEditTask
     {
+
         public int elemUID;
         public bool[] selFaces;
-        public int uvIndex;
-        public float oldUv;
-        public float newUv;
+        public float[] oldUvs;
+        public float[] newUvs;
 
-        public TaskSetFaceUV(ShapeElement elem, bool[] selFaces, int uvIndex, float newUV)
+        public TaskSetAllUVs(ShapeElement elem, bool[] selFaces, float[] oldUvs, float[] newUvs)
         {
             this.elemUID = elem.elementUID;
-            this.uvIndex = uvIndex;
-            this.selFaces = new bool[6];
-            selFaces.CopyTo(this.selFaces, 0);
-
-            for (int i = 0; i < 6; i++)
-            {
-                if (selFaces[i]) oldUv = elem.FacesResolved[i].Uv[uvIndex];
-            }
-
-            this.newUv = newUV;
+            this.selFaces = (bool[])selFaces.Clone();
+            this.oldUvs = (float[])oldUvs.Clone();
+            this.newUvs = (float[])newUvs.Clone(); ;
         }
 
         public override void DoTask()
@@ -30,7 +25,7 @@ namespace VSMC
             {
                 //Do not act on non-selected faces.
                 if (!selFaces[i]) continue;
-                elem.FacesResolved[i].Uv[uvIndex] = newUv;
+                elem.FacesResolved[i].Uv = (float[])newUvs.Clone();
             }
             elem.RecreateObjectMesh();
             UVLayoutManager.main.RefreshAllUVSpaces();
@@ -43,7 +38,7 @@ namespace VSMC
             {
                 //Do not act on non-selected faces.
                 if (!selFaces[i]) continue;
-                elem.FacesResolved[i].Uv[uvIndex] = oldUv;
+                elem.FacesResolved[i].Uv = (float[])oldUvs.Clone();
             }
             elem.RecreateObjectMesh();
             UVLayoutManager.main.RefreshAllUVSpaces();
@@ -56,7 +51,7 @@ namespace VSMC
 
         public override long GetSizeOfTaskInBytes()
         {
-            return sizeof(int) * 2 + sizeof(bool) * selFaces.Length + sizeof(float) * 2;
+            return sizeof(int) * 2 + sizeof(bool) * selFaces.Length + sizeof(float) * 8;
         }
 
         public override VSEditMode GetRequiredEditMode()
@@ -66,7 +61,8 @@ namespace VSMC
 
         public override string GetTaskName()
         {
-            return "Set Face UV";
+            return "Modify Face UVs";
         }
+
     }
 }

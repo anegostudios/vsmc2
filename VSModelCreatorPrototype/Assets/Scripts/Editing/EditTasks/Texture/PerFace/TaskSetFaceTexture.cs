@@ -36,6 +36,7 @@ namespace VSMC
                 elem.FacesResolved[i].ResolveTexture(TextureManager.main.loadedTextures);
             }
             elem.RecreateObjectMesh();
+            UVLayoutManager.main.RefreshAllUVSpaces();
         }
 
         public override void UndoTask()
@@ -49,6 +50,7 @@ namespace VSMC
                 elem.FacesResolved[i].ResolveTexture(TextureManager.main.loadedTextures);
             }
             elem.RecreateObjectMesh();
+            UVLayoutManager.main.RefreshAllUVSpaces();
         }
 
         public override bool MergeTasksIfPossible(IEditTask nextTask)

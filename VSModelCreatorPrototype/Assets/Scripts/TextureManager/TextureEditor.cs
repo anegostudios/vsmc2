@@ -36,7 +36,9 @@ namespace VSMC {
         {
             if (EditModeManager.main.cEditMode != VSEditMode.Texture) return;
             uiElements.OnElementSelected(cSelected.GetComponent<ShapeElementGameObject>());
+            UVLayoutManager.main.RefreshAllUVSpaces();
             uiElements.ShowAllUIElements();
+
         }
 
         private void OnObjectDeselcted(GameObject deSelected)

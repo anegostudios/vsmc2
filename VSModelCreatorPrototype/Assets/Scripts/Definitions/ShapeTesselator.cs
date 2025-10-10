@@ -275,6 +275,7 @@ namespace VSMC
         {
             stackMatrix.Clear();
             stackMatrix.PushIdentity();
+
             ResolveMatricesForShapeElements(shape.Elements);
         }
 

@@ -89,6 +89,12 @@ namespace VSMC
             return ResolvedTexture;
         }
 
+        public LoadedTexture GetLoadedTexture()
+        {
+            if (textureIndex == -1) return TextureManager.main.emptyTexture;
+            return TextureManager.main.loadedTextures[textureIndex];
+        }
+
         public void ResolveBeforeSerialization()
         {
             Texture = "#" + ResolvedTexture;

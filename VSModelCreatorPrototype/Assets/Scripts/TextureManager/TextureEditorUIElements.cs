@@ -51,10 +51,10 @@ namespace VSMC
             }
             allFacesButton.GetComponent<Button>().onClick.AddListener(() => { ToggleAllFaces(); });
             textureSelectionDropdown.onValueChanged.AddListener(x => { OnTextureSelectionChanged(x); });
-            uvX1.onValueChanged.AddListener(x => { OnAnyUVChanged(x, 0); });
-            uvY1.onValueChanged.AddListener(x => { OnAnyUVChanged(x, 1); });
-            uvX2.onValueChanged.AddListener(x => { OnAnyUVChanged(x, 2); });
-            uvY2.onValueChanged.AddListener(x => { OnAnyUVChanged(x, 3); });
+            uvX1.onEndEdit.AddListener(x => { OnAnyUVChanged(x, 0); });
+            uvY1.onEndEdit.AddListener(x => { OnAnyUVChanged(x, 1); });
+            uvX2.onEndEdit.AddListener(x => { OnAnyUVChanged(x, 2); });
+            uvY2.onEndEdit.AddListener(x => { OnAnyUVChanged(x, 3); });
         }
 
         public void OnElementSelected(ShapeElementGameObject element)
@@ -121,7 +121,8 @@ namespace VSMC
                 faceButtons[i].GetComponent<Outline>().enabled = cSelectedFaces[i];
                 faceButtons[i].GetComponent<Image>().color = cSelectedFaces[i] ? selectedFaceButtonColor : unselectedFaceButtonColor;
             }
-            
+
+            UVLayoutManager.main.OnSelectedFacesChanged(cSelectedFaces);
             if (!isAnyFaceSelected)
             {
                 entireObjectGroupThatRequiresFaceSelection.SetActive(false); 

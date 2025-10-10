@@ -26,6 +26,7 @@ namespace VSMC
         public string textureBasePath;
         public Texture2DArray shapeTextureArray;
         public List<LoadedTexture> loadedTextures;
+        public LoadedTexture emptyTexture;
 
         private void Awake()
         {
@@ -42,7 +43,10 @@ namespace VSMC
             //Shape.TextureWidth;
             //Shape.TextureHeight
             //Shape.TextureSizes
-            
+
+            emptyTexture = new LoadedTexture("", "");
+            emptyTexture.ResolveTextureSize(ShapeLoader.main.shapeHolder.cLoadedShape);
+
             //This actually loads the textures. 
             int i = 0;
             loadedTextures = new List<LoadedTexture>();
