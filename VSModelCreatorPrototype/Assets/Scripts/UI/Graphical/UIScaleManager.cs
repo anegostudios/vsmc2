@@ -44,6 +44,7 @@ public class UIScaleManager : MonoBehaviour
         scaleSlider.minValue = 1;
         scaleSlider.maxValue = GetRecommendedScale() * 2;
         scaleOverlay.SetActive(true);
+        scaleText.text = "UI Scale: " + mainCanvasScaler.scaleFactor.ToString("0.00") + "x.\nDetected width: " + highestWidth.ToString();
     }
 
     public void SetToRecommended()

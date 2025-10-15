@@ -11,6 +11,7 @@ public class ElementHierarchyManager : MonoBehaviour
     public GameObject elementPrefab;
     public Transform hierarchyParent;
     public bool isForAnimation = false;
+    public bool isMainElementHierarchy = false;
 
     [Header("Sprites for Elements")]
     public Sprite CollapseChildrenSprite;
@@ -23,13 +24,13 @@ public class ElementHierarchyManager : MonoBehaviour
     private void Awake()
     {
         if (isForAnimation) AnimationHierarchy = this;
-        else ElementHierarchy = this; 
+        else if (isMainElementHierarchy) ElementHierarchy = this; 
     }
 
     public void StartCreatingElementPrefabs(Shape shape)
     {
         //Remove existing elements.
-        foreach (Transform t in hierarchyParent.transform)
+        foreach (Transform t in hierarchyParent)
         {
             Destroy(t.gameObject);
         }

@@ -58,13 +58,27 @@ public class ShapeElementRegistry : MonoBehaviour
         return shapeElementByUID.Values;
     }
 
-    public void UnregisterShapeElement(ShapeElement element)
+    public void UnregisterShapeElement(ShapeElement element, bool doChildren = false)
     {
         shapeElementByUID.Remove(element.elementUID);
+        if (doChildren && element.Children != null)
+        {
+            foreach (ShapeElement child in element.Children)
+            {
+                UnregisterShapeElement(child, true);
+            }
+        }
     }
 
-    public void ReregisterShapeElement(ShapeElement element)
+    public void ReregisterShapeElement(ShapeElement element, bool doChildren = false)
     {
         shapeElementByUID.Add(element.elementUID, element);
+        if (doChildren && element.Children != null)
+        {
+            foreach (ShapeElement child in element.Children)
+            {
+                ReregisterShapeElement(child, true);
+            }
+        }
     }
 }

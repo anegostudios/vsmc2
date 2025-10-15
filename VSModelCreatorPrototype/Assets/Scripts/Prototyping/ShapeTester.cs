@@ -84,6 +84,12 @@ public class ShapeTester : MonoBehaviour
 
     public void SaveShapeFile()
     {
+
+        if (ShapeLoader.main.shapeHolder.cLoadedShape == null)
+        {
+            Debug.Log("Trying to save nothing...");
+            return;
+        }
         string saveTo = StandaloneFileBrowser.SaveFilePanel("Save file path", "", "shape.json", "json");
         if (saveTo == null || saveTo.Length < 1)
         {

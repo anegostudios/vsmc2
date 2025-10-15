@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -141,6 +142,16 @@ namespace VSMC
             UndoManager.main.CommitTask(changeTexPathTask);
         }
 
+        public void SelectTexturePath()
+        {
+            if (cSelectedTextureIndex == -1) return;
+            string[] selFile = SFB.StandaloneFileBrowser.OpenFilePanel("Select texture...", TextureManager.main.textureBasePath, "png", false);
+            if (selFile == null || selFile.Length == 0) return;
+            
+            texturePath.text = Path.GetRelativePath(TextureManager.main.textureBasePath, selFile[0]).Replace(".png","");
+            ApplyTexturePath();
+        }
+
         public void AddNewTexture()
         {
             TaskCreateNewTexture newTexTask = new TaskCreateNewTexture();
@@ -156,6 +167,23 @@ namespace VSMC
             delTexTask.DoTask();
             UndoManager.main.CommitTask(delTexTask);
             
+        }
+
+        public void AutoSetTextureSize()
+        {
+            if (cSelectedTextureIndex == -1) return;
+            if (TextureManager.main.loadedTextures[cSelectedTextureIndex].loadedTexture == null) return;
+            textureWidth.text = Mathf.RoundToInt(TextureManager.main.loadedTextures[cSelectedTextureIndex].loadedTexture.width / 2).ToString();
+            textureHeight.text = Mathf.RoundToInt(TextureManager.main.loadedTextures[cSelectedTextureIndex].loadedTexture.height / 2).ToString();
+            ApplyTextureSize();
+        }
+
+        public void ApplyTextureSize()
+        {
+            if (cSelectedTextureIndex == -1) return;
+            TaskSetTextureSize setTexSizeTask = new TaskSetTextureSize(cSelectedTextureIndex, int.Parse(textureWidth.text), int.Parse(textureHeight.text));
+            setTexSizeTask.DoTask();
+            UndoManager.main.CommitTask(setTexSizeTask);
         }
 
         public void RefreshIfOpen()

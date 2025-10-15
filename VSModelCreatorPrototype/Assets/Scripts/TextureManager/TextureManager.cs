@@ -14,6 +14,7 @@ namespace VSMC
 
         public static TextureManager main;
         public Material modelMaterial;
+        public Material transparentMaterial;
         public TextureManagerOverlay overlay;
 
         //public string textureBasePath;
@@ -111,6 +112,7 @@ namespace VSMC
                 shapeTextureArray.SetPixels(colors, 0);
                 shapeTextureArray.Apply();
                 modelMaterial.SetTexture("_AvailableTextures", shapeTextureArray);
+                transparentMaterial.SetTexture("_AvailableTextures", shapeTextureArray);
                 return;
             }
 
@@ -138,10 +140,12 @@ namespace VSMC
                             created.SetPixel(x, tex.loadedTexture.height - 1 - y, tex.loadedTexture.GetPixel(x, y));
                             
                             //This will probably need to change, but it sets the pixel to be completely empty if transparent.
+                            /*
                             if (tex.loadedTexture.GetPixel(x, y).a < 0.5)
                             {
                                 created.SetPixel(x, tex.loadedTexture.height - 1 - y, new Color(0, 0, 0, 0));
                             }
+                            */
                         }
                     }
                     created.Apply();
@@ -192,6 +196,15 @@ namespace VSMC
             return true;
         }
 
+        public void SetTextureSize(LoadedTexture tex, int newWidth, int newHeight)
+        {
+            tex.storedWidth = newWidth;
+            tex.storedHeight = newHeight;
+            ApplyTexturesIntoShape(ShapeLoader.main.shapeHolder.cLoadedShape);
+            tex.ResolveTextureSize(ShapeLoader.main.shapeHolder.cLoadedShape);
+            OnTexturePropertiesChanged();
+        }
+
         public bool ChangeTexturePath(LoadedTexture tex, string newPath)
         {
             //Actually this one's really easy!
@@ -221,6 +234,7 @@ namespace VSMC
         public void OnTexturePropertiesChanged()
         {
             modelMaterial.SetTexture("_AvailableTextures", shapeTextureArray);
+            transparentMaterial.SetTexture("_AvailableTextures", shapeTextureArray);
             foreach (ShapeElement elem in ShapeElementRegistry.main.GetAllShapeElements())
             {
                 elem.RecreateObjectMesh();

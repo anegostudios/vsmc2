@@ -32,32 +32,65 @@ public class TaskReparentElement : IEditTask
     public override void DoTask()
     {
         ShapeElement child = ShapeElementRegistry.main.GetShapeElementByUID(elemToReparentID);
-        ShapeElement newParent = ShapeElementRegistry.main.GetShapeElementByUID(newParentID);
-        
-        child.ParentElement = newParent;
-        if (newParent.Children == null) newParent.Children = new ShapeElement[] { child };
-        else
-        {
-            newParent.Children = newParent.Children.Append(child);
-        }
 
-        //If old parent exists...
-        if (oldParentID != -1)
+        //Remove old parent first.
+        if (oldParentID == -1)
+        {
+            ShapeLoader.main.shapeHolder.cLoadedShape.RemoveRootShapeElement(child);
+        }
+        else
         {
             ShapeElement oldParent = ShapeElementRegistry.main.GetShapeElementByUID(oldParentID);
             oldParent.Children = oldParent.Children.Remove(child);
             oldParent.RecreateObjectMeshAndTransforms();
         }
 
-        newParent.RecreateObjectMeshAndTransforms();
+        //Now add new parent.
+        if (newParentID == -1)
+        {
+            ShapeLoader.main.shapeHolder.cLoadedShape.AddRootShapeElement(child);
+            child.ParentElement = null;
+            child.RecreateObjectMeshAndTransforms();
+        }
+        else
+        {
+            ShapeElement newParent = ShapeElementRegistry.main.GetShapeElementByUID(newParentID);
+            child.ParentElement = newParent;
+            if (newParent.Children == null) newParent.Children = new ShapeElement[] { child };
+            else
+            {
+                newParent.Children = newParent.Children.Append(child);
+            }
+            newParent.RecreateObjectMeshAndTransforms();
+        }
+        ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeLoader.main.shapeHolder.cLoadedShape);
     }
 
     public override void UndoTask()
     {
         ShapeElement child = ShapeElementRegistry.main.GetShapeElementByUID(elemToReparentID);
-        ShapeElement newParent = ShapeElementRegistry.main.GetShapeElementByUID(newParentID);
+        //ShapeElement newParent = ShapeElementRegistry.main.GetShapeElementByUID(newParentID);
 
-        if (oldParentID != -1)
+        //Do the opposite - So remove the new parent first.
+        if (newParentID == -1)
+        {
+            ShapeLoader.main.shapeHolder.cLoadedShape.RemoveRootShapeElement(child);
+        }
+        else
+        {
+            ShapeElement newParent = ShapeElementRegistry.main.GetShapeElementByUID(newParentID);
+            newParent.Children = newParent.Children.Remove(child);
+            newParent.RecreateObjectMeshAndTransforms();
+        }
+
+        //Now add the old parent back.
+        if (oldParentID == -1)
+        {
+            ShapeLoader.main.shapeHolder.cLoadedShape.AddRootShapeElement(child);
+            child.ParentElement = null;
+            child.RecreateObjectMeshAndTransforms();
+        }
+        else
         {
             ShapeElement oldParent = ShapeElementRegistry.main.GetShapeElementByUID(oldParentID);
 
@@ -69,12 +102,7 @@ public class TaskReparentElement : IEditTask
             }
             oldParent.RecreateObjectMeshAndTransforms();
         }
-        else
-        {
-            child.ParentElement = null;
-            child.RecreateObjectMeshAndTransforms();
-        }
-        newParent.RecreateObjectMeshAndTransforms();
+        ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeLoader.main.shapeHolder.cLoadedShape);
 
     }
 

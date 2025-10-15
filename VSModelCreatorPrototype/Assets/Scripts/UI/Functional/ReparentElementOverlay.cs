@@ -14,6 +14,7 @@ public class ReparentElementOverlay : MonoBehaviour
     GameObject clonedHierarchy;
     GameObject cSelected;
     public Button applyButton;
+    public Button setNoParentButton;
     int selID;
 
     public void OpenOverlay(ShapeElement selElem)
@@ -35,6 +36,7 @@ public class ReparentElementOverlay : MonoBehaviour
             item.GetComponent<Button>().onClick.AddListener(() => OnElementClicked(temp));
             Destroy(item);
         }
+        setNoParentButton.interactable = selElem.ParentElement != null;
         gameObject.SetActive(true);
     }
 
@@ -67,6 +69,13 @@ public class ReparentElementOverlay : MonoBehaviour
     public void ApplyChanges()
     {
         modelEditor.ReparentElement(selID, int.Parse(cSelected.name));
+        gameObject.SetActive(false);
     }   
+
+    public void SetNoParent()
+    {
+        modelEditor.ReparentElement(selID, -1);
+        gameObject.SetActive(false);
+    }
 
 }

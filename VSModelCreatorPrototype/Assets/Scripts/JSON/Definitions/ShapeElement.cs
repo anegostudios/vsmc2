@@ -370,7 +370,7 @@ namespace VSMC
 
         public void CacheInverseTransformMatrix()
         {
-            if (inverseModelTransform == Matrix4x4.zero)
+            //if (inverseModelTransform == Matrix4x4.zero)
             {
                 inverseModelTransform = GetInverseModelMatrix();
             }
@@ -624,6 +624,43 @@ namespace VSMC
         public Vector3 RotateFromLocalToWorldForThisObjectsRotation(Vector3 local)
         {
             return Quaternion.Inverse(Quaternion.Euler((float)RotationX, (float)RotationY, (float)RotationZ)) * local;
+        }
+
+        public ShapeElement CopyThisElement()
+        {
+            //Easier method would be to serialize this element and then deserialize it.
+            ResolveBeforeSerialization();
+            string json = JsonConvert.SerializeObject(this);
+            ShapeElement elem = JsonConvert.DeserializeObject<ShapeElement>(json);
+            elem.ParentElement = this.ParentElement;
+            elem.ResolveReferencesAndUIDs();
+            List<ShapeElement> allElem = new List<ShapeElement>() { elem };
+            while (allElem.Count > 0)
+            {
+                ShapeElement cElem = allElem[0];
+                allElem.RemoveAt(0);
+                if (cElem.Children != null) allElem.AddRange(cElem.Children);
+
+                //Firstly, unregister this element.
+                ShapeElementRegistry.main.UnregisterShapeElement(cElem);
+
+                //Now validate the name.
+                int nameCheckCount = 1;
+                string nameStart = cElem.Name;
+                while (ShapeElementRegistry.main.GetShapeElementByName(cElem.Name) != null)
+                {
+                    cElem.Name = nameStart + " (" + ++nameCheckCount + ")";
+                }
+            }
+            elem.ResolveFacesAndTextures(TextureManager.main.loadedTextures);
+            ShapeTesselator.TesselateShapeElements(new ShapeElement[] { elem });
+            ShapeTesselator.ResolveMatricesForShapeElementAndChildren(elem);
+            ShapeLoader.main.shapeHolder.CreateShapeElementGameObject(elem);
+            ShapeLoader.main.shapeHolder.SendElementToDeletionLimbo(elem, true);
+            
+            //This may seem odd but we need this to be null for the copy task - However it is used throughout the matrix calculations.
+            elem.ParentElement = null;
+            return elem;
         }
     }
 }

@@ -18,6 +18,14 @@ namespace VSMC
 
         public void RefreshAllUVSpaces()
         {
+            if (!ObjectSelector.main.IsAnySelected())
+            {
+                for (int i = 0; i < uvSpaces.Length; i++)
+                {
+                    uvSpaces[i].gameObject.SetActive(false);
+                }
+                return;
+            }
             ShapeElementGameObject cSel = ObjectSelector.main.GetCurrentlySelected().GetComponent<ShapeElementGameObject>();
             for (int i = 0; i < uvSpaces.Length; i++) 
             {
@@ -28,9 +36,18 @@ namespace VSMC
 
         public void OnSelectedFacesChanged(bool[] selFaces)
         {
+            if (!ObjectSelector.main.IsAnySelected())
+            {
+                for (int i = 0; i < uvSpaces.Length; i++)
+                {
+                    uvSpaces[i].gameObject.SetActive(false);
+                }
+                return;
+            }
+            ShapeElementGameObject cSel = ObjectSelector.main.GetCurrentlySelected().GetComponent<ShapeElementGameObject>();
             for (int i = 0; i < selFaces.Length && i < uvSpaces.Length; i++)
             {
-                uvSpaces[i].gameObject.SetActive(selFaces[i]);
+                uvSpaces[i].gameObject.SetActive(selFaces[i] && cSel.element.FacesResolved[i].Enabled);
             }
 
             imageLayout.ReorganizeElements();

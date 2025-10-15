@@ -102,7 +102,21 @@ namespace VSMC
                     newJoint.transform.parent = jointParentParent;
                     jointParents.Add(newJoint.transform);
                 }
-                cElem.gameObject.transform.parent = jointParents[cElem.JointId];
+                cElem.gameObject.transform.SetParent(jointParents[cElem.JointId], false);
+            }
+        }
+
+        public void ReparentGameObjectsToNoJoints()
+        {
+            List<ShapeElement> elements = new List<ShapeElement>();
+            elements.AddRange(cLoadedShape.Elements);
+            while (elements.Count > 0)
+            {
+                ShapeElement cElem = elements[0];
+                elements.RemoveAt(0);
+                if (cElem.Children != null) elements.AddRange(cElem.Children);
+
+                cElem.gameObject.transform.SetParent(noJointParent, false);
             }
         }
 
@@ -110,21 +124,38 @@ namespace VSMC
         /// Sends an object to a semi-deleted state parent. Will also deselect the object.
         /// </summary>
         /// <param name="elem"></param>
-        public void SendElementToDeletionLimbo(ShapeElement elem)
+        public void SendElementToDeletionLimbo(ShapeElement elem, bool doChildren = false)
         {
             //When an object is deleted, we definitely don't want it to remain selected.
             ObjectSelector.main.DeselectObject(elem.gameObject.gameObject, false);
             
             elem.gameObject.transform.SetParent(deletedElementParent, true);
+
+            if (doChildren && elem.Children != null)
+            {
+                foreach (ShapeElement child in  elem.Children)
+                {
+                    SendElementToDeletionLimbo(child, true);
+                }
+            }
+
+
         }
 
         /// <summary>
         /// Restores an object that's in the semi-deleted state parent.
         /// </summary>
         /// <param name="elem"></param>
-        public void RestoreElementFromDeletionLimbo(ShapeElement elem)
+        public void RestoreElementFromDeletionLimbo(ShapeElement elem, bool doChildren = false)
         {
             elem.gameObject.transform.SetParent(noJointParent, true);
+            if (doChildren && elem.Children != null)
+            {
+                foreach (ShapeElement child in elem.Children)
+                {
+                    RestoreElementFromDeletionLimbo(child, true);
+                }
+            }
         }
 
     }

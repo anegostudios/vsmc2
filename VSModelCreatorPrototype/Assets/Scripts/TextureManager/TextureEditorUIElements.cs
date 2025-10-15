@@ -28,6 +28,10 @@ namespace VSMC
         public TMP_InputField uvX2;
         public TMP_InputField uvY2;
         public GameObject uvMixedWarningText;
+        public Slider uvRotationSlider;
+        public MixedElementToggle enabledToggle;
+        public TMP_InputField elemName;
+
 
         [Header("Usage Data")]
         public bool[] cSelectedFaces;
@@ -55,11 +59,14 @@ namespace VSMC
             uvY1.onEndEdit.AddListener(x => { OnAnyUVChanged(x, 1); });
             uvX2.onEndEdit.AddListener(x => { OnAnyUVChanged(x, 2); });
             uvY2.onEndEdit.AddListener(x => { OnAnyUVChanged(x, 3); });
+            enabledToggle.toggle.onValueChanged.AddListener(x => { OnEnabledChanged(x); });
+            uvRotationSlider.onValueChanged.AddListener(x => { OnRotationSliderChanged(x); });
         }
 
         public void OnElementSelected(ShapeElementGameObject element)
         {
             cSelected = element.element;
+            elemName.SetTextWithoutNotify(element.element.Name);
             entireTextureModeObjectGroup.SetActive(true);
             OnFaceSelectionChange();
             
@@ -78,6 +85,7 @@ namespace VSMC
 
         public void HideAllUIElements()
         {
+            UVLayoutManager.main.OnSelectedFacesChanged(cSelectedFaces);
             entireTextureModeObjectGroup.SetActive(false);
         }
 
@@ -205,6 +213,20 @@ namespace VSMC
 
             //Set the warning to appear if any UVs are mixed.
             uvMixedWarningText.gameObject.SetActive(anyMixedUVs);
+
+            bool areAllSame = true;
+            foreach (ShapeElementFace face in selFaces)
+            {
+                if (face.Enabled != selFaces[0].Enabled)
+                {
+                    areAllSame = false;
+                    break;
+                }
+            }
+            if (!areAllSame) enabledToggle.SetToggleValue(false, true);
+            else enabledToggle.SetToggleValue(selFaces[0].Enabled, false);
+            uvRotationSlider.SetValueWithoutNotify(Mathf.RoundToInt(selFaces[0].Rotation / 90f));
+
         }
 
         public void OnTextureSelectionChanged(int selIndex)
@@ -220,6 +242,21 @@ namespace VSMC
             TaskSetFaceUV setFaceUVTask = new TaskSetFaceUV(cSelected, cSelectedFaces, uvIndex, setVal);
             setFaceUVTask.DoTask();
             UndoManager.main.CommitTask(setFaceUVTask);
+        }
+        
+        public void OnRotationSliderChanged(float val)
+        {
+            float preciseVal = ((int)val) * 90;
+            TaskSetFaceUVRotation setFaceUvRot = new TaskSetFaceUVRotation(cSelected, cSelectedFaces, preciseVal);
+            setFaceUvRot.DoTask();
+            UndoManager.main.CommitTask(setFaceUvRot);
+        }
+
+        public void OnEnabledChanged(bool enabled)
+        {
+            TaskSetFaceEnabled setFaceEnabledTask = new TaskSetFaceEnabled(cSelected, cSelectedFaces, enabled);
+            setFaceEnabledTask.DoTask();
+            UndoManager.main.CommitTask(setFaceEnabledTask);
         }
 
         private List<ShapeElementFace> GetSelectedFaces()

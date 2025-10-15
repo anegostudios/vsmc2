@@ -2,27 +2,26 @@ using System.Linq;
 using UnityEngine;
 namespace VSMC
 {
-    public class TaskSetFaceTexture : IEditTask
+    public class TaskSetFaceEnabled : IEditTask
     {
 
         public int elemUID;
         public bool[] selFaces;
-        public string[] oldTextures;
-        public string newTexture;
+        public bool[] oldEnabled;
+        public bool newEnabled;
 
-        public TaskSetFaceTexture(ShapeElement elem, bool[] selFaces, string newTexture)
+        public TaskSetFaceEnabled(ShapeElement elem, bool[] selFaces, bool newEnabled)
         {
             this.elemUID = elem.elementUID;
-            this.selFaces = new bool[6];
-            selFaces.CopyTo(this.selFaces, 0);
+            this.selFaces = (bool[])selFaces.Clone();
 
-            oldTextures = new string[6];
+            oldEnabled = new bool[6];
             for (int i = 0; i < 6; i++)
             {
-                oldTextures[i] = elem.FacesResolved[i].ResolvedTexture;
+                oldEnabled[i] = elem.FacesResolved[i].Enabled;
             }
 
-            this.newTexture = newTexture;
+            this.newEnabled = newEnabled;
         }
 
         public override void DoTask()
@@ -32,12 +31,10 @@ namespace VSMC
             {
                 //Do not act on non-selected faces.
                 if (!selFaces[i]) continue;
-                elem.FacesResolved[i].Texture = "#" + newTexture;
-                elem.FacesResolved[i].ResolveTexture(TextureManager.main.loadedTextures);
+                elem.FacesResolved[i].Enabled = newEnabled;
             }
-            elem.RecreateObjectMesh(); 
-            UVLayoutManager.main.OnSelectedFacesChanged(selFaces);
-
+            elem.RecreateObjectMesh();
+            UVLayoutManager.main.RefreshAllUVSpaces();
         }
 
         public override void UndoTask()
@@ -47,11 +44,10 @@ namespace VSMC
             {
                 //Do not act on non-selected faces.
                 if (!selFaces[i]) continue;
-                elem.FacesResolved[i].Texture = "#" + oldTextures[i];
-                elem.FacesResolved[i].ResolveTexture(TextureManager.main.loadedTextures);
+                elem.FacesResolved[i].Enabled = oldEnabled[i];
             }
             elem.RecreateObjectMesh();
-            UVLayoutManager.main.OnSelectedFacesChanged(selFaces);
+            UVLayoutManager.main.RefreshAllUVSpaces();
         }
 
         public override bool MergeTasksIfPossible(IEditTask nextTask)
@@ -61,7 +57,7 @@ namespace VSMC
 
         public override long GetSizeOfTaskInBytes()
         {
-            return sizeof(int) + sizeof(bool) * selFaces.Length + sizeof(char) * (newTexture.Length + oldTextures.Sum(x => x.Length));
+            return sizeof(int) + sizeof(bool) * (selFaces.Length + 7);
         }
 
         public override VSEditMode GetRequiredEditMode()
@@ -71,7 +67,7 @@ namespace VSMC
 
         public override string GetTaskName()
         {
-            return "Set Face Texture";
+            return "Set Face Enabled";
         }
     }
 }

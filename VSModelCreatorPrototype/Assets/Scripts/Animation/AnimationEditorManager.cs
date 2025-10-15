@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.Rendering.FilterWindow;
 
 namespace VSMC
 {
@@ -66,8 +65,8 @@ namespace VSMC
             for (int i = 0; i < shapeHolder.jointParents.Count; i++)
             {
                 Transform joint = shapeHolder.jointParents[i];
-                joint.position = Vector3.zero;
-                joint.rotation = Quaternion.identity;
+                joint.localPosition = Vector3.zero;
+                joint.localRotation = Quaternion.identity;
                 joint.localScale = Vector3.one;
             }
 
@@ -87,8 +86,8 @@ namespace VSMC
                 Matrix4x4 flipZ = Matrix4x4.Scale(new Vector3(1f, 1f, -1f));
                 Matrix4x4 m = flipZ * animator.Matrices[i] * flipZ;
 
-                joint.position = m.GetPosition();
-                joint.rotation = m.rotation;
+                joint.localPosition = m.GetPosition();
+                joint.localRotation = m.rotation;
                 joint.localScale = m.lossyScale;
             }
 

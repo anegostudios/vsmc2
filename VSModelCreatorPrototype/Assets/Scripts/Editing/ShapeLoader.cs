@@ -57,6 +57,7 @@ namespace VSMC {
             //Reset shape IDs.
             EditModeManager.main.SelectMode(VSEditMode.None);
             ShapeElementRegistry.main.ClearForNewModel();
+            UndoManager.main.ReInit();
         }
 
     }

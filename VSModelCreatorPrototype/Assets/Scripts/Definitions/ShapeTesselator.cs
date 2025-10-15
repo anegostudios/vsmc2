@@ -218,7 +218,7 @@ namespace VSMC
             for (int f = 0; f < 6; f++)
             {
                 ShapeElementFace face = element.FacesResolved[f];
-                if (face == null) continue;
+                if (face == null || !face.Enabled) continue;
                 BlockFacing facing = BlockFacing.ALLFACES[f];
 
                 Vector2 uv1 = new Vector2(face.Uv[0], face.Uv[3]);

@@ -43,6 +43,8 @@ public class ElementHierarchyItemPrefab : MonoBehaviour
         ObjectSelector.main.RegisterForObjectSelectedEvent(OnElementSelected);
         ObjectSelector.main.RegisterForObjectDeselectedEvent(OnElementDeselected);
 
+        if (ObjectSelector.main.IsAnySelected()) OnElementSelected(ObjectSelector.main.GetCurrentlySelected());
+
         //Trying to set the element name width using the editor is awful, so this manually sets it after a single frame.
         Invoke("ResolveTextSize", 0.1f);
     }

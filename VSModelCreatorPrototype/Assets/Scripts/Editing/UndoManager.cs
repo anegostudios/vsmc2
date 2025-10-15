@@ -33,6 +33,13 @@ public class UndoManager : MonoBehaviour
         OnAnyAction();
     }
 
+    public void ReInit()
+    {
+        completedEditTasks = new LinkedList<IEditTask>();
+        undoneEditTasks = new LinkedList<IEditTask>();
+        OnAnyAction();
+    }
+
     public static void RegisterForAnyActionDoneOrUndone(UnityAction func)
     {
         main.OnAnyActionDoneOrUndone.AddListener(func);

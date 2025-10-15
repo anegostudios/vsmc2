@@ -48,6 +48,7 @@ namespace VSMC {
             //Now apply the sections to the Unity object.
             gameObject.GetComponent<MeshFilter>().mesh = unityMesh;
             gameObject.GetComponent<MeshCollider>().sharedMesh = unityMesh;
+            RefreshMaterialChoice();
 
             RegenerateSelectionLinesFromMeshData();
         }
@@ -130,6 +131,13 @@ namespace VSMC {
         public Vector3 RotateFromLocalToWorldPosition(Vector3 localVector)
         {
             return Quaternion.Inverse(transform.rotation) * localVector;
+        }
+
+        public void RefreshMaterialChoice()
+        {
+            if (gameObject == null) return;
+            if (element.RenderPass == 3) gameObject.GetComponent<MeshRenderer>().material = TextureManager.main.transparentMaterial;
+            else gameObject.GetComponent<MeshRenderer>().material = TextureManager.main.modelMaterial;
         }
 
     }

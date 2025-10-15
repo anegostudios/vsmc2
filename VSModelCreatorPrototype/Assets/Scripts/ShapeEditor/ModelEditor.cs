@@ -87,6 +87,15 @@ namespace VSMC
         void OnEditModeSelect(VSEditMode sel)
         {
             if (sel != VSEditMode.Model) return;
+            ShapeLoader.main.shapeHolder.ReparentGameObjectsToNoJoints();
+            if (!objectSelector.IsAnySelected())
+            {
+                OnObjectDeselcted(null);
+            }
+            else
+            {
+                OnObjectSelected(objectSelector.GetCurrentlySelected());
+            }
         }
 
         void OnEditModeDeselect(VSEditMode desel)
@@ -155,6 +164,15 @@ namespace VSMC
             return newName;
         }
 
+        public void CopyElement()
+        {
+            if (!objectSelector.IsAnySelected()) return; 
+            ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
+            TaskCopyElement copyTask = new TaskCopyElement(cElem);
+            copyTask.DoTask();
+            UndoManager.main.CommitTask(copyTask);
+        }
+
         public void OpenReparentMenu()
         {
             if (!objectSelector.IsAnySelected()) return;
@@ -166,7 +184,6 @@ namespace VSMC
             TaskReparentElement reTask = new TaskReparentElement(elemToReparentUID, newParentUID);
             reTask.DoTask();
             UndoManager.main.CommitTask(reTask);
-            elementHierarchyManager.StartCreatingElementPrefabs(ShapeLoader.main.shapeHolder.cLoadedShape);
         }
     }
 }
