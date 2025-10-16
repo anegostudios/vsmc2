@@ -12,7 +12,7 @@ VSMC2 does not require installation, and can be run directly from the unzipped f
 # Building & Editing VSMC2 #
 VSMC2 is built using the Unity3D Game Engine. Whilst different Unity versions may work, it is recommended to use the version given below:
 
-**Currently used Unity3D version: [6000.0.43f1](https://unity.com/releases/editor/whats-new/6000.0.43#installs)**
+**Currently used Unity3D version: [6000.0.60f1](https://unity.com/releases/editor/whats-new/6000.0.60#installs)**
 
 You will need to download the repository, and add it as a project to the Unity Hub. After installing the appropriate Unity version, you should be able to edit the program.
 
