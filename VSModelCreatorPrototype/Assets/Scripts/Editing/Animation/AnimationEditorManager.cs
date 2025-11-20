@@ -27,9 +27,11 @@ namespace VSMC
         {
             if (select != VSEditMode.Animation) return;
             Shape shape = shapeHolder.cLoadedShape;
+            System.DateTime t1 = System.DateTime.Now;
             shape.InitForAnimations("root");
+            Debug.Log("Calculating " + shape.Animations.Length + " animations took " + (System.DateTime.Now - t1).TotalMilliseconds + "ms.");
             shapeHolder.ReparentGameObjectsByJoints();
-
+            
             if (shape.Animations == null)
             {
                 shape.Animations = new Animation[0];

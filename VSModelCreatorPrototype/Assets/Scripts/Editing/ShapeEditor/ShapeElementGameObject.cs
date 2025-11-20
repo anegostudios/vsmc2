@@ -47,7 +47,21 @@ namespace VSMC {
 
             //Now apply the sections to the Unity object.
             gameObject.GetComponent<MeshFilter>().mesh = unityMesh;
-            gameObject.GetComponent<MeshCollider>().sharedMesh = unityMesh;
+
+            //This will break if the mesh is too small (i.e. near-0 in more than one dimension)
+            Vector3 mSize = unityMesh.bounds.size;
+            float tinyBounds = 0.001f;
+            if (mSize.x <= tinyBounds && mSize.y <= tinyBounds ||
+                mSize.x <= tinyBounds && mSize.z <= tinyBounds ||
+                mSize.y <= tinyBounds && mSize.z <= tinyBounds)
+            {
+                gameObject.GetComponent<MeshCollider>().enabled = false;
+            }
+            else
+            {
+                gameObject.GetComponent<MeshCollider>().enabled = true;
+                gameObject.GetComponent<MeshCollider>().sharedMesh = unityMesh;
+            }
             RefreshMaterialChoice();
 
             RegenerateSelectionLinesFromMeshData();

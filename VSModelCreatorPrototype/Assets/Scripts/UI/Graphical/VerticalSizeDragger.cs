@@ -4,16 +4,17 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
 
-public class HorizontalSizeDragger : MonoBehaviour
+public class VerticalSizeDragger : MonoBehaviour
 {
-
     public CanvasScaler mainCanvasScaler;
-    public bool fromRightHandSide;
+    public bool fromTop;
     public LayoutElement parentLayoutElement;
+    public float screenHeightMaxMultiplier = 0.7f;
     public UIBehaviour[] elementsToDisableWhilstMoving;
-
+    float dragStartMousePos;
+    float dragstartPrefPos;
     bool isCurrentlyDrag;
-    
+
     private void Update()
     {
         if (isCurrentlyDrag)
@@ -21,7 +22,6 @@ public class HorizontalSizeDragger : MonoBehaviour
             if (!Input.GetMouseButton(0))
             {
                 isCurrentlyDrag = false;
-                //Re-enable performance-intensive components.
                 foreach (UIBehaviour c in elementsToDisableWhilstMoving)
                 {
                     c.enabled = true;
@@ -29,14 +29,9 @@ public class HorizontalSizeDragger : MonoBehaviour
                 return;
             }
 
-            if (fromRightHandSide)
-            {
-                parentLayoutElement.preferredWidth = (Screen.width - Input.mousePosition.x) / mainCanvasScaler.scaleFactor;
-            }
-            else
-            {
-                parentLayoutElement.preferredWidth = Input.mousePosition.x / mainCanvasScaler.scaleFactor;
-            }
+            float diff = (Input.mousePosition.y - dragStartMousePos) / mainCanvasScaler.scaleFactor;
+            if (fromTop) diff *= -1;
+            parentLayoutElement.preferredHeight = Mathf.Min(dragstartPrefPos + diff, (Screen.height * screenHeightMaxMultiplier) / mainCanvasScaler.scaleFactor);
         }
     }
 
@@ -44,7 +39,8 @@ public class HorizontalSizeDragger : MonoBehaviour
     {
         if (isCurrentlyDrag) return;
         isCurrentlyDrag = true;
-        //Disable performance-intensive components.
+        dragStartMousePos = Input.mousePosition.y;
+        dragstartPrefPos = parentLayoutElement.GetComponent<RectTransform>().rect.height;
         foreach (UIBehaviour c in elementsToDisableWhilstMoving)
         {
             c.enabled = false;
@@ -53,12 +49,11 @@ public class HorizontalSizeDragger : MonoBehaviour
 
     public void OnCursorEnter()
     {
-        NativeCursor.SetCursor(NTCursors.ResizeHorizontal);
+        NativeCursor.SetCursor(NTCursors.ResizeVertical);
     }
 
     public void OnCursorLeave()
     {
         NativeCursor.ResetCursor();
     }
-
 }

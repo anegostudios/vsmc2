@@ -15,8 +15,7 @@ namespace VSMC
 
         public Matrix4x4[] TransformationMatrices = new Matrix4x4[GlobalConstants.MaxAnimatedElements];
         public Matrix4x4[] TransformationMatricesDefaultPose = new Matrix4x4[GlobalConstants.MaxAnimatedElements];
-
-        //Specific to VSMC. We only play a single animation at a time; So no need for the  
+ 
         public RunningAnimation[] CurAnims = new RunningAnimation[20];
 
         public bool CalculateMatrices { get; set; } = true;

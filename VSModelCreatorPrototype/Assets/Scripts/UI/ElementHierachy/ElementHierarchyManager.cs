@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using VSMC;
 
 public class ElementHierarchyManager : MonoBehaviour
@@ -80,6 +81,23 @@ public class ElementHierarchyManager : MonoBehaviour
             return null;
         }
         return uiElementsByUID[element.elementUID].GetComponent<ElementHierarchyItemPrefab>();
+    }
+
+    private void RecalculateElementsInView()
+    {
+        /*
+        float hYPos = hierarchyParent.transform.localPosition.y;
+        foreach (Transform t in hierarchyParent)
+        {
+            if (t.localPosition.y + hYPos > 0) t.GetComponent<HorizontalLayoutGroup>().enabled = false;
+            else t.GetComponent<HorizontalLayoutGroup>().enabled = true;
+        }
+        */
+    }
+
+    public void OnScrollViewChanged()
+    {
+        //RecalculateElementsInView();
     }
 
 
