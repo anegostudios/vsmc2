@@ -6,6 +6,10 @@ using UnityEngine;
 
 namespace VSMC
 {
+    /// <summary>
+    /// A game script that controls how the animator should work.
+    /// In game, this is split into client & server animators. We only need <see cref="ClientAnimator"/>.
+    /// </summary>
     public abstract class AnimatorBase : IAnimator
     {
         protected int activeAnimCount = 0;

@@ -3,7 +3,9 @@ using UnityEngine;
 
 namespace VSMC
 {
-
+    /// <summary>
+    /// Each shape element has a weight, which controls how the element is blended in a running animation.
+    /// </summary>
     public class ShapeElementWeights
     {
         public float Weight = 1f;
@@ -11,6 +13,10 @@ namespace VSMC
         public ShapeElementWeights[] ChildElements;
     }
 
+    /// <summary>
+    /// Defines a currently active animation.
+    ///  This is added to the <see cref="ClientAnimator"/> to calculate appropriate matrices.
+    /// </summary>
     public class RunningAnimation
     {
         public AnimationMetaData meta;

@@ -2,6 +2,9 @@ using System.Linq;
 using UnityEngine;
 namespace VSMC
 {
+    /// <summary>
+    /// An undoable task to set the texture code (string) of all selected faces.
+    /// </summary>
     public class TaskSetFaceTexture : IEditTask
     {
 

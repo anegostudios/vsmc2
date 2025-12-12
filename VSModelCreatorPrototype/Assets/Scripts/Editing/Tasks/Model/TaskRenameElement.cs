@@ -3,7 +3,7 @@ using System.Text;
 namespace VSMC
 {
     /// <summary>
-    /// Renames an element.
+    /// An undoable task that renames an element.
     /// </summary>
     public class TaskRenameElement : IEditTask
     {

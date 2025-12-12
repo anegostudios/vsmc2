@@ -2,6 +2,9 @@ using System.Linq;
 using UnityEngine;
 namespace VSMC
 {
+    /// <summary>
+    /// An undoable task to set the UV rotation for all selected faces. UV rotation should be 0, 90, 180 or 270.
+    /// </summary>
     public class TaskSetFaceUVRotation : IEditTask
     {
 

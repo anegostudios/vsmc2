@@ -5,6 +5,9 @@ using UnityEngine.UI;
 
 namespace VSMC {
 
+    /// <summary>
+    /// Controls the selection, events, and callbacks of edit modes, as well as the selection UI.
+    /// </summary>
     public class EditModeManager : MonoBehaviour
     {
         public static EditModeManager main;

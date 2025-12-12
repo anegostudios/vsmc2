@@ -3,6 +3,10 @@ using UnityEngine;
 
 namespace VSMC
 {
+    /// <summary>
+    /// This is the entry point to any animation features. 
+    /// Most animation classes will interact with this in one way or another.
+    /// </summary>
     public class AnimationEditorManager : MonoBehaviour
     {
         [Header("Unity References")]

@@ -5,6 +5,10 @@ using UnityEngine;
 
 namespace VSMC
 {
+    /// <summary>
+    /// This is a game script, but also it is the main class responsible for how animations are processed.
+    /// This will create the matrices that are used by VSMC.
+    /// </summary>
     public class ClientAnimator : AnimatorBase
     {
 

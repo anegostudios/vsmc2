@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using VSMC;
 
 /// <summary>
-/// To avoid clutter, the UI elements required and used by the ShapeEditor (since there are so many) are managed here.
+/// To avoid clutter, the UI elements required and used by the <see cref="ModelEditor"/> (since there are so many) are managed here.
 /// </summary>
 public class ModelEditorUIElements : MonoBehaviour
 {

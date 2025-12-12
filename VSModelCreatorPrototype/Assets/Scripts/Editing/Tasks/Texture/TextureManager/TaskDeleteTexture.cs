@@ -2,6 +2,9 @@ using UnityEngine;
 
 namespace VSMC
 {
+    /// <summary>
+    /// An undoable task to delete a texture.
+    /// </summary>
     public class TaskDeleteTexture : IEditTask
     {
 

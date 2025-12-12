@@ -6,12 +6,10 @@ using VSMC;
 
 public class ElementHierarchyManager : MonoBehaviour
 {
-    public static ElementHierarchyManager AnimationHierarchy;
     public static ElementHierarchyManager ElementHierarchy;
 
     public GameObject elementPrefab;
     public Transform hierarchyParent;
-    public bool isForAnimation = false;
     public bool isMainElementHierarchy = false;
 
     [Header("Sprites for Elements")]
@@ -24,8 +22,7 @@ public class ElementHierarchyManager : MonoBehaviour
 
     private void Awake()
     {
-        if (isForAnimation) AnimationHierarchy = this;
-        else if (isMainElementHierarchy) ElementHierarchy = this; 
+        if (isMainElementHierarchy) ElementHierarchy = this; 
     }
 
     public void StartCreatingElementPrefabs(Shape shape)

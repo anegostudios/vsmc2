@@ -4,6 +4,11 @@ using static UnityEngine.Rendering.DebugUI;
 
 namespace VSMC
 {
+    /// <summary>
+    /// This controls everything to do with editing base ShapeElements properties.
+    /// This includes position, rotation, scale, rotation origin, as well as creation, deletion, and renaming.
+    /// UI Controls and interactions for this class are split into <see cref="ModelEditorUIElements"/>.
+    /// </summary>
     public class ModelEditor : MonoBehaviour
     {
         [Header("Unity References")]

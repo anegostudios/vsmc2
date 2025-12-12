@@ -9,6 +9,9 @@ using VSMC;
 
 namespace VSMC
 {
+    /// <summary>
+    /// This handles the UI and function of the texture manager overlay, opened by clicking "textures" in app.
+    /// </summary>
     public class TextureManagerOverlay : MonoBehaviour
     {
         [Header("Unity References")]

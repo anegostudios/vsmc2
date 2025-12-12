@@ -7,6 +7,7 @@ namespace VSMC
 {
     /// <summary>
     /// This pretty much holds all the UI element references for the texture editor. I expect there to be quite a few here...
+    /// It also turned into where most of the tasks are called. Most of these probably want to be moved into <see cref="TextureEditor"/> at some point.
     /// </summary>
     public class TextureEditorUIElements : MonoBehaviour
     {

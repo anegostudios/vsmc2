@@ -2,6 +2,9 @@ using UnityEngine;
 
 namespace VSMC
 {
+    /// <summary>
+    /// An undoable task to set all four UV values for all selected faces.
+    /// </summary>
     public class TaskSetAllUVs : IEditTask
     {
 

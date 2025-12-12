@@ -1,6 +1,10 @@
 using UnityEngine;
 
 namespace VSMC {
+
+    /// <summary>
+    /// A single interactable 3D object that represents the transform gizmo. Used to control pulling direction.
+    /// </summary>
     public class GizmoObject : MonoBehaviour
     {
 

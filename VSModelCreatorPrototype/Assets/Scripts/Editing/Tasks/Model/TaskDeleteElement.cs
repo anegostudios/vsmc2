@@ -5,7 +5,7 @@ using UnityEngine;
 namespace VSMC
 {
     /// <summary>
-    /// Deletes a shape element.
+    /// An undoable task that deletes a shape element.
     /// </summary>
     public class TaskDeleteElement : IEditTask
     {

@@ -4,14 +4,31 @@ namespace VSMC
 {
     public class AnimationHierarchyManager : MonoBehaviour
     {
-        // Start is called once before the first execution of Update after the MonoBehaviour is created
-        void Start()
-        {
 
+        public static AnimationHierarchyManager AnimationHierarchy;
+
+        public GameObject animEntryPrefab;
+        public Transform hierarchyParent;
+
+        private void Awake()
+        {
+            AnimationHierarchy = this;
         }
 
-        // Update is called once per frame
-        void Update()
+        public void StartCreatingAnimationEntries(Shape s)
+        {
+            foreach (Transform t in hierarchyParent)
+            {
+                Destroy(t.gameObject);
+            }
+
+            foreach (Animation anim in s.Animations)
+            {
+                CreateAnimEntry(anim);
+            }
+        }
+
+        private void CreateAnimEntry(Animation anim)
         {
 
         }

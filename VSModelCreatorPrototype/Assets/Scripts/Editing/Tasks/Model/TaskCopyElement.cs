@@ -3,7 +3,7 @@ using UnityEngine;
 namespace VSMC
 {
     /// <summary>
-    /// Create a new element.
+    /// An undoable task that duplicates an element and its children.
     /// </summary>
     public class TaskCopyElement : IEditTask
     {

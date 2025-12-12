@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace VSMC
 {
+    /// <summary>
+    /// An undoable task to change the texture's path.
+    /// </summary>
     public class TaskChangeTexturePath : IEditTask
     {
         public int textureIndex;

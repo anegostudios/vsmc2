@@ -1,5 +1,8 @@
 namespace VSMC
 {
+    /// <summary>
+    /// A type of gizmo for the 3D <see cref="GizmoController"/>.
+    /// </summary>
     public enum GizmoMode
     {
         None = -1,

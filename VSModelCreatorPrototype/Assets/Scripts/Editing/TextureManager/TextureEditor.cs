@@ -1,6 +1,11 @@
 using UnityEngine;
 
 namespace VSMC {
+    /// <summary>
+    /// This is the main class for editing any texture or UV related features.
+    /// Most editing functionality is done inside of <see cref="TextureEditorUIElements"/>.
+    /// See <see cref="TextureManager"/> for the loading and maagement of actual texture files.
+    /// </summary>
     public class TextureEditor : MonoBehaviour
     {
 

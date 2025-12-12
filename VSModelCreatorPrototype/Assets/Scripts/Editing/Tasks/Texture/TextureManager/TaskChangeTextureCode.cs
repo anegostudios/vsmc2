@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace VSMC
 {
+    /// <summary>
+    /// An undoable task to set a texture's code.
+    /// </summary>
     public class TaskChangeTextureCode : IEditTask
     {
         public int textureIndex;

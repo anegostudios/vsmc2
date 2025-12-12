@@ -1,5 +1,8 @@
 namespace VSMC
 {
+    /// <summary>
+    /// An undoable task to set a single UV value for all selected faces.
+    /// </summary>
     public class TaskSetFaceUV : IEditTask
     {
         public int elemUID;

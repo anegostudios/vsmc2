@@ -2,6 +2,9 @@ using System.Linq;
 using UnityEngine;
 namespace VSMC
 {
+    /// <summary>
+    /// An undoable task to enable or disable the selected faces.
+    /// </summary>
     public class TaskSetFaceEnabled : IEditTask
     {
 

@@ -1,5 +1,9 @@
 namespace VSMC
 {
+    /// <summary>
+    /// An undoable task to set an element's rotation origin.
+    /// Used by the UI controls.
+    /// </summary>
     public class TaskSetElementRotationOrigin : IEditTask
     {
         public int elementUID;

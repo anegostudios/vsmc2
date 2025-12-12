@@ -1,5 +1,8 @@
 namespace VSMC
 {
+    /// <summary>
+    /// An undoable task to create a new texture.
+    /// </summary>
     public class TaskCreateNewTexture : IEditTask
     {
         string newTextureCode;

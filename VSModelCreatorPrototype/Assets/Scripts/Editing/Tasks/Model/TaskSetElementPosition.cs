@@ -3,8 +3,8 @@ using UnityEngine;
 namespace VSMC
 {
     /// <summary>
-    /// An edit task for setting an element position in a single axis.
-    /// Can be merged with other tasks of the same type.
+    /// An undoable task for setting an element position in a single axis.
+    /// Used by the UI controls.
     /// </summary>
     public class TaskSetElementPosition : IEditTask
     {

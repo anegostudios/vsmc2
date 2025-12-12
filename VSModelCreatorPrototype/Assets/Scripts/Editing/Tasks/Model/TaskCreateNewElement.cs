@@ -3,7 +3,7 @@ using UnityEngine;
 namespace VSMC
 {
     /// <summary>
-    /// Create a new element.
+    /// An undoable task that creates a new element.
     /// </summary>
     public class TaskCreateNewElement : IEditTask
     {

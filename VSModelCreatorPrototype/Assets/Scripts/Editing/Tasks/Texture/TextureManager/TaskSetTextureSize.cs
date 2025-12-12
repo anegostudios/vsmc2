@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace VSMC
 {
+    /// <summary>
+    /// An undoable task to set the size of a texture.
+    /// </summary>
     public class TaskSetTextureSize : IEditTask
     {
         public int textureIndex;

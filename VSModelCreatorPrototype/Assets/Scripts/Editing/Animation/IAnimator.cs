@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace VSMC
 {
+    /// <summary>
+    /// A game script for the animator interface. Just provides features for <see cref="AnimatorBase"/> and <see cref="ClientAnimator"/>.
+    /// </summary>
     public interface IAnimator
     {
 

@@ -2,9 +2,16 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace VSMC {
+
+    /// <summary>
+    /// Allows the enabling/disabling of elements based on the selected <see cref="VSEditMode"/>.
+    /// </summary>
     public class EditModeEnablers : MonoBehaviour
     {
-
+        /// <summary>
+        /// A serializable array of gameobjects that can be listed in the Unity Editor.
+        /// (Cannot use a 2D array, but can use an array of a type that contains an array :^) )
+        /// </summary>
         [System.Serializable]
         public class EnableList
         {

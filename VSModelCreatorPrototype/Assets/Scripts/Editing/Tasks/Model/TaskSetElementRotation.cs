@@ -1,5 +1,9 @@
 namespace VSMC
 {
+    /// <summary>
+    /// An undoable task that sets an elements rotation.
+    /// Used by the UI controls.
+    /// </summary>
     public class TaskSetElementRotation : IEditTask
     {
         public int elementUID;

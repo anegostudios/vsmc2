@@ -1,6 +1,10 @@
 using UnityEngine;
 namespace VSMC
 {
+    /// <summary>
+    /// An undoable task to translates an element by a movement vector.
+    /// This is mainly used by the 3D movement gizmos.
+    /// </summary>
     public class TaskAddToElementPosition : IEditTask
     {
         public int elementUID;

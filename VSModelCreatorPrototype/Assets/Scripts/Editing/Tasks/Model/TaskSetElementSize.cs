@@ -2,8 +2,8 @@ using Unity.VisualScripting;
 namespace VSMC {
 
     /// <summary>
-    /// An edit task that will set the size of one axis of a shape element.
-    /// Can be merged with other tasks of the same type.
+    /// An undoable task that will set the size of one axis of a shape element.
+    /// Used by the UI controls.
     /// </summary>
     public class TaskSetElementSize : IEditTask
     {

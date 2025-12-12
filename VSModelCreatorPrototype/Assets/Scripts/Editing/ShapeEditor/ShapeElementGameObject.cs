@@ -5,6 +5,7 @@ namespace VSMC {
 
     /// <summary>
     /// This is a physical representation of a ShapeElement in Unity.
+    /// Every shape element will have a shape element gameobject.
     /// </summary>
     public class ShapeElementGameObject : MonoBehaviour
     {
