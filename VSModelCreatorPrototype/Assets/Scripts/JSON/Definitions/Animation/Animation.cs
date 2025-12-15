@@ -51,11 +51,13 @@ namespace VSMC
         [JsonProperty]
         public string Code;
 
+        /*
         /// <summary>
         /// A group name that helps seperate animations in the editor.
         /// </summary>
         [JsonProperty]
         public string GroupInEditor;
+        */
 
         [JsonProperty]
         public int Version;

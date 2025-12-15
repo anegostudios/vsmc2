@@ -8,7 +8,7 @@ public class ElementHierarchyItemPrefab : MonoBehaviour
 
     static bool AlternateColor = false;
     int elementUID;
-    public Color defaultColor;
+    Color defaultColor;
     public GameObject emptySpace;
     public Image minMaxButton;
     public Image hideShowButton;

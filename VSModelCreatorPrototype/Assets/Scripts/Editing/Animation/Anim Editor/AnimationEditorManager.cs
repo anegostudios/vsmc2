@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace VSMC
@@ -12,8 +13,6 @@ namespace VSMC
         [Header("Unity References")]
         public ShapeHolder shapeHolder;
 
-        public GameObject animPrefab;
-        public Transform animListParent;
         bool isInAnimatorMode = false;
 
         Dictionary<string, AnimationMetaData> allAnimations;
@@ -25,6 +24,10 @@ namespace VSMC
         {
             EditModeManager.RegisterForOnModeSelect(OnEditModeSelect);
             EditModeManager.RegisterForOnModeDeselect(OnEditModeDeselect);
+            AnimationSelector.main.RegisterForOnAnimationSelected(OnAnimationSelected);
+            AnimationSelector.main.RegisterForOnAnimationDeselected(OnAnimationDeselected);
+            //ObjectSelector.main.RegisterForObjectSelectedEvent();
+            //ObjectSelector.main.RegisterForObjectDeselectedEvent();
         }
 
         void OnEditModeSelect(VSEditMode select)
@@ -47,18 +50,14 @@ namespace VSMC
             activeAnimations = new Dictionary<string, AnimationMetaData>();
             int animID = 0;
 
-            foreach (Transform child in animListParent)
-            {
-                Destroy(child.gameObject);
-            }
 
             foreach (var anim in shape.Animations)
             {
                 AnimationMetaData meta = new AnimationMetaData(anim.Name, anim.Code);
                 allAnimations.Add(anim.Code, meta);
-                Instantiate(animPrefab, animListParent).GetComponent<AnimationEntryPrefab>().InitializePrefab(anim.Name, anim.Code, this);
                 animID++;
             }
+            AnimationHierarchyManager.AnimationHierarchy.StartCreatingAnimationEntries(shape);
 
             isInAnimatorMode = true;
         }
@@ -81,6 +80,7 @@ namespace VSMC
 
         private void Update()
         {
+            /*
             if (animator == null || !isInAnimatorMode) return;
             animator.OnFrame(activeAnimations, Time.deltaTime);
             
@@ -96,7 +96,46 @@ namespace VSMC
                 joint.localRotation = m.rotation;
                 joint.localScale = m.lossyScale;
             }
+            */
 
+        }
+
+        public void SetAnimationFrame(int frame)
+        {
+            if (animator == null || !isInAnimatorMode) return;
+            for (int i = 0; i < animator.anims.Length; i++)
+            {
+                RunningAnimation anim = animator.anims[i];
+                if (activeAnimations.TryGetValue(anim.Animation.Code, out AnimationMetaData animData))
+                {
+                    Debug.Log("Setting value of " + anim.Animation.Code +" to frame "+frame);
+                    anim.CurrentFrame = frame;
+                }
+            }
+
+            animator.OnFrame(activeAnimations, 0);
+            for (int i = 0; i < animator.MaxJointId; i++)
+            {
+                Transform joint = shapeHolder.jointParents[i];
+
+                //Flip animation matrices too.
+                Matrix4x4 flipZ = Matrix4x4.Scale(new Vector3(1f, 1f, -1f));
+                Matrix4x4 m = flipZ * animator.Matrices[i] * flipZ;
+
+                joint.localPosition = m.GetPosition();
+                joint.localRotation = m.rotation;
+                joint.localScale = m.lossyScale;
+            }
+        }
+
+        void OnAnimationSelected(Animation animation)
+        {
+            SetAnimationPlaying(animation.Code, true);
+        }
+
+        void OnAnimationDeselected(Animation animation)
+        {
+            SetAnimationPlaying(animation.Code, false);
         }
 
         public void SetAnimationPlaying(string animID, bool isPlaying)
@@ -109,6 +148,7 @@ namespace VSMC
             {
                 activeAnimations.Remove(animID);
             }
+            animator.OnFrame(activeAnimations, 1);
         }
 
 
