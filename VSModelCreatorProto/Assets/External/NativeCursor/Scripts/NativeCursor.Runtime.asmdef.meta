@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 59a8075002be4f44788c2da8680125f4
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 220347
+  packageName: Native Cursor
+  packageVersion: 1.1.3
+  assetPath: Assets/NativeCursor/Scripts/NativeCursor.Runtime.asmdef
+  uploadId: 718824

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a4eec9238f3787348a6f1f8903e47bc5
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 220347
+  packageName: Native Cursor
+  packageVersion: 1.1.3
+  assetPath: Assets/NativeCursor/Cursors/Borealis/license.txt
+  uploadId: 718824

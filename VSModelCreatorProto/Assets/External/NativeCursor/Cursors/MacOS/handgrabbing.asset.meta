@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 060dfceb7edbd984a843eb8bc6257064
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 220347
+  packageName: Native Cursor
+  packageVersion: 1.1.3
+  assetPath: Assets/NativeCursor/Cursors/MacOS/handgrabbing.asset
+  uploadId: 718824

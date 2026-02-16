@@ -1,0 +1,17 @@
+
+ Tyrons Wants:
+
+Milestone 1
+- Work with radfast to see how much code can be referenced directly from VintageStoryLib.dll
+- Grid, Compass - Done
+- Left mouse, right mouse, scroll wheel
+- Element tree
+- Play Animations - Done (wow!)!
+
+
+"Not quite, the plan for now is a minimum viable product: 
+Open file, 
+Play animations (no editing), 
+Add/Resize/Rotate/Move/Remove boxes, 
+Save file. 
+After which we'll take a close look now how the editor will look like. I got way too many ideas myself to make the workflow of our modelers simpler as well"

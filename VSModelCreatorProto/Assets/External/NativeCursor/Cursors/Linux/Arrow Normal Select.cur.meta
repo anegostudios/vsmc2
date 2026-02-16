@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 637dd719a7e9e50458ef702766d72fcc
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 220347
+  packageName: Native Cursor
+  packageVersion: 1.1.3
+  assetPath: Assets/NativeCursor/Cursors/Linux/Arrow Normal Select.cur
+  uploadId: 718824

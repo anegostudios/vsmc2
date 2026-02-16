@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 73e81b2d31eec8645b8ada911631229e
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 2336aae621111594abd70506a35a1ed0, type: 3}
+  _resize: 0
+  _resizeTarget: 32
+AssetOrigin:
+  serializedVersion: 1
+  productId: 220347
+  packageName: Native Cursor
+  packageVersion: 1.1.3
+  assetPath: Assets/NativeCursor/Cursors/Windows/aero_nesw.cur
+  uploadId: 718824

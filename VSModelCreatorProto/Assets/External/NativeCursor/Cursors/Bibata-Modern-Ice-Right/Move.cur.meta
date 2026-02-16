@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 24c8939258da01f4ba8dc2e2da452ebb
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 2336aae621111594abd70506a35a1ed0, type: 3}
+  _invertXHotspot: 0
+AssetOrigin:
+  serializedVersion: 1
+  productId: 220347
+  packageName: Native Cursor
+  packageVersion: 1.1.3
+  assetPath: Assets/NativeCursor/Cursors/Bibata-Modern-Ice-Right/Move.cur
+  uploadId: 718824

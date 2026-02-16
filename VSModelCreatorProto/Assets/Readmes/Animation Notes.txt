@@ -1,0 +1,101 @@
+
+	Details in regard to animations.
+- Animations run at 30fps.
+- RunningAnimation.cs controls the current frame of animation.
+            float newFrame = CurrentFrame + 30 * (ShouldRewind ? -dt : dt) * (Animation.EaseAnimationSpeed ? EasingFactor : 1);
+
+			if (dt >= 0 && CurrentFrame >= Animation.QuantityFrames) // here and in the modulo used to be a -1 but that skips the last frame (tyron 10dec2020)
+			{
+				Iterations++;
+				CurrentFrame = GameMath.Mod(newFrame, Animation.QuantityFrames);
+			}
+			if (dt < 0 && CurrentFrame < 0)
+			{
+				Iterations++;
+				CurrentFrame = GameMath.Mod(newFrame, Animation.QuantityFrames);
+			}
+
+ElementPose seems to control most of the per-frame calculations.
+
+
+
+ Working backwards from Rendering:
+1. Render in EntityAnimated shader.
+2. Multiply default model matrix by ElementTransforms.values[jointId];
+3. ElementTransforms:
+	ElementTransforms is specified as "Animation" UBO in AnimateableRenderer.cs (Line 145).
+	ElementTransforms is created as animator.Matrices (return activeAnimCount > 0 ? TransformationMatrices : TransformationMatricesDefaultPose;) (AnimatorBase.cs Line 48)
+	Need to find both TransformationMatrices and TransformationMatricesDefaultPose.
+	4. TransformationMatrices:
+		public float[] TransformationMatrices = new float[16 * GlobalConstants.MaxAnimatedElements];
+		TransformationMatrices is a 1D array, where indices 0 to 15 are for jointID = 0. 16 to 31 are jointId = 1, etc etc.
+		If unused, initialized as identity matrix. TransformationMatrices[jointid * 16 + j] = identMat[j];
+		
+Joint ID
+
+
+
+
+oh my 
+Every frame - The animations get calculated at runtime.
+Each 'joint' has an ID and an associated matrix that gets passed into the EntityAnimated shader.
+This matrix is then multiplied by the standard model matrix of the element.
+
+Questions... 
+Where is Joint ID assigned?
+How, techincally, are the matrices calculated?
+How is the Animation property actually used in runtime?	
+
+
+Should be able to use the update frame to upload a matrix for it, but this may be inefficient.
+Will have to take a look.
+Update updates every frame so exceptionally useful for what I need.
+
+
+Next thing is figuring out how joints work...
+
+ 
+ - Create Joints
+ - Create Animation Data
+
+
+
+
+"/// <summary>
+/// Represents a shape animation and can calculate the transformation matrices for each frame to be sent to the shader
+/// Process
+/// 1. For each frame, for each root element, calculate the transformation matrix. Curent model matrix is identy mat.
+/// 1.1. Get previous and next key frame. Apply translation, rotation and scale to model matrix.
+/// 1.2. Store this matrix as animationmatrix in list
+/// 1.3. For each child element
+/// 1.3.1. Multiply local transformation matrix with the animation matrix. This matrix is now the curent model matrix. Go to 1 with child elements as root elems
+/// 
+/// 2. For each frame, for each joint
+/// 2.1. Calculate the inverse model matrix 
+/// 2.2. Multiply stored animationmatrix with the inverse model matrix
+/// 
+/// 3. done
+/// </summary>"
+
+
+
+
+
+	
+	Mat4f.Identity(ModelMat);
+	Mat4f.Translate(ModelMat, ModelMat, (float)(pos.X - entityPlayer.CameraPos.X), (float)(pos.Y - entityPlayer.CameraPos.Y), (float)(pos.Z - entityPlayer.CameraPos.Z));
+
+	if (CustomTransform != null)
+	{
+	 Mat4f.Multiply(ModelMat, ModelMat, CustomTransform);
+	}
+	else
+	{
+	 Mat4f.Translate(ModelMat, ModelMat, 0.5f, 0, 0.5f);
+	 Mat4f.Scale(ModelMat, ModelMat, ScaleX, ScaleY, ScaleZ);
+	 Mat4f.RotateY(ModelMat, ModelMat, rotationDeg.Y * GameMath.DEG2RAD);
+	 Mat4f.Translate(ModelMat, ModelMat, -0.5f, 0, -0.5f);
+	}
+	
+	
+	https://github.com/anegostudios/vsmodelcreator/blob/master/src/at/vintagestory/modelcreator/model/Element.java#L647

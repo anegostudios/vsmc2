@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a639cd1283eb76844b5dfed6739706ca
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 220347
+  packageName: Native Cursor
+  packageVersion: 1.1.3
+  assetPath: Assets/NativeCursor/Cursors/GoogleDot-Blue-Regular/license.txt
+  uploadId: 718824
