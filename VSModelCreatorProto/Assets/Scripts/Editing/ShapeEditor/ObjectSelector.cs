@@ -14,6 +14,9 @@ namespace VSMC
     {
         public static ObjectSelector main;
 
+        //Required for the face selector...
+        public TextureEditorUIElements texEditorUIElements;
+
         UnityEvent<GameObject> OnObjectSelected;
         UnityEvent<GameObject> OnObjectDeSelected;
         GameObject cSelected;
@@ -103,7 +106,7 @@ namespace VSMC
                 DeselectAll();
                 return true;
             }
-            bool groupObjects = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftControl);
+            //bool groupObjects = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftControl);
             if (scrollingObjectCounter >= storedRaycastHitCount)
             {
                 DeselectLast();
@@ -111,7 +114,29 @@ namespace VSMC
                 scrollingObjectCounter = 0;
                 return true;
             }
-            SelectObject(storedRaycastHits[scrollingObjectCounter].collider.gameObject, true, groupObjects);
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            {
+                SelectObject(storedRaycastHits[scrollingObjectCounter].collider.gameObject, false, false);
+                if (EditModeManager.main.cEditMode == VSEditMode.Texture)
+                {
+                    //Select a specific face... based on the *local* normal of the contact point.
+                    Vector3 normal = storedRaycastHits[scrollingObjectCounter].collider.transform.InverseTransformVector(
+                        storedRaycastHits[scrollingObjectCounter].normal);
+                    int faceFound = -1;
+                    if (normal.y < -0.5f) faceFound = (int)FaceEnum.Down;
+                    else if (normal.y > 0.5f) faceFound = (int)FaceEnum.Up;
+                    else if (normal.x < -0.5f) faceFound = (int)FaceEnum.West;
+                    else if (normal.x > 0.5f) faceFound = (int)FaceEnum.East;
+                    else if (normal.z < -0.5f) faceFound = (int)FaceEnum.South;
+                    else if (normal.z > 0.5f) faceFound = (int)FaceEnum.North;
+                    if (faceFound != -1)
+                    {
+                        texEditorUIElements.SetOneFaceEnabled(faceFound);
+                    }
+                }
+                return true;
+            }
+            SelectObject(storedRaycastHits[scrollingObjectCounter].collider.gameObject, true, false);
             return true;
         }
 

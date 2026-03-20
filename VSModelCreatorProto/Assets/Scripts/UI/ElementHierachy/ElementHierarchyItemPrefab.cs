@@ -89,6 +89,10 @@ public class ElementHierarchyItemPrefab : MonoBehaviour
         elem.renderInEditor = !elem.renderInEditor;
         hideShowButton.sprite = elem.renderInEditor ? hierarchyManager.ShownSprite : hierarchyManager.HiddenSprite;
         ShapeElementRegistry.main.GetShapeElementByUID(elementUID).RecalculateHiddenStatus();
+        if (EditModeManager.main.cEditMode == VSEditMode.Texture)
+        {
+            UVLayoutManager.main.RefreshAllUVSpaces();
+        }
     }
 
     public int GetUID()

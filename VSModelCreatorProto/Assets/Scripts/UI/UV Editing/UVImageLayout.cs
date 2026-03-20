@@ -9,8 +9,8 @@ namespace VSMC
     /// </summary>
     public class UVImageLayout : MonoBehaviour
     {
-        public RectTransform[] uvElements;
         public GridLayoutGroup gridLayout;
+        public GameObject noFaceSelectedLabel;
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
@@ -26,20 +26,25 @@ namespace VSMC
 
         private void OnRectTransformDimensionsChange()
         {
-            ReorganizeElements();
+            ReorganizeElements(true);
         }
 
-        public void ReorganizeElements()
+        public void ReorganizeElements(bool fromUIEvent = false)
         {
             RectTransform myRect = GetComponent<RectTransform>();
             float totWidth = myRect.rect.width - (gridLayout.padding.left + gridLayout.padding.right);
             float totHeight = myRect.rect.height - (gridLayout.padding.top + gridLayout.padding.bottom);
             int activeChildren = 0;
-            foreach (RectTransform c in uvElements)
+            foreach (RectTransform c in transform)
             {
-                if (c.gameObject.activeSelf) activeChildren++;
+                if (c.gameObject.activeSelf && c.gameObject != noFaceSelectedLabel) activeChildren++;
             }
-            if (activeChildren == 0) return;
+            if (activeChildren == 0)
+            {
+                if (noFaceSelectedLabel != null && !fromUIEvent) noFaceSelectedLabel.SetActive(true);
+                return;
+            }
+            if (noFaceSelectedLabel != null && !fromUIEvent) noFaceSelectedLabel.SetActive(false);
 
             //Hope the maths is right...
             //float prefElemWidth = (totWidth + gridLayout.spacing.x) / activeChildren - gridLayout.spacing.x;

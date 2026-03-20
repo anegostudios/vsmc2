@@ -30,8 +30,9 @@ namespace VSMC
                 if (!selFaces[i]) continue;
                 elem.FacesResolved[i].Uv = (float[])newUvs.Clone();
             }
+            elem.ResolveUVForFaces();
             elem.RecreateObjectMesh();
-            UVLayoutManager.main.RefreshAllUVSpaces();
+            UVLayoutManager.main.RecalculateUVPositionsForSingleElement(elem);
         }
 
         public override void UndoTask()
@@ -43,8 +44,10 @@ namespace VSMC
                 if (!selFaces[i]) continue;
                 elem.FacesResolved[i].Uv = (float[])oldUvs.Clone();
             }
+
+            elem.ResolveUVForFaces();
             elem.RecreateObjectMesh();
-            UVLayoutManager.main.RefreshAllUVSpaces();
+            UVLayoutManager.main.RecalculateUVPositionsForSingleElement(elem);
         }
 
         public override bool MergeTasksIfPossible(IEditTask nextTask)

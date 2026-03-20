@@ -36,7 +36,9 @@ namespace VSMC
                 if (!selFaces[i]) continue;
                 elem.FacesResolved[i].Rotation = newRot;
             }
+            elem.ResolveUVForFaces();
             elem.RecreateObjectMesh();
+            UVLayoutManager.main.RecalculateUVPositionsForSingleElement(elem);
         }
 
         public override void UndoTask()
@@ -48,7 +50,9 @@ namespace VSMC
                 if (!selFaces[i]) continue;
                 elem.FacesResolved[i].Rotation = oldRot[i];
             }
+            elem.ResolveUVForFaces();
             elem.RecreateObjectMesh();
+            UVLayoutManager.main.RecalculateUVPositionsForSingleElement(elem);
         }
 
         public override bool MergeTasksIfPossible(IEditTask nextTask)

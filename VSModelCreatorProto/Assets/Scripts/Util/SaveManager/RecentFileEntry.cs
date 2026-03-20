@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using UnityEditor;
 using UnityEngine;
 
 [System.Serializable]
@@ -20,27 +22,42 @@ public class RecentFileEntry
         return Path.GetFileName(completeFilePath);
     }
 
-    public Texture2D LoadPreviewImage()
+    public Texture2D GetPreviewImage()
     {
         if (File.Exists(GetTexturePath()))
         {
             try
             {
-                Texture2D loaded = new Texture2D(0, 0);
+                Texture2D loaded = new Texture2D(256, 256, TextureFormat.ARGB32, false);
                 loaded.LoadImage(File.ReadAllBytes(GetTexturePath()));
                 return loaded;
             }
-            catch
+            catch (Exception e)
             {
+                Debug.LogException(e);
                 return null;
             }
         }
         return null;
     }
 
+    public void SavePreviewImage(Texture2D tex)
+    {
+        if (!File.Exists(GetTexturePath()))
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(GetTexturePath()));
+            using (var r = File.CreateText(GetTexturePath()))
+            {
+                r.Write(tex.EncodeToPNG());
+            } 
+            return;
+        }
+        File.WriteAllBytes(GetTexturePath(), tex.EncodeToPNG());
+    }
+
     string GetTexturePath()
     {
-        return "recents/" + uniqueFileName + ".png";
+        return Application.persistentDataPath + Path.DirectorySeparatorChar + "recents" + Path.DirectorySeparatorChar + uniqueFileName + ".png";
     }
 
 }

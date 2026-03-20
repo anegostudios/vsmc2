@@ -21,12 +21,21 @@ namespace VSMC
 
         public override void DoTask()
         {
-            //We should try and calculate the ideal position based on the two keyframes this is between.
-            //Is this as simple as lerping between the two in-between rotations?
+            ElementPose pose = animation.GenerateFrameForFlag(frame, ShapeElementRegistry.main.GetShapeElementByName(elemCode), 0);
             this.kfElem = animation.GetOrCreateKeyFrame(frame).GetOrCreateKeyFrameElement(elemCode);
-            kfElem.OffsetX = 0;
-            kfElem.OffsetY = 0;
-            kfElem.OffsetZ = 0;
+            if (pose == null)
+            {
+                kfElem.OffsetX = 0;
+                kfElem.OffsetY = 0;
+                kfElem.OffsetZ = 0;
+            }
+            else
+            {
+                //Translatiosn are converted in model space, but we actually want to undo that conversion, hence the * 16.
+                kfElem.OffsetX = pose.translateX * 16;
+                kfElem.OffsetY = pose.translateY * 16;
+                kfElem.OffsetZ = pose.translateZ * 16;
+            }
             AnimationEditorManager.main.OnAnyKeyframeAddedOrRemoved();
         }
 

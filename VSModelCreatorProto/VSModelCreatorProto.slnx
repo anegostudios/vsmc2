@@ -1,0 +1,7 @@
+﻿<Solution>
+  <Project Path="NativeCursor.Runtime.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="NativeCursor.Editor.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="NativeCursor.GUI.Editor.csproj" />
+</Solution>

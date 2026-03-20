@@ -18,6 +18,7 @@ namespace VSMC
         [Header("Unity References")]
         public ShapeHolder shapeHolder;
         public AnimationEditorUIElements UI;
+        public 
 
         bool isInAnimatorMode = false;
 
@@ -43,6 +44,7 @@ namespace VSMC
 
         public int cFrame;
         public Animation cSelectedAnimation;
+        public float playbackSpeed = 1;
 
         void Awake()
         {
@@ -101,7 +103,7 @@ namespace VSMC
         private void Update()
         { 
             if (animator == null || !isInAnimatorMode || !shouldPlayAnimations) return;
-            ProgressAnimation(Time.deltaTime);
+            ProgressAnimation(Time.deltaTime * playbackSpeed);
         }
 
         private void OnObjectSelected(GameObject selected)
@@ -274,6 +276,7 @@ namespace VSMC
             foreach (var anim in shape.Animations)
             {
                 AnimationMetaData meta = new AnimationMetaData(anim.Name, anim.Code);
+                anim.PrevNextKeyFrameByFrame = null;
                 allAnimations.Add(anim.Code, meta);
                 animID++;
             }

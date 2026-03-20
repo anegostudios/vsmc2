@@ -20,7 +20,8 @@ public class ShapeAccessor
             DefaultValueHandling = DefaultValueHandling.Ignore,
             ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy(false, false) }
         };
-        File.WriteAllText(filePath, JsonConvert.SerializeObject(shape,Formatting.Indented,settings));
+        File.WriteAllText(filePath, JsonConvert.SerializeObject(shape, Formatting.Indented, settings));
+        SaveManager.main.OnModelSave(filePath);
     }
 
     /// <summary>

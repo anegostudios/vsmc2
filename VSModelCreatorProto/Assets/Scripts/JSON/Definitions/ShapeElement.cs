@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 using Newtonsoft.Json;
+using System.ComponentModel;
 
 namespace VSMC
 {
@@ -38,7 +39,7 @@ namespace VSMC
         private Dictionary<string, ShapeElementFace> Faces;
 
         /// <summary>
-        /// The origin point for rotation.0
+        /// The origin point for rotation.
         /// </summary>
         [JsonProperty]
         public double[] RotationOrigin = new double[3];
@@ -117,6 +118,32 @@ namespace VSMC
         /// </summary>
         [JsonProperty]
         public bool renderInEditor = true;
+
+        /// <summary>
+        /// If entity texturing is enabled, should this element be unwrapped automatically? (Default true)
+        /// </summary>
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [DefaultValue(true)]
+        public bool autoUnwrap = true;
+
+        /// <summary>
+        /// The UV position to start elements at when using entity texture mode.
+        /// </summary>
+        [JsonProperty(PropertyName = "uv")]
+        public double[] entityTextureUV = new double[] { 0, 0 };
+
+        /// <summary>
+        /// The unwrap mode when using entity texture mode.
+        /// </summary>
+        [JsonProperty(PropertyName = "unwrapMode")]
+        public int entityTextureUnwrapMode = 0;
+
+        /// <summary>
+        /// The rotation index when using entity texture mode.
+        /// </summary>
+        [JsonProperty(PropertyName = "unwrapRotation")]
+        public int entityTextureUnwrapRotationIndex = 0;
+
         #endregion
 
         //These properties will be set at runtime, and do not need to be saved to a JSON file.
@@ -550,6 +577,7 @@ namespace VSMC
                     FacesResolved[i] = new ShapeElementFace();
                     FacesResolved[i].Enabled = false;
                 }
+                FacesResolved[i].AutomaticallyDisableAutoUVOrSnapping(GetFaceDimension(i));
             }
 
             if (Children != null)
@@ -657,10 +685,69 @@ namespace VSMC
             ShapeTesselator.ResolveMatricesForShapeElementAndChildren(elem);
             ShapeLoader.main.shapeHolder.CreateShapeElementGameObject(elem);
             ShapeLoader.main.shapeHolder.SendElementToDeletionLimbo(elem, true);
-            
+
             //This may seem odd but we need this to be null for the copy task - However it is used throughout the matrix calculations.
             elem.ParentElement = null;
             return elem;
+        }
+
+        public void ResolveUVForFaces()
+        {
+            if (autoUnwrap && ShapeHolder.CurrentLoadedShape.editor.entityTextureMode)
+            {
+                UVUnwrapper.DoAutoUV(this);
+                RecreateObjectMesh();
+                return;
+            }
+            for (int i = 0; i < FacesResolved.Length; i++)
+            {
+                FacesResolved[i].CalculateAutoUV(GetFaceDimension(i));
+            }
+            RecreateObjectMesh();
+        }
+
+        public Vector2 GetFaceDimension(int face)
+        {
+            switch (face)
+            {
+                case 0:
+                    return new Vector2(Width, Height);
+                case 1:
+                    return new Vector2(Depth, Height);
+                case 2:
+                    return new Vector2(Width, Height);
+                case 3:
+                    return new Vector2(Depth, Height);
+                case 4:
+                    return new Vector2(Width, Depth);
+                case 5:
+                    return new Vector2(Width, Depth);
+            }
+            return new Vector2(0, 0);
+        }
+        
+        public float Width
+        {
+            get
+            {
+                return (float)(To[0] - From[0]);
+            }
+        }
+
+        public float Height
+        {
+            get
+            {
+                return (float)(To[1] - From[1]);
+            }
+        }
+
+        public float Depth
+        {
+            get
+            {
+                return (float)(To[2] - From[2]);
+            }
         }
     }
 }

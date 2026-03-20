@@ -12,9 +12,15 @@ namespace VSMC
     public class Shape
     {
         /// <summary>
+        /// The editor settings for the shape.
+        /// </summary>
+        [JsonProperty()]
+        public ShapeEditorSettings editor = new ShapeEditorSettings();
+
+        /// <summary>
         /// The collection of textures in the shape. The Dictionary keys are the texture short names, used in each ShapeElementFace.
         /// <br/>You should be using <see cref="TextureManager.loadedTextures"/>!
-        /// </summary>
+        /// </summary>  
         [JsonProperty]
         public Dictionary<string, string> Textures = new Dictionary<string, string>();
 

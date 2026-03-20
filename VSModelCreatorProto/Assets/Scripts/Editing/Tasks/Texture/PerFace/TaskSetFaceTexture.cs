@@ -40,6 +40,7 @@ namespace VSMC
             }
             elem.RecreateObjectMesh(); 
             UVLayoutManager.main.OnSelectedFacesChanged(selFaces);
+            UVLayoutManager.main.RecalculateUVPositionsForSingleElement(elem);
 
         }
 
@@ -55,6 +56,7 @@ namespace VSMC
             }
             elem.RecreateObjectMesh();
             UVLayoutManager.main.OnSelectedFacesChanged(selFaces);
+            UVLayoutManager.main.RecalculateUVPositionsForSingleElement(elem);
         }
 
         public override bool MergeTasksIfPossible(IEditTask nextTask)

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,6 +8,8 @@ namespace VSMC {
     {
 
         public RectTransform timelineRectTransform;
+        public RectTransform framelineHolderForWidth;
+        public KeyframeSelector kfSelector = new KeyframeSelector();
 
         /// <summary>
         /// The current number of pixels for one column in the timeline.
@@ -57,6 +60,8 @@ namespace VSMC {
                 }
             }
 
+            kfSelector.Reinitialize();
+
             foreach (KeyValuePair<ShapeElement, List<AnimationKeyFrameElement>> animatedElem in animatedElems)
             {
                 GameObject h = Instantiate(timelineListEntryPrefab, timelineListHolder);
@@ -73,11 +78,15 @@ namespace VSMC {
                     float posOffset = frame * 32 + 8;
                     if (kf.PositionSet)
                     {
-                        Instantiate(translationPrefab, t.transform).GetComponent<RectTransform>().localPosition = new Vector3(posOffset, 0);
+                        GameObject pkf = Instantiate(translationPrefab, t.transform);
+                        pkf.GetComponent<RectTransform>().localPosition = new Vector3(posOffset, 0);
+                        pkf.GetComponent<TimelineKeyFrameElementMarker>().Initialize(this, framelineHolderForWidth, frame, kf, 0, kfSelector);
                     }
                     if (kf.RotationSet)
                     {
-                        Instantiate(rotationPrefab, r.transform).GetComponent<RectTransform>().localPosition = new Vector3(posOffset, 0);
+                        GameObject rkf = Instantiate(rotationPrefab, r.transform);
+                        rkf.GetComponent<RectTransform>().localPosition = new Vector3(posOffset, 0);
+                        rkf.GetComponent<TimelineKeyFrameElementMarker>().Initialize(this, framelineHolderForWidth, frame, kf, 1, kfSelector);
                     }
                 }
 
@@ -95,7 +104,31 @@ namespace VSMC {
             prefPos.y -= pixelsPerColumn * 6;
 
             wholeContentRect.GetComponent<RectTransform>().anchoredPosition = prefPos;
-                    
+
+        }
+
+        public void OnKFEMarkerMoved(int moveAmount)
+        {
+            List<TimelineKeyFrameElementMarker> sel = kfSelector.currentSelectedKeyframeMarkers;
+            foreach (TimelineKeyFrameElementMarker marker in sel)
+            {
+                if (marker.assosciatedKFE.Frame + moveAmount < 0)
+                {
+                    //Frame out of bounds. Reset the markers and do nothing.
+                    foreach (TimelineKeyFrameElementMarker marker2 in sel)
+                    {
+                        marker2.ResetPosition();
+                    }
+                    return;
+                }
+            }
+            //Now we should be valid...
+            TaskMoveMultiKeyFrameElementsFrames moveKfeTask =
+            new TaskMoveMultiKeyFrameElementsFrames(AnimationSelector.main.GetCurrentlySelected(),
+                                                    sel, moveAmount);
+            moveKfeTask.DoTask();
+            UndoManager.main.CommitTask(moveKfeTask);
+            //Gods.PrayTo(); 
         }
 
     }

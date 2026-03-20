@@ -39,6 +39,7 @@ namespace VSMC {
             UnloadCurrentShape();
 
             //Load shape and then enter model mode.
+            SaveManager.main.BeforeFileLoad();
             Shape loadedShape = ShapeAccessor.DeserializeShapeFromFile(filePath);
             shapeHolder.OnShapeLoaded(loadedShape);
             hierarchy.StartCreatingElementPrefabs(loadedShape);

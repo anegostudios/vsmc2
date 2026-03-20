@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -31,7 +32,18 @@ namespace VSMC
         public GameObject uvMixedWarningText;
         public Slider uvRotationSlider;
         public MixedElementToggle enabledToggle;
+        public MixedElementToggle autoUVToggle;
+        public MixedElementToggle snapUVToggle;
         public TMP_InputField elemName;
+
+        [Header("Entity Texture Stuff")]
+        public GameObject autoUnwrapUVGameObject;
+        public GameObject[] autoUnwrapOnlyUIElements;
+        public GameObject[] manualUVOnlyUIElements;
+        public Toggle autoUnwrapUV;
+        public TMP_Dropdown autoUnwrapMode;
+        public TMP_InputField unwrapUvX;
+        public TMP_InputField unwrapUvY;
 
 
         [Header("Usage Data")]
@@ -61,7 +73,13 @@ namespace VSMC
             uvX2.onEndEdit.AddListener(x => { OnAnyUVChanged(x, 2); });
             uvY2.onEndEdit.AddListener(x => { OnAnyUVChanged(x, 3); });
             enabledToggle.toggle.onValueChanged.AddListener(x => { OnEnabledChanged(x); });
+            autoUVToggle.toggle.onValueChanged.AddListener(x => { OnAutoResolutionChanged(x); });
+            snapUVToggle.toggle.onValueChanged.AddListener(x => { OnSnapUVChanged(x); });
             uvRotationSlider.onValueChanged.AddListener(x => { OnRotationSliderChanged(x); });
+            autoUnwrapUV.onValueChanged.AddListener(x => { OnAutoUnwrapChanged(x); });
+            autoUnwrapMode.onValueChanged.AddListener(x => { OnAutoUnwrapModeChanged(x); });
+            unwrapUvX.onEndEdit.AddListener(x => { OnAnyAutoUnwrapUVChange(x, 0); });
+            unwrapUvY.onEndEdit.AddListener(x => { OnAnyAutoUnwrapUVChange(x, 1); });
         }
 
         public void OnElementSelected(ShapeElementGameObject element)
@@ -69,8 +87,8 @@ namespace VSMC
             cSelected = element.element;
             elemName.SetTextWithoutNotify(element.element.Name);
             entireTextureModeObjectGroup.SetActive(true);
+            ResolveEntityTextureUIElements();
             OnFaceSelectionChange();
-            
         }
 
         public void OnElementDeselected()
@@ -93,6 +111,16 @@ namespace VSMC
         public void ShowAllUIElements()
         {
             entireTextureModeObjectGroup.SetActive(true);
+        }
+
+        public void SetOneFaceEnabled(int index)
+        {
+            for (int i = 0; i < faceButtons.Length; i++)
+            {
+                cSelectedFaces[i] = i == index;
+            }
+            OnFaceSelectionChange();
+            return;
         }
 
         public void ToggleSelectFace(int index)
@@ -170,7 +198,7 @@ namespace VSMC
             textureSelectionDropdown.MultiSelect = true;
             textureSelectionDropdown.SetValueWithoutNotify(int.MaxValue);
             textureSelectionDropdown.MultiSelect = false;
-            
+
             List<string> faceTextures = new List<string>();
             foreach (ShapeElementFace face in selFaces)
             {
@@ -226,8 +254,61 @@ namespace VSMC
             }
             if (!areAllSame) enabledToggle.SetToggleValue(false, true);
             else enabledToggle.SetToggleValue(selFaces[0].Enabled, false);
+
+            areAllSame = true;
+            foreach (ShapeElementFace face in selFaces)
+            {
+                if (face.autoResolutionForUV != selFaces[0].autoResolutionForUV)
+                {
+                    areAllSame = false;
+                    break;
+                }
+            }
+            if (!areAllSame) autoUVToggle.SetToggleValue(false, true);
+            else autoUVToggle.SetToggleValue(selFaces[0].autoResolutionForUV, false);
+
+
+            areAllSame = true;
+            foreach (ShapeElementFace face in selFaces)
+            {
+                if (face.snapUV != selFaces[0].snapUV)
+                {
+                    areAllSame = false;
+                    break;
+                }
+            }
+            if (!areAllSame) snapUVToggle.SetToggleValue(false, true);
+            else snapUVToggle.SetToggleValue(selFaces[0].snapUV, false);
+
             uvRotationSlider.SetValueWithoutNotify(Mathf.RoundToInt(selFaces[0].Rotation / 90f));
 
+        }
+        
+        public void ResolveEntityTextureUIElements()
+        {
+            if (ShapeHolder.CurrentLoadedShape.editor.entityTextureMode)
+            {
+                //Enable all standard game objects...
+                autoUnwrapUVGameObject.SetActive(true);
+                autoUnwrapMode.SetValueWithoutNotify(cSelected.entityTextureUnwrapMode);
+                autoUnwrapUV.SetIsOnWithoutNotify(cSelected.autoUnwrap);
+                if (cSelected.autoUnwrap)
+                {
+                    foreach (GameObject g in manualUVOnlyUIElements) g.SetActive(false);
+                    foreach (GameObject g in autoUnwrapOnlyUIElements) g.SetActive(true);
+
+                    unwrapUvX.SetTextWithoutNotify(cSelected.entityTextureUV[0].ToString("0.###"));
+                    unwrapUvY.SetTextWithoutNotify(cSelected.entityTextureUV[1].ToString("0.###"));
+
+                    return;
+                }
+            }
+            else
+            {
+                autoUnwrapUVGameObject.SetActive(false);
+            }
+            foreach (GameObject g in manualUVOnlyUIElements) g.SetActive(true);
+            foreach (GameObject g in autoUnwrapOnlyUIElements) g.SetActive(false);
         }
 
         public void OnTextureSelectionChanged(int selIndex)
@@ -248,6 +329,7 @@ namespace VSMC
         public void OnRotationSliderChanged(float val)
         {
             float preciseVal = ((int)val) * 90;
+
             TaskSetFaceUVRotation setFaceUvRot = new TaskSetFaceUVRotation(cSelected, cSelectedFaces, preciseVal);
             setFaceUvRot.DoTask();
             UndoManager.main.CommitTask(setFaceUvRot);
@@ -258,6 +340,44 @@ namespace VSMC
             TaskSetFaceEnabled setFaceEnabledTask = new TaskSetFaceEnabled(cSelected, cSelectedFaces, enabled);
             setFaceEnabledTask.DoTask();
             UndoManager.main.CommitTask(setFaceEnabledTask);
+        }
+
+        public void OnAutoResolutionChanged(bool enabled)
+        {
+            TaskSetFaceAutoResolution setFaceAutoResTask = new TaskSetFaceAutoResolution(cSelected, cSelectedFaces, enabled);
+            setFaceAutoResTask.DoTask();
+            UndoManager.main.CommitTask(setFaceAutoResTask);
+        }
+
+        public void OnSnapUVChanged(bool enabled)
+        {
+            TaskSetFaceSnapUV setFaceSnapUVTask = new TaskSetFaceSnapUV(cSelected, cSelectedFaces, enabled);
+            setFaceSnapUVTask.DoTask();
+            UndoManager.main.CommitTask(setFaceSnapUVTask);
+        }
+
+        public void OnAutoUnwrapChanged(bool enabled)
+        {
+            TaskSetAutoUnwrapUV setAutoUnwrapTask = new TaskSetAutoUnwrapUV(cSelected, enabled);
+            setAutoUnwrapTask.DoTask();
+            UndoManager.main.CommitTask(setAutoUnwrapTask);
+        }
+
+        public void OnAutoUnwrapModeChanged(int value)
+        {
+            TaskSetEntityTextureUnwrapMode setUnwrapModeTask = new TaskSetEntityTextureUnwrapMode(cSelected, value);
+            setUnwrapModeTask.DoTask();
+            UndoManager.main.CommitTask(setUnwrapModeTask);
+        }
+
+        public void OnAnyAutoUnwrapUVChange(string value, int index)
+        {
+            if (!float.TryParse(value, out float setVal)) return;
+            Vector2 newUV = new Vector2((float)cSelected.entityTextureUV[0], (float)cSelected.entityTextureUV[1]);
+            newUV[index] = setVal;
+            TaskSetEntityTextureUVPosition setUnwrapUVTask = new TaskSetEntityTextureUVPosition(cSelected, newUV);
+            setUnwrapUVTask.DoTask();
+            UndoManager.main.CommitTask(setUnwrapUVTask);
         }
 
         private List<ShapeElementFace> GetSelectedFaces()

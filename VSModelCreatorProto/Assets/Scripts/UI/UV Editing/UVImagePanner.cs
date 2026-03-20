@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -34,9 +35,9 @@ namespace VSMC
                 result /= rect.sizeDelta;
 
                 //Add a bit of snapping to the center.
-                if (result.sqrMagnitude < centerSnapLimit) 
-                { 
-                    result = Vector2.zero; 
+                if (result.sqrMagnitude < centerSnapLimit)
+                {
+                    result = Vector2.zero;
                 }
 
                 result += new Vector2(0.5f, 0.5f);
@@ -47,10 +48,29 @@ namespace VSMC
                 cVal = result;
             }
         }
+
         public void MouseDownOnElement(BaseEventData pointer)
         {
             if ((pointer as PointerEventData).button != 0) return;
             mouseDownOnElem = true;
+        }
+
+        public void PanByAmount(Vector2 amt)
+        {
+            cVal += amt;
+            cVal = new Vector2(Mathf.Clamp01(cVal.x), Mathf.Clamp01(cVal.y));
+            panCursor.anchorMin = cVal;
+            panCursor.anchorMax = cVal;
+            panCursor.anchoredPosition = Vector2.zero;
+        }
+
+        public void SetPan(Vector2 amt)
+        {
+            cVal = amt;
+            cVal = new Vector2(Mathf.Clamp01(cVal.x), Mathf.Clamp01(cVal.y));
+            panCursor.anchorMin = cVal;
+            panCursor.anchorMax = cVal;
+            panCursor.anchoredPosition = Vector2.zero;
         }
     }
 

@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 
 namespace VSMC {
@@ -9,9 +10,20 @@ namespace VSMC {
     public class TextureEditor : MonoBehaviour
     {
 
+        public static TextureEditor main;
+
         [Header("Unity References")]
         public TextureEditorUIElements uiElements;
         public ObjectSelector objectSelector;
+
+        [Header("Entity Texturing")]
+        public TMP_Text entityTextureModeButtonText;
+        public GameObject entityTextureEnableOverlay;
+
+        void Awake()
+        {
+            main = this;  
+        }
 
         private void Start()
         {
@@ -28,6 +40,7 @@ namespace VSMC {
             {
                 if (objectSelector.IsAnySelected()) OnObjectSelected(objectSelector.GetCurrentlySelected());
                 else OnObjectDeselcted(null);
+                UVLayoutManager.main.RefreshAllUVSpaces(true);
             }
         }
 
@@ -51,6 +64,46 @@ namespace VSMC {
             if (EditModeManager.main.cEditMode != VSEditMode.Texture) return;
             uiElements.OnElementDeselected();
             uiElements.HideAllUIElements();
+        }
+
+
+        public void OnEntityTextureModeToggleSelect()
+        {
+            if (ShapeHolder.CurrentLoadedShape == null) return;
+            if (GetEntityTextureMode())
+            {
+                TaskSetEntityTextureMode setET = new TaskSetEntityTextureMode(!GetEntityTextureMode(), false);
+                setET.DoTask();
+                UndoManager.main.CommitTask(setET);
+            }
+            else
+            {
+                entityTextureEnableOverlay.SetActive(true);
+            }
+        }
+
+        public void ConfirmEntityTextureModeToggle(int confirmValue)
+        {
+            bool? t = null;
+            if (confirmValue == 0) t = true;
+            else if (confirmValue == 1) t = false;
+            TaskSetEntityTextureMode setET = new TaskSetEntityTextureMode(true, t);
+            setET.DoTask();
+            UndoManager.main.CommitTask(setET);
+            entityTextureEnableOverlay.SetActive(false);
+        }
+
+
+        public void OnEntityTextureModeChange()
+        {
+            entityTextureModeButtonText.text = GetEntityTextureMode() ? "Disable Entity Texture Mode" : "Enable Entity Texture Mode";
+            UVLayoutManager.main.OnEntityTextureModeChange();
+        }
+
+        public static bool GetEntityTextureMode()
+        {
+            if (ShapeHolder.CurrentLoadedShape == null) return false;
+            return ShapeHolder.CurrentLoadedShape.editor.entityTextureMode;
         }
 
     }

@@ -102,8 +102,10 @@ namespace VSMC
             IEditTask toUndo = completedEditTasks.First.Value;
 
             //Need to set edit mode to correct mode for undoing.
-            EditModeManager.main.SelectMode(toUndo.GetRequiredEditMode());
-
+            if (toUndo.GetRequiredEditMode() != VSEditMode.None)
+            {
+                EditModeManager.main.SelectMode(toUndo.GetRequiredEditMode());
+            }
             toUndo.UndoTask();
             undoneEditTasks.AddFirst(toUndo);
             completedEditTasks.RemoveFirst();
@@ -121,8 +123,10 @@ namespace VSMC
             IEditTask toRedo = undoneEditTasks.First.Value;
 
             //Need to set edit mode to correct mode for redoing.
-            EditModeManager.main.SelectMode(toRedo.GetRequiredEditMode());
-
+            if (toRedo.GetRequiredEditMode() != VSEditMode.None)
+            {
+                EditModeManager.main.SelectMode(toRedo.GetRequiredEditMode());
+            }
             toRedo.DoTask();
             completedEditTasks.AddFirst(toRedo);
             undoneEditTasks.RemoveFirst();

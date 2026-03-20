@@ -27,11 +27,6 @@ public class TimelineElementCollapsable : MonoBehaviour
 
     TimelineManager manager;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-    }
-
     public void Initialize(TimelineManager manager, string elemName, params GameObject[] linkedCollapses)
     {
         this.manager = manager;
@@ -40,7 +35,7 @@ public class TimelineElementCollapsable : MonoBehaviour
         ObjectSelector.main.RegisterForObjectSelectedEvent(OnAnyElementSelected);
         ObjectSelector.main.RegisterForObjectDeselectedEvent(OnAnyElementDeselected);
         elemNameImage.color = unselColor;
-        OnElementCollapsed();
+        OnElementExpanded();
     }
 
     public void OnCollapseButtonClick()

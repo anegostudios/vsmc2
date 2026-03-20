@@ -191,6 +191,40 @@ namespace VSMC
         }
 
 
+        public ElementPose GenerateFrameForFlag(int frameNumber, ShapeElement element, int flag)
+        {
+            getTwoKeyFramesElementForFlag(frameNumber, element, flag, out AnimationKeyFrameElement curKelem, out AnimationKeyFrameElement nextKelem);
+
+            if (curKelem == null) return null;
+
+
+            float t;
+
+            if (nextKelem == null || curKelem == nextKelem)
+            {
+                nextKelem = curKelem;
+                t = 0;
+            }
+            else
+            {
+                if (nextKelem.Frame < curKelem.Frame)
+                {
+                    int quantity = nextKelem.Frame + (QuantityFrames - curKelem.Frame);
+                    int framePos = GameMath.Mod(frameNumber - curKelem.Frame, QuantityFrames);
+
+                    t = (float)framePos / quantity;
+                }
+                else
+                {
+                    t = (float)(frameNumber - curKelem.Frame) / (nextKelem.Frame - curKelem.Frame);
+                }
+            }
+
+
+            ElementPose transform = new ElementPose();
+            lerpKeyFrameElement(curKelem, nextKelem, flag, t, ref transform);
+            return transform;
+        }
 
         protected void GenerateFrameForElement(int frameNumber, ShapeElement element, ref ElementPose transform)
         {

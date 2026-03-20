@@ -21,12 +21,20 @@ namespace VSMC
 
         public override void DoTask()
         {
-            //We should try and calculate the ideal rotation based on the two keyframes this is between.
-            //Is this as simple as lerping between the two in-between rotations?
+            ElementPose pose = animation.GenerateFrameForFlag(frame, ShapeElementRegistry.main.GetShapeElementByName(elemCode), 1);
             this.kfElem = animation.GetOrCreateKeyFrame(frame).GetOrCreateKeyFrameElement(elemCode);
-            kfElem.RotationX = 0;
-            kfElem.RotationY = 0;
-            kfElem.RotationZ = 0;
+            if (pose == null)
+            {
+                kfElem.RotationX = 0;
+                kfElem.RotationY = 0;
+                kfElem.RotationZ = 0;
+            }
+            else
+            {
+                kfElem.RotationX = pose.degX;
+                kfElem.RotationY = pose.degY;
+                kfElem.RotationZ = pose.degZ;
+            }
             animation.RemoveAnyEmptyKeyFrames();
             AnimationEditorManager.main.OnAnyKeyframeAddedOrRemoved();
         }

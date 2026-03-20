@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -28,8 +29,12 @@ namespace VSMC
         public TMP_Text currentFrameLabel;
         public Button playPauseButton;
         public TMP_Text playPauseButtonText;
-        public Button jumpToStartButton;
-        public Button jumpToEndButton;
+        public Button nextFrameButton;
+        public Button prevFrameButton;
+
+        [Header("Animation Details - Playback Speed")]
+        public Slider playbackSpeedSlider;
+        public TMP_InputField playbackSpeedInputField;
 
         [Header("Animation Details - Timeline")]
         public RectTransform timelineCurrentFrameMarker;
@@ -67,7 +72,13 @@ namespace VSMC
             onAnimEnded.onValueChanged.AddListener(x => { OnAnimationEndSelected(x); });
             animDurationInFrames.onEndEdit.AddListener(x => { OnAnimationFrameQuantitySubmit(x); });
 
+            prevFrameButton.onClick.AddListener(OnPreviousFrameButtonClick);
+            nextFrameButton.onClick.AddListener(OnNextFrameButtonClick);
+
             timelineFrameline.onFrameSliderValueChanged.AddListener(x => { OnSetFrameViaTimeline(x); });
+
+            playbackSpeedInputField.onEndEdit.AddListener(x => { OnChangePlaybackSpeedInputField(x); });
+            playbackSpeedSlider.onValueChanged.AddListener(x => { OnChangePlaybackSpeedSlider(x); });
 
             //Keyframe Events
             positionKeyframeToggle.onValueChanged.AddListener(x => { OnPositionKeyframeToggled(x); });
@@ -306,24 +317,27 @@ namespace VSMC
             }
             onAnimDurationChangeConfirmationOverlay.SetActive(false);
         }
-        
+
         #endregion
 
         #region UI Events - Frame Progressor
 
-        private void OnPlayPauseAnimationClicked()
+        private void OnPreviousFrameButtonClick()
         {
-
+            if (!IsAnyAnimationSelected()) return;
+            int cFrame = GetCurrentFrame();
+            cFrame -= 1;
+            if (cFrame < 0) cFrame = GetFrameDurationOfCurrentAnimation() - 1;
+            animEditor.SetAnimationFrame(cFrame, true);
         }
 
-        private void OnJumpToAnimationStartClicked()
+        private void OnNextFrameButtonClick()
         {
-
-        }
-
-        private void OnJumpToAnimationEndClicked()
-        {
-
+            if (!IsAnyAnimationSelected()) return;
+            int cFrame = GetCurrentFrame();
+            cFrame += 1;
+            if (cFrame >= GetFrameDurationOfCurrentAnimation()) cFrame = 0;
+            animEditor.SetAnimationFrame(cFrame, true);
         }
 
         #endregion
@@ -355,6 +369,23 @@ namespace VSMC
 
             if (frame == GetCurrentFrame()) return;
             animEditor.SetAnimationFrame(frame);
+        }
+
+        private void OnChangePlaybackSpeedSlider(float val)
+        {
+            float playbackSpeed = val / 4;
+            playbackSpeedInputField.SetTextWithoutNotify(playbackSpeed.ToString("0.##") + "x");
+            animEditor.playbackSpeed = playbackSpeed;
+        }
+
+        private void OnChangePlaybackSpeedInputField(string val)
+        {
+            if (float.TryParse(val, out float valf))
+            {
+                valf = Math.Clamp(valf, 0, 99.99f);
+                playbackSpeedSlider.SetValueWithoutNotify(valf * 4);
+                animEditor.playbackSpeed = valf;
+            }
         }
 
         #endregion

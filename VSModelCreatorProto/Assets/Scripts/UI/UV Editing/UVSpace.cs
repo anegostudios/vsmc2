@@ -97,6 +97,15 @@ namespace VSMC
                     float[] nUVs = new float[] { rmbStartUVs[0], rmbStartUVs[1], rmbStartUVs[2] + diff.x, rmbStartUVs[3] + diff.y };
                     bool[] selFaces = new bool[6];
                     selFaces[faceIndex] = true;
+                    if (ObjectSelector.main.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element.FacesResolved[faceIndex].autoResolutionForUV)
+                    {
+                        //Do not process if auto res is enabled.
+                        if (!Input.GetMouseButton(1))
+                        {
+                            rmbDown = false;
+                        }
+                        return;
+                    }
                     TaskSetAllUVs setUVTask = new TaskSetAllUVs(ObjectSelector.main.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element, selFaces, rmbStartUVs, nUVs);
                     setUVTask.DoTask();
 
@@ -130,6 +139,7 @@ namespace VSMC
             uvShape.anchorMax = new Vector2(Mathf.Max(perPixelUVs[0], perPixelUVs[2]), Mathf.Max(1-perPixelUVs[3], 1 - perPixelUVs[1]));
             uvShape.anchoredPosition = Vector2.zero;
             Vector2 sizeDelta = Vector2.zero;
+            //Add a tiny amount of space if the size is zero.
             if (uvShape.anchorMin.x == uvShape.anchorMax.x)
             {
                 sizeDelta.x = 4;

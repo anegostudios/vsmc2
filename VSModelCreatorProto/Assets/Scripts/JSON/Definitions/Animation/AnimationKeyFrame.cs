@@ -42,7 +42,7 @@ namespace VSMC
 
         internal AnimationKeyFrameElement GetKeyFrameElement(ShapeElement forElem)
         {
-            if (forElem == null) return null;
+            if (forElem == null || ElementsByShapeElement == null) return null;
             ElementsByShapeElement.TryGetValue(forElem, out AnimationKeyFrameElement kelem);
             return kelem;
         }

@@ -28,6 +28,7 @@ namespace VSMC {
             //Get element, update size, recreate mesh.
             ShapeElement elem = ShapeElementRegistry.main.GetShapeElementByUID(elementUID);
             elem.To[(int)axis] = elem.From[(int)axis] + newSize;
+            elem.ResolveUVForFaces();
             elem.RecreateObjectMeshAndTransforms();
         }
 
@@ -36,6 +37,7 @@ namespace VSMC {
             //Get element, update size, recreate mesh.
             ShapeElement elem = ShapeElementRegistry.main.GetShapeElementByUID(elementUID);
             elem.To[(int)axis] = elem.From[(int)axis] + oldSize;
+            elem.ResolveUVForFaces();
             elem.RecreateObjectMeshAndTransforms();
         }
 

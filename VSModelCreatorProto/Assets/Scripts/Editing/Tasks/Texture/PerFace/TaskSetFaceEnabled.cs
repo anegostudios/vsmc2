@@ -37,7 +37,7 @@ namespace VSMC
                 elem.FacesResolved[i].Enabled = newEnabled;
             }
             elem.RecreateObjectMesh();
-            UVLayoutManager.main.RefreshAllUVSpaces();
+            UVLayoutManager.main.RecalculateUVPositionsForSingleElement(elem);
         }
 
         public override void UndoTask()
@@ -50,7 +50,7 @@ namespace VSMC
                 elem.FacesResolved[i].Enabled = oldEnabled[i];
             }
             elem.RecreateObjectMesh();
-            UVLayoutManager.main.RefreshAllUVSpaces();
+            UVLayoutManager.main.RecalculateUVPositionsForSingleElement(elem);
         }
 
         public override bool MergeTasksIfPossible(IEditTask nextTask)
