@@ -24,10 +24,24 @@ namespace VSMC
 
         }
 
+        void OnEnable()
+        {
+            Invoke("OnRectTransformDimensionsChange", 0.001f);
+        }
+
         private void OnRectTransformDimensionsChange()
         {
             ReorganizeElements(true);
         }
+
+        /// <summary>
+        /// Invokes the reorganization for next frame to ensure elements are set to correct active states.
+        /// </summary>
+        public void ReorganizeNextFrame()
+        {
+            Invoke("OnRectTransformDimensionsChange", 0.02f);
+        }
+
 
         public void ReorganizeElements(bool fromUIEvent = false)
         {
@@ -50,7 +64,7 @@ namespace VSMC
             //float prefElemWidth = (totWidth + gridLayout.spacing.x) / activeChildren - gridLayout.spacing.x;
             //float prefElemHeight = (totHeight + gridLayout.spacing.y) / activeChildren - gridLayout.spacing.y;
 
-            
+
             int childPerRow = activeChildren;
             int[] widths = new int[activeChildren];
             int bestSize = 0;
@@ -67,7 +81,7 @@ namespace VSMC
                 }
                 i++;
             }
-            
+
 
             int childPerCol = activeChildren;
             int[] heights = new int[activeChildren];

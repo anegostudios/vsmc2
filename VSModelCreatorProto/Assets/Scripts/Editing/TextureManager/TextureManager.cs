@@ -131,14 +131,21 @@ namespace VSMC
                 // Means I can't just set pixels, I have to hack it. It doesn't take too long really.
 
                 Texture2D created = new Texture2D(maxTextureSize, maxTextureSize);
-                if (tex.loadedTexture != null) 
+                Color[] cols = created.GetPixels();
+                Color invalidColor = new Color(1, 0, 1, 1);
+                for (int i = 0; i < cols.Length; i++)
                 {
+                    cols[i] = invalidColor;
+                }
+                created.SetPixels(cols);
+
+                if (tex.loadedTexture != null) 
+                {   
                     for (int x = 0; x < tex.loadedTexture.width; x++)
                     {
                         for (int y = 0; y < tex.loadedTexture.height; y++)
                         {
-                            created.SetPixel(x, tex.loadedTexture.height - 1 - y, tex.loadedTexture.GetPixel(x, y));
-                            
+                            created.SetPixel(x, tex.loadedTexture.height - 1 - y, tex.loadedTexture.GetPixel(x, y));            
                             //This will probably need to change, but it sets the pixel to be completely empty if transparent.
                             /*
                             if (tex.loadedTexture.GetPixel(x, y).a < 0.5)

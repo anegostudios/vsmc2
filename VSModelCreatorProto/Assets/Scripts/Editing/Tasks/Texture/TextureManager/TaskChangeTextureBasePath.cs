@@ -19,12 +19,14 @@ namespace VSMC
         {
             TextureManager.main.ChangeTextureBasePath(newPath);
             TextureManager.main.overlay.RefreshIfOpen();
+            UVLayoutManager.main.RefreshAllUVSpaces(true);
         }
 
         public override void UndoTask()
         {
             TextureManager.main.ChangeTextureBasePath(oldPath);
             TextureManager.main.overlay.RefreshIfOpen();
+            UVLayoutManager.main.RefreshAllUVSpaces(true);
         }
 
 

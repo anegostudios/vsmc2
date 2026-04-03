@@ -15,6 +15,8 @@ namespace VSMC
         public int faceIndex;
         private RectTransform rect;
 
+        public RectTransform[] rotationMarkers;
+
         public void Initialize(EntityTextureUVSpace space, ShapeElement elem, int faceIndex, bool attemptName)
         {
             name = elem.Name + "/" + faceIndex;
@@ -23,7 +25,7 @@ namespace VSMC
             this.elem = elem;
             this.faceIndex = faceIndex;
             entryImage.color = space.GetColorForFace(faceIndex);
-            if (attemptName)
+            if (attemptName && ProgramPreferences.UVShowLabels.GetValue())
             {
                 elemName.text = elem.Name;
                 elemName.gameObject.SetActive(true);
@@ -48,7 +50,8 @@ namespace VSMC
         public void UpdateElementSpace(EntityTextureUVSpace space, bool attemptName)
         {
             this.space = space;
-            if (attemptName)
+            if (space != null) entryImage.color = space.GetColorForFace(faceIndex);
+            if (attemptName && ProgramPreferences.UVShowLabels.GetValue())
             {
                 elemName.text = elem.Name;
                 elemName.gameObject.SetActive(true);
@@ -88,12 +91,21 @@ namespace VSMC
                 sizeDelta.y = 4;
             }
             rect.sizeDelta = sizeDelta;
+
+            foreach (RectTransform g in rotationMarkers)
+            {
+                g.gameObject.SetActive(false);
+            }
+            if (ProgramPreferences.UVShowOrientationMarkers.GetValue())
+            {
+                rotationMarkers[elem.FacesResolved[faceIndex].RotationIndex].gameObject.SetActive(true);
+            }
         }
 
         public void OnSelect()
         {
             outline.SetActive(true);
-            //Setting the sibling index to 0 allows the most recently selected objects to be selected first in the UV view.
+            //Setting the sibling index to 0 allows the most recently selected objects to be selected first in the UV view.-+
             transform.SetSiblingIndex(0);
         }
 
@@ -107,14 +119,25 @@ namespace VSMC
             outline.GetComponent<Graphic>().CrossFadeColor(
                 isSelected ? UVLayoutManager.main.selectedFaceOutlineColor : UVLayoutManager.main.deselectedFaceOutlineColor,
                 0.1f, false, false);
-            GetComponent<Canvas>().overrideSorting = isSelected ? true : false;
-            if (isSelected) GetComponent<Canvas>().sortingOrder = 5;
+            //GetComponent<Canvas>().overrideSorting = isSelected ? true : false;
+            //if (isSelected) GetComponent<Canvas>().sortingOrder = 5;
         }
 
         public void SelectThisElementAndFace()
         {
             ObjectSelector.main.SelectObject(elem.gameObject.gameObject, false, false);
             TextureEditor.main.uiElements.SetOneFaceEnabled(faceIndex);
+        }
+
+        void Update()
+        {
+            outline.GetComponent<Image>().pixelsPerUnitMultiplier = outline.transform.lossyScale.x;
+            Vector3 scaleAmt = Vector3.one / transform.lossyScale.x;
+            foreach (RectTransform g in rotationMarkers)
+            {
+                g.sizeDelta = new Vector2(16, 16) * scaleAmt;
+            }
+            elemName.transform.localScale = scaleAmt;
         }
     }
 }

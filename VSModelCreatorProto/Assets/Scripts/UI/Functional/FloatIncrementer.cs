@@ -23,7 +23,7 @@ public class FloatIncrementer : MonoBehaviour
     public void Inc()
     {
         if (inputField.text.Equals("~")) return;
-        float val = Input.GetKey(KeyCode.LeftControl) ? ctrlInc : standardInc;
+        float val = Input.GetKey(KeyCode.LeftShift) ? ctrlInc : standardInc;
         inputField.text = (float.Parse(inputField.text) + val).ToString();
         inputField.onEndEdit.Invoke(inputField.text);
     }
@@ -31,7 +31,7 @@ public class FloatIncrementer : MonoBehaviour
     public void Dec()
     {
         if (inputField.text.Equals("~")) return;
-        float val = Input.GetKey(KeyCode.LeftControl) ? ctrlInc : standardInc;
+        float val = Input.GetKey(KeyCode.LeftShift) ? ctrlInc : standardInc;
         inputField.text = (float.Parse(inputField.text) - val).ToString();
         inputField.onEndEdit.Invoke(inputField.text);
     }

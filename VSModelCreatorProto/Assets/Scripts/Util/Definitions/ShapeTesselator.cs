@@ -180,6 +180,7 @@ namespace VSMC
         {
             //Tesselate element now.
             MeshData elementMeshData = element.meshData;
+            if (elementMeshData == null) return;
             elementMeshData.Clear();
             elementMeshData.meshName = element.Name;
             TesselateShapeElement(elementMeshData, element);

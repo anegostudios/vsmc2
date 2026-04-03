@@ -16,6 +16,7 @@ namespace VSMC
         public int storedWidth;
         public int storedHeight;
         public Vector2 storedTextureSizeMultiplier;
+        private Sprite storedSprite;
 
 
         public enum LoadedTextureError
@@ -40,10 +41,21 @@ namespace VSMC
                 loadedTexture = null;
             }
 
+            if (storedSprite != null)
+            {
+                GameObject.Destroy(storedSprite);
+                storedSprite = null;
+            }
+
             string fullPath = Path.Combine(TextureManager.main.textureBasePath, path + ".png");
 
-            if (!File.Exists(fullPath)) return LoadedTextureError.InvalidFilePath;
-                
+            if (!File.Exists(fullPath)) //Failed to load, just load a plain white texture.
+            {
+                loadedTexture = new Texture2D(32, 32);
+                ResolveTextureSize(ShapeHolder.CurrentLoadedShape);
+                return LoadedTextureError.InvalidFilePath;
+            }
+
             //Load the texture
             try
             {
@@ -56,6 +68,8 @@ namespace VSMC
             {
                 Debug.Log("Failed to load image " + code);
                 Debug.LogException(e);
+                loadedTexture = new Texture2D(32, 32);
+                ResolveTextureSize(ShapeHolder.CurrentLoadedShape);
                 return LoadedTextureError.CouldntLoad;
             }
             ResolveTextureSize(ShapeHolder.CurrentLoadedShape);
@@ -81,6 +95,14 @@ namespace VSMC
 
             if (loadedTexture == null) return;
             storedTextureSizeMultiplier = new Vector2((float)storedWidth / loadedTexture.width, (float)storedHeight / loadedTexture.height);
+        }
+
+        public Sprite GetSprite()
+        {
+            if (storedSprite != null) return storedSprite;
+            if (loadedTexture == null) return null;
+            storedSprite = Sprite.Create(loadedTexture, new Rect(0, 0, loadedTexture.width, loadedTexture.height), new Vector2(0.5f, 0.5f));
+            return storedSprite;
         }
 
     }

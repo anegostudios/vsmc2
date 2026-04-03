@@ -23,6 +23,7 @@ namespace VSMC
         {
             TextureManager.main.ChangeTextureCode(TextureManager.main.loadedTextures[textureIndex], newCode);
             TextureManager.main.overlay.RefreshIfOpen();
+            UVLayoutManager.main.RefreshAllUVSpaces(true);
 
         }
 
@@ -30,6 +31,7 @@ namespace VSMC
         {
             TextureManager.main.ChangeTextureCode(TextureManager.main.loadedTextures[textureIndex], oldCode);
             TextureManager.main.overlay.RefreshIfOpen();
+            UVLayoutManager.main.RefreshAllUVSpaces(true);
 
         }
 

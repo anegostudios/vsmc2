@@ -44,6 +44,7 @@ namespace VSMC
         public TMP_Dropdown autoUnwrapMode;
         public TMP_InputField unwrapUvX;
         public TMP_InputField unwrapUvY;
+        public Toggle alternateUnwrapDirection;
 
 
         [Header("Usage Data")]
@@ -80,6 +81,7 @@ namespace VSMC
             autoUnwrapMode.onValueChanged.AddListener(x => { OnAutoUnwrapModeChanged(x); });
             unwrapUvX.onEndEdit.AddListener(x => { OnAnyAutoUnwrapUVChange(x, 0); });
             unwrapUvY.onEndEdit.AddListener(x => { OnAnyAutoUnwrapUVChange(x, 1); });
+            alternateUnwrapDirection.onValueChanged.AddListener(x => { OnAlternateUnwrapDirectionToggled(x); });
         }
 
         public void OnElementSelected(ShapeElementGameObject element)
@@ -177,10 +179,10 @@ namespace VSMC
             List<ShapeElementFace> selFaces = GetSelectedFaces();
 
             //Texture selection... First get the textures that exist.
-            List<string> loadedTextures = new List<string>();
+            List<TMP_Dropdown.OptionData> loadedTextures = new List<TMP_Dropdown.OptionData>();
             foreach (LoadedTexture tex in TextureManager.main.loadedTextures)
             {
-                loadedTextures.Add(tex.code);
+                loadedTextures.Add(new TMP_Dropdown.OptionData(tex.code, tex.GetSprite(), Color.white));
             }
             textureSelectionDropdown.ClearOptions();
             textureSelectionDropdown.AddOptions(loadedTextures);
@@ -288,9 +290,10 @@ namespace VSMC
         {
             if (ShapeHolder.CurrentLoadedShape.editor.entityTextureMode)
             {
-                //Enable all standard game objects...
+                //Enable all game objects...
                 autoUnwrapUVGameObject.SetActive(true);
                 autoUnwrapMode.SetValueWithoutNotify(cSelected.entityTextureUnwrapMode);
+                alternateUnwrapDirection.SetIsOnWithoutNotify(cSelected.entityTextureUnwrapRotationIndex > 0);
                 autoUnwrapUV.SetIsOnWithoutNotify(cSelected.autoUnwrap);
                 if (cSelected.autoUnwrap)
                 {
@@ -368,6 +371,13 @@ namespace VSMC
             TaskSetEntityTextureUnwrapMode setUnwrapModeTask = new TaskSetEntityTextureUnwrapMode(cSelected, value);
             setUnwrapModeTask.DoTask();
             UndoManager.main.CommitTask(setUnwrapModeTask);
+        }
+
+        public void OnAlternateUnwrapDirectionToggled(bool enabled)
+        {
+            TaskSetEntityTextureAlternateUnwrapDirection setAltDirTask = new TaskSetEntityTextureAlternateUnwrapDirection(cSelected, enabled);
+            setAltDirTask.DoTask();
+            UndoManager.main.CommitTask(setAltDirTask);
         }
 
         public void OnAnyAutoUnwrapUVChange(string value, int index)

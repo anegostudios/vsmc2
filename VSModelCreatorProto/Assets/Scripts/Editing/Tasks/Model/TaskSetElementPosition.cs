@@ -12,13 +12,17 @@ namespace VSMC
         public EnumAxis axis;
         public double oldPosition;
         public double newPosition;
+        public double oldRotOrigin;
+        public double newRotOrigin;
 
-        public TaskSetElementPosition(ShapeElement elem, EnumAxis axis, double newPos)
+        public TaskSetElementPosition(ShapeElement elem, EnumAxis axis, double newPos, bool moveRotOrigin)
         {
             elementUID = elem.elementUID;
             this.axis = axis;
             oldPosition = elem.From[(int)axis];
             newPosition = newPos;
+            oldRotOrigin = elem.RotationOrigin[(int)axis];
+            newRotOrigin = moveRotOrigin ? oldRotOrigin + (newPosition - oldPosition): oldRotOrigin;
         }
 
         public override void DoTask()
@@ -28,6 +32,7 @@ namespace VSMC
             double size = elem.To[(int)axis] - elem.From[(int)axis];
             elem.From[(int)axis] = newPosition;
             elem.To[(int)axis] = newPosition + size;
+            elem.RotationOrigin[(int)axis] = newRotOrigin;
             elem.RecreateTransforms();
 
             /* Old code - This has been moved to IncElemenetPosition.
@@ -78,6 +83,7 @@ namespace VSMC
             double size = elem.To[(int)axis] - elem.From[(int)axis];            
             elem.From[(int)axis] = oldPosition;
             elem.To[(int)axis] = oldPosition + size;
+            elem.RotationOrigin[(int)axis] = oldRotOrigin;
             elem.RecreateTransforms();
 
             /* Old code - This has been moved to IncElemenetPosition.

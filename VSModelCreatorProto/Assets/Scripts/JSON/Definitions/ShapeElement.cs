@@ -3,6 +3,7 @@ using System;
 using UnityEngine;
 using Newtonsoft.Json;
 using System.ComponentModel;
+using System.Linq;
 
 namespace VSMC
 {
@@ -211,13 +212,18 @@ namespace VSMC
             }
             ResolveReferencesAndUIDs();
             Faces = new Dictionary<string, ShapeElementFace>();
+            string texCode = "texture";
+            if (ShapeHolder.CurrentLoadedShape?.Textures?.Count > 0)
+            {
+                texCode = ShapeHolder.CurrentLoadedShape.Textures.First().Key;
+            }
             for (int i = 0; i < 6; i++)
             {
                 Faces.Add(FaceNames[i], new ShapeElementFace()
                 {
                     Enabled = true,
                     Uv = new float[] { 0, 0, 1, 1 },
-                    Texture = "#texture"
+                    Texture = "#"+texCode
                 });
             }
         }
@@ -257,6 +263,7 @@ namespace VSMC
         public void RecreateTransforms()
         {
             //Retesselate the shapes, and then reapply the transforms for the object.
+            if (gameObject == null) return;
             ShapeTesselator.ResolveMatricesForShapeElementAndChildren(this);
             gameObject.ReapplyTransformsFromMeshData(true);
         }
@@ -267,6 +274,7 @@ namespace VSMC
         public void RecreateObjectMesh()
         {
             //Retesselate the shapes, and then reapply the meshes.
+            if (gameObject == null) return;
             ShapeTesselator.RecreateMeshesForShapeElement(this);
             gameObject.RegenerateMeshFromMeshData();
         }
@@ -276,6 +284,7 @@ namespace VSMC
         /// </summary>
         public void RecreateObjectMeshAndTransforms()
         {
+            if (gameObject == null) return;
             ShapeTesselator.RecreateMeshesForShapeElement(this);
             ShapeTesselator.ResolveMatricesForShapeElementAndChildren(this);
             gameObject.RegenerateMeshFromMeshData();

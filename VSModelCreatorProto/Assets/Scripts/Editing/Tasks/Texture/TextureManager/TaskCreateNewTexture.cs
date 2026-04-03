@@ -33,6 +33,7 @@ namespace VSMC
             TextureManager.main.RegenerateTextureArray();
             TextureManager.main.overlay.RefreshIfOpen();
             TextureManager.main.overlay.OnTextureSelected(TextureManager.main.overlay.textureImages[TextureManager.main.overlay.textureImages.Length - 1]); //lol this line
+            UVLayoutManager.main.RefreshAllUVSpaces(true);
         }
 
         public override void UndoTask()
@@ -41,6 +42,7 @@ namespace VSMC
             TextureManager.main.loadedTextures.RemoveAll(x => x.code == newTextureCode);
             TextureManager.main.RegenerateTextureArray();
             TextureManager.main.overlay.RefreshIfOpen();
+            UVLayoutManager.main.RefreshAllUVSpaces(true);
         }
 
 

@@ -22,6 +22,7 @@ namespace VSMC
             TextureManager.main.loadedTextures.Remove(texToDelete);
             TextureManager.main.OnTextureArrayModified();
             TextureManager.main.overlay.RefreshIfOpen();
+            UVLayoutManager.main.RefreshAllUVSpaces(true);
         }
 
         public override void UndoTask()
@@ -30,6 +31,7 @@ namespace VSMC
             TextureManager.main.loadedTextures.Insert(indexInTextureArray, texToDelete);
             TextureManager.main.OnTextureArrayModified();
             TextureManager.main.overlay.RefreshIfOpen();
+            UVLayoutManager.main.RefreshAllUVSpaces(true);
         }
 
 

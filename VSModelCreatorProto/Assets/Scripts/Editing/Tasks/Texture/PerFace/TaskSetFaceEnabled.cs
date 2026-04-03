@@ -36,7 +36,7 @@ namespace VSMC
                 if (!selFaces[i]) continue;
                 elem.FacesResolved[i].Enabled = newEnabled;
             }
-            elem.RecreateObjectMesh();
+            elem.ResolveUVForFaces();
             UVLayoutManager.main.RecalculateUVPositionsForSingleElement(elem);
         }
 
@@ -49,7 +49,7 @@ namespace VSMC
                 if (!selFaces[i]) continue;
                 elem.FacesResolved[i].Enabled = oldEnabled[i];
             }
-            elem.RecreateObjectMesh();
+            elem.ResolveUVForFaces();
             UVLayoutManager.main.RecalculateUVPositionsForSingleElement(elem);
         }
 

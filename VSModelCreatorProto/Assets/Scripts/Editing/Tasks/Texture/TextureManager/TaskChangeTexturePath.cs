@@ -23,6 +23,7 @@ namespace VSMC
         {
             TextureManager.main.ChangeTexturePath(TextureManager.main.loadedTextures[textureIndex], newPath);
             TextureManager.main.overlay.RefreshIfOpen();
+            UVLayoutManager.main.RefreshAllUVSpaces(true);
 
         }
 
@@ -30,6 +31,7 @@ namespace VSMC
         {
             TextureManager.main.ChangeTexturePath(TextureManager.main.loadedTextures[textureIndex], oldPath);
             TextureManager.main.overlay.RefreshIfOpen();
+            UVLayoutManager.main.RefreshAllUVSpaces(true);
         }
 
 

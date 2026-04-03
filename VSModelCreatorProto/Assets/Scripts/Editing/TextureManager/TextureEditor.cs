@@ -32,6 +32,12 @@ namespace VSMC {
             EditModeManager.RegisterForOnModeSelect(OnModeSelect);
             uiElements.HideAllUIElements();
             UndoManager.RegisterForAnyActionDoneOrUndone(OnAnyAction);
+            ShapeLoader.RegisterForOnShapeLoadEvent(OnShapeLoaded);
+        }
+
+        void OnShapeLoaded(Shape shape)
+        {
+            entityTextureModeButtonText.text = GetEntityTextureMode() ? "Disable Entity Texture Mode" : "Enable Entity Texture Mode";
         }
 
         public void OnModeSelect(VSEditMode editMode)

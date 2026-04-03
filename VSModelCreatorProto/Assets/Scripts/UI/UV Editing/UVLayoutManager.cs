@@ -23,6 +23,7 @@ namespace VSMC
 
         //There should be one UV space per valid texture.
         public GameObject entityTextureUVSpacePrefab;
+        public UVImageLayout entityImageLayout;
         public Transform entityTextureUVSpaceParent;
         public Dictionary<string, EntityTextureUVSpace> textureCodeToUVSpace;
 
@@ -31,6 +32,14 @@ namespace VSMC
         public Transform invalidEntityUvEntryParent;
         public Color[] faceColors;
         public Dictionary<int, EntityTextureUVEntry[]> shapeElementUIDToUVEntries;
+
+        //Entity texturing UV selection.
+        public int cEntityUVSelectionIndex = 0;
+        public TMP_Text cEntityUVSelectionText;
+
+        public TMP_Text showUVGridText;
+        public TMP_Text showUVLabelsText;
+        public TMP_Text showUVOrientationMarkersText;
 
         bool hasCreatedEntityTextureUVSpaces = false; 
         bool[] mostRecentSelFaces;
@@ -44,6 +53,9 @@ namespace VSMC
         {
             ObjectSelector.main.RegisterForObjectSelectedEvent(OnElementSelect);
             ObjectSelector.main.RegisterForObjectDeselectedEvent(OnElementDeselect);
+            showUVGridText.text = ProgramPreferences.UVShowGrid.GetValue() ? "Hide UV Grid" : "Show UV Grid";
+            showUVLabelsText.text = ProgramPreferences.UVShowLabels.GetValue() ? "Hide UV Labels" : "Show UV Labels";
+            showUVOrientationMarkersText.text = ProgramPreferences.UVShowOrientationMarkers.GetValue() ? "Hide UV Orientations" : "Show UV Orientations";
         }
 
         public void RefreshAllUVSpaces(bool forceReset = false)
@@ -60,6 +72,7 @@ namespace VSMC
                     {
                         uvSpaces[i].gameObject.SetActive(false);
                     }
+                    imageLayout.ReorganizeElements();
                     return;
                 }
                 ShapeElementGameObject cSel = ObjectSelector.main.GetCurrentlySelected().GetComponent<ShapeElementGameObject>();
@@ -68,6 +81,7 @@ namespace VSMC
                     uvSpaces[i].SetTexture(cSel.element.FacesResolved[i].GetLoadedTexture());
                     uvSpaces[i].SetUVPosition(cSel.element.FacesResolved[i].Uv);
                 }
+                imageLayout.ReorganizeElements();
             }
             else if (forceReset || !hasCreatedEntityTextureUVSpaces)
             {
@@ -77,6 +91,7 @@ namespace VSMC
                 }
                 CreateEntityTextureUVSpaces();
                 entityTextureUVSpaceParent.gameObject.SetActive(true);
+                entityImageLayout.ReorganizeNextFrame();
             }
         }
 
@@ -86,7 +101,7 @@ namespace VSMC
             if (TextureEditor.GetEntityTextureMode())
             {
                 OnFaceSelectionChangedForEntityTexturing(selFaces);
-                imageLayout.ReorganizeElements();
+                entityImageLayout.ReorganizeElements();
                 return;
             }
             if (!ObjectSelector.main.IsAnySelected())
@@ -130,6 +145,7 @@ namespace VSMC
             }
             hasCreatedEntityTextureUVSpaces = true;
             CreateEntityTextureUVEntriesForAllElements();
+            OnEntityTextureViewSelectionChange(0);
         }
 
         public void CreateEntityTextureUVEntriesForAllElements()
@@ -248,7 +264,7 @@ namespace VSMC
                     if (texCode == null) texCode = "";
                     if (textureCodeToUVSpace.TryGetValue(texCode.ToLower(), out var space))
                     {
-                        faceUVs[i].transform.SetParent(space.uvEntriesParent);
+                        faceUVs[i].transform.SetParent(space.uvEntriesParent, true);
                         faceUVs[i].UpdateElementSpace(space, !doneName);
                         doneName = doneName || faceUVs[i].elemName.gameObject.activeSelf;
                     }
@@ -266,5 +282,74 @@ namespace VSMC
                 RefreshAllUVSpaces();
             }
         }
+
+        public void OnEntityTextureViewSelectionChange(int incValue)
+        {
+            cEntityUVSelectionIndex = (cEntityUVSelectionIndex + incValue);
+            if (cEntityUVSelectionIndex > textureCodeToUVSpace.Count) cEntityUVSelectionIndex = 0;
+            if (cEntityUVSelectionIndex < 0) cEntityUVSelectionIndex = textureCodeToUVSpace.Count;
+            ResolveShownUVSpaces();
+        }
+
+        public void ResolveShownUVSpaces()
+        {
+            if (cEntityUVSelectionIndex == 0)
+            {
+                cEntityUVSelectionText.text = "All (1/" + (textureCodeToUVSpace.Count + 1) + ")";
+                foreach (EntityTextureUVSpace s in textureCodeToUVSpace.Values)
+                {
+                    s.gameObject.SetActive(true);
+                }
+            }
+            else
+            {
+                int i = 1;
+                foreach (EntityTextureUVSpace s in textureCodeToUVSpace.Values)
+                {
+                    if (i == cEntityUVSelectionIndex)
+                    {
+                        s.gameObject.SetActive(true);
+                        cEntityUVSelectionText.text = s.name + " (" + (i + 1) + "/" + (textureCodeToUVSpace.Count + 1) + ")";
+                    }
+                    else
+                    {
+                        s.gameObject.SetActive(false);
+                    }
+                    i++;
+                }
+            }
+            entityImageLayout.ReorganizeElements();
+        }
+
+        public void OnShowGridToggled()
+        {
+            ProgramPreferences.UVShowGrid.SetValue(!ProgramPreferences.UVShowGrid.GetValue());
+            if (EditModeManager.main.cEditMode == VSEditMode.Texture)
+            {
+                RefreshAllUVSpaces(true);
+            }
+            showUVGridText.text = ProgramPreferences.UVShowGrid.GetValue() ? "Hide UV Grid" : "Show UV Grid";
+        }
+
+        public void OnShowElementNamesToggled()
+        {
+            ProgramPreferences.UVShowLabels.SetValue(!ProgramPreferences.UVShowLabels.GetValue());
+            if (EditModeManager.main.cEditMode == VSEditMode.Texture)
+            {
+                RefreshAllUVSpaces(true);
+            }
+            showUVLabelsText.text = ProgramPreferences.UVShowLabels.GetValue() ? "Hide UV Labels" : "Show UV Labels";
+        }
+        
+        public void OnShowOrientationsToggled()
+        {
+            ProgramPreferences.UVShowOrientationMarkers.SetValue(!ProgramPreferences.UVShowOrientationMarkers.GetValue());
+            if (EditModeManager.main.cEditMode == VSEditMode.Texture)
+            {
+                RefreshAllUVSpaces(true);
+            }
+            showUVOrientationMarkersText.text = ProgramPreferences.UVShowOrientationMarkers.GetValue() ? "Hide UV Orientations" : "Show UV Orientations";
+        }
+
     }
 }

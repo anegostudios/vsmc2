@@ -51,8 +51,10 @@ namespace VSMC
 
         public void SetTexture(LoadedTexture tex)
         {
+            gameObject.name = tex.code;
             mainTexture.texture = tex.loadedTexture;
             grid.uvRect = new Rect(0, 0, tex.storedWidth, tex.storedHeight);
+            grid.gameObject.SetActive(ProgramPreferences.UVShowGrid.GetValue());
             textureNameText.text = tex.code.ToUpper();
             //RefreshAllUISpacePositions();
         }
@@ -74,7 +76,7 @@ namespace VSMC
                     //clamp to 1.
                     if (!Input.GetKey(KeyCode.LeftControl))
                     {
-                        diff = new Vector2((int)diff.x, (int)diff.y);
+                        diff = new Vector2(((int)(diff.x * 2)) / 2f, ((int)(diff.y * 2)) / 2f);
                     }
 
                     //UVs be upside down.
@@ -103,11 +105,8 @@ namespace VSMC
                     //Convert the actual difference into UV pixels, respective of the current zoom.
                     diff /= (uiPixelsPerUVPixel);
 
-                    //clamp to 1.
-                    if (!Input.GetKey(KeyCode.LeftControl))
-                    {
-                        diff = new Vector2((int)diff.x, (int)diff.y);
-                    }
+                    //Perform per-pixel clamping...
+                    diff = new Vector2(((int)(diff.x * 2)) / 2f, ((int)(diff.y * 2)) / 2f);
 
                     //UVs be upside down.
                     diff.y *= -1;
@@ -221,7 +220,6 @@ namespace VSMC
                         if (RectTransformUtility.RectangleContainsScreenPoint(t, Input.mousePosition))
                         {
                             uvEntries.Add(t.GetComponent<EntityTextureUVEntry>());
-                            Debug.Log("Mouse is over element " + t.GetComponent<EntityTextureUVEntry>().name);
                         }
                     }
                     uvEntriesUnderMouseCursorOnClick = new EntityTextureUVEntry[uvEntries.Count];

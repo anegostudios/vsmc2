@@ -177,7 +177,7 @@ namespace VSMC
                 // Fix any float imprecision first
                 x = Mathf.Round(x * 1000.0f) / 1000.0f;
                 // Now round to the next closest pixel
-                x = Mathf.RoundToInt(x * scale.x) / scale.x;
+                x = Mathf.Ceil(x * scale.x) / scale.x;
             }
 
             aboveFace.Uv[0] = x;
@@ -190,7 +190,7 @@ namespace VSMC
             // Fix any float imprecision first
             y = Mathf.Round(y * 1000.0f) / 1000.0f;
             // Now round to the next closest pixel
-            y = Mathf.RoundToInt(y * scale.y) / scale.y;
+            y = Mathf.Ceil(y * scale.y) / scale.y;
 
             x = (float)elem.entityTextureUV[0];
 
@@ -205,7 +205,7 @@ namespace VSMC
                 // Fix any float imprecision first
                 x = Mathf.Round(x * 1000.0f) / 1000.0f;
                 // Now round to the next closest pixel
-                x = Mathf.RoundToInt(x * scale.x) / scale.x;
+                x = Mathf.Ceil(x * scale.x) / scale.x;
             }
 
             centerFace.Uv[0] = x;
@@ -218,7 +218,7 @@ namespace VSMC
                 // Fix any float imprecision first
                 x = Mathf.Round(x * 1000.0f) / 1000.0f;
                 // Now round to the next closest pixel
-                x = Mathf.RoundToInt(x * scale.x) / scale.x;
+                x = Mathf.Ceil(x * scale.x) / scale.x;
             }
 
             rightFace.Uv[0] = x;
@@ -231,7 +231,7 @@ namespace VSMC
                 // Fix any float imprecision first
                 x = Mathf.Round(x * 1000.0f) / 1000.0f;
                 // Now round to the next closest pixel
-                x = Mathf.RoundToInt(x * scale.x) / scale.x;
+                x = Mathf.Ceil(x * scale.x) / scale.x;
             }
 
             veryRightFace.Uv[0] = x;
@@ -247,14 +247,14 @@ namespace VSMC
                 // Fix any float imprecision first
                 x = Mathf.Round(x * 1000.0f) / 1000.0f;
                 // Now round to the next closest pixel			
-                x = Mathf.RoundToInt(x * scale.x) / scale.x;
+                x = Mathf.Ceil(x * scale.x) / scale.x;
             }
 
             y += Mathf.Max(leftFace.uvHeight(true), centerFace.uvHeight(true), rightFace.uvHeight(true), veryRightFace.uvHeight(true));
             // Fix any float imprecision first
             y = Mathf.Round(y * 1000.0f) / 1000.0f;
             // Now round to the next closest pixel
-            y = Mathf.RoundToInt(y * scale.y) / scale.y;
+            y = Mathf.Ceil(y * scale.y) / scale.y;
 
             belowFace.Uv[0] = x;
             belowFace.Uv[1] = y;
@@ -270,7 +270,7 @@ namespace VSMC
             float y = (float)elem.entityTextureUV[1];
             float maxTexHeight = 0;
 
-            if (faces[4].Enabled && faces[4].autoResolutionForUV)
+            if (faces[4].Enabled)// && faces[4].autoResolutionForUV)
             {
                 faces[4].Uv[0] = x;
                 faces[4].Uv[1] = y;
@@ -282,7 +282,7 @@ namespace VSMC
 
             x = Mathf.Ceil(x * scale.x) / scale.x;
 
-            if (faces[5].Enabled && faces[5].autoResolutionForUV)
+            if (faces[5].Enabled)// && faces[5].autoResolutionForUV)
             {
                 faces[5].Uv[0] = x;
                 faces[5].Uv[1] = y;
@@ -300,7 +300,7 @@ namespace VSMC
             for (int side = 0; side < 4; side++)
             {
                 ShapeElementFace face = faces[side];
-                if (!face.Enabled || !faces[side].autoResolutionForUV) continue;
+                if (!face.Enabled) continue;// || !faces[side].autoResolutionForUV) continue;
 
                 face.Uv[0] = x;
                 face.Uv[1] = y;

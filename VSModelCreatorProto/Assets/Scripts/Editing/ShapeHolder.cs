@@ -25,13 +25,16 @@ namespace VSMC
         /// Load a shape and creates its model in the noJoint parent.
         /// </summary>
         /// <param name="loadedShape"></param>
-        public void OnShapeLoaded(Shape loadedShape)
+        public void OnShapeLoaded(Shape loadedShape, bool alreadyResolved = false)
         {
             if (CurrentLoadedShape != null)
             {
                 Debug.LogError("Trying to load a shape when one is already active. Remember to call UnloadCurrentShape first!");
             }
-            loadedShape.ResolveReferencesAndUIDs();
+            if (!alreadyResolved)
+            {
+                loadedShape.ResolveReferencesAndUIDs();
+            }
             CurrentLoadedShape = loadedShape;
             CreateAllShapeElementGameObjects(CurrentLoadedShape);
         }
@@ -71,6 +74,7 @@ namespace VSMC
 
         public void UnloadCurrentShape()
         {
+            ObjectSelector.main.DeselectAll();
             foreach (Transform child in noJointParent.transform)
             {
                 Destroy(child.gameObject);

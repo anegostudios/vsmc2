@@ -65,19 +65,20 @@ public class SaveManager : MonoBehaviour
     void Awake()
     {
         main = this;
-        LoadRecents();
-        startSectionContent.SetActive(true);
-        modellingSectionContent.SetActive(true);
+        //LoadRecents();
+        //startSectionContent.SetActive(true);
+        //modellingSectionContent.SetActive(true);
     }
 
     void Start()
     {
-        startSectionContent.SetActive(true);
-        modellingSectionContent.SetActive(false);
+        //startSectionContent.SetActive(true);
+        //modellingSectionContent.SetActive(false);
     }
 
     public void OnModelSave(string path)
     {
+        return;
         RecentFileEntry rec = new RecentFileEntry();
         rec.completeFilePath = path;
         rec.uniqueFileName = Path.GetFileNameWithoutExtension(path);
@@ -122,7 +123,7 @@ public class SaveManager : MonoBehaviour
 
         //Order the recents based on last write time for the file, then by favourite. (effect is other way around)
         recentFiles.recents = recentFiles.recents.OrderBy(x => File.GetLastWriteTime(x.completeFilePath))
-        .OrderBy(x => x.markedAsFavourite).Reverse().ToArray();
+        .ThenBy(x => x.markedAsFavourite).Reverse().ToArray();
 
         for (int i = 0; i < recentFiles.recents.Length; i++)
         {

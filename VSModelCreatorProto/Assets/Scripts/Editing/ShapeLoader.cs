@@ -1,5 +1,8 @@
+using System;
+using System.IO;
 using System.Runtime.Serialization;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace VSMC {
     /// <summary>
@@ -13,10 +16,29 @@ namespace VSMC {
         [Header("Unity References")]
         public ShapeHolder shapeHolder;
         public ElementHierarchyManager hierarchy;
+        public UnityEvent<Shape> onShapeLoadedEvent;
+        int lastAutoSaveLoc = 0;
 
         private void Awake()
         {
             main = this;
+            onShapeLoadedEvent = new UnityEvent<Shape>();
+            //InvokeRepeating("AutosaveShapeIfLoaded", 5, 30);
+        }
+
+        public void AutosaveShapeIfLoaded()
+        {
+            if (ShapeHolder.CurrentLoadedShape == null) return;
+            DateTime t1 = DateTime.Now;
+            if (!Directory.Exists("autosaves")) Directory.CreateDirectory("autosaves");
+            //ShapeAccessor.SerializeShapeToFile(ShapeHolder.CurrentLoadedShape, "autosaves/" + lastAutoSaveLoc + ".json");
+            lastAutoSaveLoc++;
+            Debug.Log("Autosave took " + (DateTime.Now - t1).TotalMilliseconds + "ms.");
+        }
+
+        public static void RegisterForOnShapeLoadEvent(UnityAction<Shape> shape)
+        {
+            main.onShapeLoadedEvent.AddListener(shape);
         }
 
         public void CreateNewShape()
@@ -27,11 +49,15 @@ namespace VSMC {
 
             ShapeElement initialElem = new ShapeElement();
             newShape.AddRootShapeElement(initialElem);
+
             newShape.Textures = new System.Collections.Generic.Dictionary<string, string>();
+            newShape.Textures.Add("texture", "");
+
             newShape.ResolveFacesAndTextures(new StreamingContext());
-            shapeHolder.OnShapeLoaded(newShape);
+            shapeHolder.OnShapeLoaded(newShape, true);
             hierarchy.StartCreatingElementPrefabs(newShape);
             EditModeManager.main.SelectMode(VSEditMode.Model);
+            onShapeLoadedEvent.Invoke(newShape);
         }
 
         public void LoadShape(string filePath)
@@ -44,6 +70,7 @@ namespace VSMC {
             shapeHolder.OnShapeLoaded(loadedShape);
             hierarchy.StartCreatingElementPrefabs(loadedShape);
             EditModeManager.main.SelectMode(VSEditMode.Model);
+            onShapeLoadedEvent.Invoke(loadedShape);
         }
 
         public void SaveShape()

@@ -42,6 +42,7 @@ namespace VSMC
                         uvs[i] = new Vector4(f.Uv[0], f.Uv[1], f.Uv[2], f.Uv[3]);
                         rotIndices[i] = f.RotationIndex;
                     }
+                    Debug.Log("Name: " + elem.Name +" with ID "+elem.elementUID);
                     oldElementUIDToFaceUVsRotationsAndAutoUnwrap.Add(elem.elementUID, (uvs, rotIndices, elem.autoUnwrap));
                 }
             }

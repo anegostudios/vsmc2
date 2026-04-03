@@ -150,8 +150,13 @@ namespace VSMC
             if (cSelectedTextureIndex == -1) return;
             string[] selFile = SFB.StandaloneFileBrowser.OpenFilePanel("Select texture...", TextureManager.main.textureBasePath, "png", false);
             if (selFile == null || selFile.Length == 0 || selFile[0].Trim().Length == 0) return;
-            
-            texturePath.text = Path.GetRelativePath(TextureManager.main.textureBasePath, selFile[0]).Replace(".png","");
+
+            string p = selFile[0];
+            if (TextureManager.main.textureBasePath.Length > 0)
+            {
+                p = Path.GetRelativePath(TextureManager.main.textureBasePath, p);
+            }
+            texturePath.text = p.Replace(".png", "");
             ApplyTexturePath();
         }
 
@@ -169,7 +174,6 @@ namespace VSMC
             cSelectedTextureIndex = -1;
             delTexTask.DoTask();
             UndoManager.main.CommitTask(delTexTask);
-            
         }
 
         public void AutoSetTextureSize()
@@ -187,6 +191,12 @@ namespace VSMC
             TaskSetTextureSize setTexSizeTask = new TaskSetTextureSize(cSelectedTextureIndex, int.Parse(textureWidth.text), int.Parse(textureHeight.text));
             setTexSizeTask.DoTask();
             UndoManager.main.CommitTask(setTexSizeTask);
+        }
+
+        public void OnApplyTextureToAllElements()
+        {
+            if (cSelectedTextureIndex == -1) return;
+            
         }
 
         public void RefreshIfOpen()

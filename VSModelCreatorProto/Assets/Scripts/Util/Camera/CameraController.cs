@@ -74,7 +74,7 @@ namespace VSMC
             cameraCompass.transform.localEulerAngles = new Vector3(0, 0, rotY);
             if (pivotChild != null)
             {
-                pivotChild.SetActive(CurrentCameraMode == CameraMode.Orbital);
+                pivotChild.SetActive(CurrentCameraMode == CameraMode.Orbital && distFromAnchor > 0.1f); //disable pivot at close distance
                 pivotChild.transform.rotation = Quaternion.identity;
             }
         }

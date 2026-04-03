@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 namespace VSMC
@@ -16,6 +17,7 @@ namespace VSMC
         public RectTransform uvShape;
         public Slider zoomSlider;
         public UVImagePanner panner;
+        public float mousewheelScrollSpeed = 0.1f;
         Vector2 uiPixelsPerUVPixel;
         RectTransform myRect;
         float[] cUVs;
@@ -25,6 +27,7 @@ namespace VSMC
         bool lmbDown;
         float[] lmbStartUVs;
         Vector2 rmbStartPos;
+        Vector2 rmbStartPosForPanner;
         bool rmbDown;
         float[] rmbStartUVs;
 
@@ -38,6 +41,7 @@ namespace VSMC
         {
             mainTexture.texture = tex.loadedTexture;
             grid.uvRect = new Rect(0, 0, tex.storedWidth, tex.storedHeight);
+            grid.gameObject.SetActive(ProgramPreferences.UVShowGrid.GetValue());
         }
 
         private void Update()
@@ -57,7 +61,7 @@ namespace VSMC
                     //clamp to 1.
                     if (!Input.GetKey(KeyCode.LeftControl))
                     {
-                        diff = new Vector2((int)diff.x, (int)diff.y);
+                        diff = new Vector2(((int)(diff.x * 2)) / 2f, ((int)(diff.y * 2)) / 2f);
                     }
 
                     //UVs be upside down.
@@ -81,6 +85,16 @@ namespace VSMC
                 }
                 else if (rmbDown)
                 {
+                    Vector2 diff = rmbStartPos - (Vector2)Input.mousePosition;
+                    panner.SetPan(rmbStartPosForPanner + (diff / myRect.rect.size / zoomSlider.value));
+                    OnZoomOrPositionChanged();
+
+                    if (!Input.GetMouseButton(1))
+                    {
+                        rmbDown = false;
+                        return;
+                    }
+                    /* This is the code that resizes the UV. But we're going to use it to pan the UV Space instead.
                     Vector2 diff = cmpos - rmbStartPos;
                     //Convert the actual difference into UV pixels, respective of the current zoom.
                     diff /= (uiPixelsPerUVPixel);
@@ -118,6 +132,8 @@ namespace VSMC
                         rmbDown = false;
                         return;
                     }
+
+                    */
                 }
             }
 
@@ -159,7 +175,7 @@ namespace VSMC
 
             //Calculate the mouse per pixel stuff.
             uiPixelsPerUVPixel = new Vector2((myRect.rect.width) / grid.uvRect.width, (myRect.rect.height) / grid.uvRect.height) * zoomSlider.value;
-
+            uvShape.GetComponentInChildren<Image>().pixelsPerUnitMultiplier = uvShape.transform.lossyScale.x;
         }
 
         public void MouseDown(BaseEventData data)
@@ -175,9 +191,15 @@ namespace VSMC
             else if (ped.button == PointerEventData.InputButton.Right)
             {
                 rmbDown = true;
-                RectTransformUtility.ScreenPointToLocalPointInRectangle(myRect, Input.mousePosition, null, out rmbStartPos);
-                rmbStartUVs = (float[])cUVs.Clone();
+                rmbStartPos = Input.mousePosition;
+                rmbStartPosForPanner = panner.cVal;
             }
+        }
+
+        public void MouseWheelScrollOver(BaseEventData data)
+        {
+            ExtendedPointerEventData ped = data as ExtendedPointerEventData;
+            zoomSlider.value += ped.scrollDelta.y * mousewheelScrollSpeed;
         }
 
 

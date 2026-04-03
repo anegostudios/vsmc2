@@ -27,6 +27,7 @@ namespace VSMC
         {
             TextureManager.main.SetTextureSize(TextureManager.main.loadedTextures[textureIndex], newWidth, newHeight);
             TextureManager.main.overlay.RefreshIfOpen();
+            UVLayoutManager.main.RefreshAllUVSpaces(true);
 
         }
 
@@ -34,6 +35,7 @@ namespace VSMC
         {
             TextureManager.main.SetTextureSize(TextureManager.main.loadedTextures[textureIndex], oldWidth, oldHeight);
             TextureManager.main.overlay.RefreshIfOpen();
+            UVLayoutManager.main.RefreshAllUVSpaces(true);
 
         }
 

@@ -63,7 +63,7 @@ namespace VSMC
             if (!objectSelector.IsAnySelected()) return;
             ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
 
-            TaskSetElementPosition spTask = new TaskSetElementPosition(cElem, axis, value);
+            TaskSetElementPosition spTask = new TaskSetElementPosition(cElem, axis, value, !Input.GetKey(KeyCode.LeftControl));
             spTask.DoTask();
             UndoManager.main.CommitTask(spTask);
         }
