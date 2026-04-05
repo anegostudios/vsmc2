@@ -118,7 +118,7 @@ namespace VSMC
             UI.RefreshUIForFrameElementSelection(cFrame);
         }
 
-        public void ProgressAnimation(float dt)
+        public void ProgressAnimation(float dt, bool stackOverflowFailsafe = false)
         {
             if (animator == null || animator.anims == null || cSelectedAnimation == null) return;
 
@@ -149,8 +149,11 @@ namespace VSMC
             if (!anim.Active || !anim.Running)
             {
                 shouldPlayAnimations = false;
-                ProgressAnimation(1);
-                SetAnimationFrame(0);
+                if (!stackOverflowFailsafe)
+                {
+                    ProgressAnimation(1, true);
+                    SetAnimationFrame(0);
+                }
             }
 
             cFrame = (int)anim.CurrentFrame;
@@ -183,7 +186,7 @@ namespace VSMC
             
             anim.CurrentFrame = frame;
             anim.Iterations = 0;
-            ProgressAnimation(0);
+            ProgressAnimation(0, true);
         }
 
         public void ResetCurrentAnimationFrame()

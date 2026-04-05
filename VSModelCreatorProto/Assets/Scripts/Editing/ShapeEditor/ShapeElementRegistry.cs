@@ -62,7 +62,6 @@ namespace VSMC
 
         public IEnumerable<ShapeElement> GetAllShapeElements()
         {
-            Debug.Log(shapeElementByUID.Count);
             return shapeElementByUID.Values;
         }
 

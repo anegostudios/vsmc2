@@ -134,8 +134,8 @@ namespace VSMC
                 //Using 'transform.right' and up here allow us to move the camera anchor in reference to the camera's angle.
                 if (mouseMovement.sqrMagnitude >= Mathf.Epsilon)
                 {
-                    cameraAnchorPos += cameraChild.transform.right * mouseMovement.x * movementSpeed * GetTotalSpeedMultiplier();
-                    cameraAnchorPos += cameraChild.transform.up * mouseMovement.y * movementSpeed * GetTotalSpeedMultiplier();
+                    cameraAnchorPos -= cameraChild.transform.right * mouseMovement.x * movementSpeed * GetTotalSpeedMultiplier();
+                    cameraAnchorPos -= cameraChild.transform.up * mouseMovement.y * movementSpeed * GetTotalSpeedMultiplier();
                     hasMovedSinceLmbDown = true;
                 }
             }

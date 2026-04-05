@@ -17,6 +17,6 @@ public class ProgramPreferences
     public static Preference<bool> UVShowGrid = new Preference<bool>("uvshowgrid", true);
     public static Preference<bool> UVShowLabels = new Preference<bool>("uvshowlabels", true);
     public static Preference<bool> UVShowOrientationMarkers = new Preference<bool>("uvshoworientationmarkers", true);
-
+    public static Preference<bool> LowPowerMode = new Preference<bool>("enableLowPowerMode", false);
 
 }

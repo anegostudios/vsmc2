@@ -32,6 +32,8 @@ namespace VSMC
         private void Awake()
         {
             main = this;
+            //Check for live updates every second.
+            InvokeRepeating("ReloadAllTexturesFromFiles", 1, 1);
         }
 
         /// <summary>
@@ -251,6 +253,23 @@ namespace VSMC
         public TextureManagerOverlay GetTextureOverlay()
         {
             return overlay;
+        }
+
+        public void ReloadAllTexturesFromFiles()
+        {
+            if (loadedTextures == null) return;
+            bool hasUpdates = false;
+            foreach (LoadedTexture t in loadedTextures)
+            {
+                hasUpdates = t.CheckForAndUpdateTextureFileChanges() || hasUpdates;
+            }
+            if (hasUpdates)
+            {
+                RegenerateTextureArray();
+                OnTexturePropertiesChanged();
+                overlay.RefreshIfOpen();
+                UVLayoutManager.main.RefreshAllUVSpaces(true);
+            }
         }
 
     }
