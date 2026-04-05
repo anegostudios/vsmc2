@@ -17,6 +17,7 @@ namespace VSMC
         public int storedHeight;
         public Vector2 storedTextureSizeMultiplier;
         private Sprite storedSprite;
+        private DateTime lastWriteTimeForFile;
 
 
         public enum LoadedTextureError
@@ -63,6 +64,7 @@ namespace VSMC
                 load.LoadImage(File.ReadAllBytes(fullPath));
                 loadedTexture = load;
                 loadedTexture.filterMode = FilterMode.Point;
+                lastWriteTimeForFile = File.GetLastWriteTime(fullPath);
             }
             catch (System.Exception e)
             {
@@ -103,6 +105,29 @@ namespace VSMC
             if (loadedTexture == null) return null;
             storedSprite = Sprite.Create(loadedTexture, new Rect(0, 0, loadedTexture.width, loadedTexture.height), new Vector2(0.5f, 0.5f));
             return storedSprite;
+        }
+
+        /// <summary>
+        /// Checks for texture file changes and update them.
+        /// </summary>
+        /// <returns>True if file has changed</returns>
+        public bool CheckForAndUpdateTextureFileChanges()
+        {
+            string fullPath = Path.Combine(TextureManager.main.textureBasePath, path + ".png");
+            if (!File.Exists(fullPath))
+            {
+                return false;
+            }
+            else
+            {
+                if (lastWriteTimeForFile != File.GetLastWriteTime(fullPath))
+                {
+                    LoadTextureFromCodeAndPath();
+                    Debug.Log("Updating texture at " + fullPath + " due to changes.");
+                    return true;
+                }
+            }
+            return false;
         }
 
     }
