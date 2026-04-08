@@ -103,7 +103,7 @@ namespace VSMC
         private void Update()
         { 
             if (animator == null || !isInAnimatorMode || !shouldPlayAnimations) return;
-            ProgressAnimation(Time.deltaTime * playbackSpeed);
+            ProgressAnimation(Mathf.Min(Time.deltaTime, 1 / 30f) * playbackSpeed); //Clamp to a max of 1 anim frame per application frame.
         }
 
         private void OnObjectSelected(GameObject selected)

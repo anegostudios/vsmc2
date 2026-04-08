@@ -71,6 +71,11 @@ namespace VSMC
         {
             Top *= Matrix4x4.Rotate(Quaternion.Euler((float)x, (float)y, (float)z));
         }
+        
+        public void Rotate(double angle, double x, double y, double z)
+        {
+            Top *= Matrix4x4.Rotate(Quaternion.AngleAxis((float)angle, new Vector3((float)x, (float)y, (float)z)));
+        }
 
         public void Translate(double x, double y, double z)
         {
@@ -81,5 +86,8 @@ namespace VSMC
         {
             Top *= Matrix4x4.Scale(new Vector3((float)x, (float)y, (float)z));
         }
+
+
+        
     }
 }   

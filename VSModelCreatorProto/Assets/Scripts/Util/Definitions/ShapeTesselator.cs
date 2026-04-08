@@ -296,7 +296,21 @@ namespace VSMC
                     stackMatrix.Translate(rotationOrigin.x / 16, rotationOrigin.y / 16, rotationOrigin.z / 16);
                 }
 
-                stackMatrix.Rotate(element.RotationX, element.RotationY, element.RotationZ);
+
+                if (element.RotationX != 0.0)
+                {
+                    stackMatrix.Rotate(element.RotationX, 1.0, 0.0, 0.0);
+                }
+                if (element.RotationY != 0.0)
+                {
+                    stackMatrix.Rotate(element.RotationY, 0.0, 1.0, 0.0);
+                }
+                if (element.RotationZ != 0.0)
+                {
+                    stackMatrix.Rotate(element.RotationZ, 0.0, 0.0, 1.0);
+                }
+
+                //stackMatrix.Rotate(element.RotationX, element.RotationY, element.RotationZ);
                 stackMatrix.Scale(element.ScaleX, element.ScaleY, element.ScaleZ);
                 stackMatrix.Translate((element.From[0] - rotationOrigin.x) / 16.0f, (element.From[1] - rotationOrigin.y) / 16.0f, (element.From[2] - rotationOrigin.z) / 16.0);
 
