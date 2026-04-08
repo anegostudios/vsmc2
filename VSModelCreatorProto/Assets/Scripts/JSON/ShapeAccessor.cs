@@ -36,17 +36,30 @@ public class ShapeAccessor
         try
         {
             contents = File.ReadAllText(filePath);
-            //Perform an immediate backup.
-            string path = Application.persistentDataPath +Path.DirectorySeparatorChar+ Path.GetFileNameWithoutExtension(filePath) + DateTime.Now.ToString("s") + ".json";
-            File.WriteAllText(path, contents);
-            Debug.Log("Written file to " + path);
         }
         catch (Exception e)
         {
             Debug.LogError("Could not read file contents at " + filePath + ". Exception:" + e.Message);
             return null;
         }
-        
+        try //backup.
+        {
+            //Perform an immediate backup.
+            string path = Application.persistentDataPath + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(filePath) + DateTime.Now.ToString("s") + ".json";
+
+            if (Directory.Exists(Path.GetDirectoryName(path)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+            }
+
+            File.WriteAllText(path, contents);
+            Debug.Log("Written file to " + path);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("Could not write file backup. Exception:" + e.Message);
+        }
+
         //Deserialize.
         return JsonConvert.DeserializeObject<Shape>(contents);
     }
