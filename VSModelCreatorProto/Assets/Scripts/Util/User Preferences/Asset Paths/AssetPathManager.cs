@@ -3,13 +3,8 @@ using System.IO;
 using System.Linq;
 using SFB;
 using TMPro;
-using UnityEditor;
-using UnityEditor.VersionControl;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.SocialPlatforms;
 using UnityEngine.UI;
-using UnityEngine.WSA;
 
 namespace VSMC
 {

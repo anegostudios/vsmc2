@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using SFB;
 using Unity.Collections;
-using UnityEditor.Rendering;
 using UnityEngine;
 
 namespace VSMC
