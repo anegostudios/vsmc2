@@ -16,6 +16,7 @@ namespace VSMC
         public ObjectSelector objectSelector;
         public ElementHierarchyManager elementHierarchyManager;
         public ReparentElementOverlay reparentElementOverlay;
+        public SetStepparentElementOverlay stepParentOverlay;
 
         [Header("UI References")]
         public ModelEditorUIElements uiElements;
@@ -139,34 +140,10 @@ namespace VSMC
             //Need to rename the element, but then swap all names in the shape animations too...
             if (!objectSelector.IsAnySelected()) return "";
             ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
-            string oldName = cElem.Name;
-
-            //Check for name set fails.
-            if (ShapeElementRegistry.main.GetShapeElementByName(newName) != null) return oldName;
-            if (newName.Length < 1) return oldName;
-
-            cElem.Name = newName;
-            cElem.gameObject.name = newName;
-
-            //Rename element in UI.
-            elementHierarchyManager.GetElementHierarchyItem(cElem).elementName.text = newName;
-
-            if (ShapeHolder.CurrentLoadedShape.Animations != null)
-            {
-                foreach (Animation anim in ShapeHolder.CurrentLoadedShape.Animations)
-                {
-                    foreach (AnimationKeyFrame keyFrame in anim.KeyFrames)
-                    {
-                        if (keyFrame.Elements.ContainsKey(oldName))
-                        {
-                            keyFrame.Elements[newName] = keyFrame.Elements[oldName];
-                            keyFrame.Elements.Remove(oldName);
-                        }
-                    }
-                }
-            }
-
-            return newName;
+            TaskRenameElement renameTask = new TaskRenameElement(cElem, newName);
+            renameTask.DoTask();
+            UndoManager.main.CommitTask(renameTask);
+            return renameTask.newName;
         }
 
         public void CopyElement()
@@ -189,6 +166,58 @@ namespace VSMC
             TaskReparentElement reTask = new TaskReparentElement(elemToReparentUID, newParentUID);
             reTask.DoTask();
             UndoManager.main.CommitTask(reTask);
+        }
+
+        public void OpenStepParentMenu()
+        {
+            if (!objectSelector.IsAnySelected()) return;
+            stepParentOverlay.OpenOverlay(objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element);
+        }
+    
+        public void SetStepParentElement(int elemToSetStepparent, string stepParentCode)
+        {
+            ShapeElement toChange = ShapeElementRegistry.main.GetShapeElementByUID(elemToSetStepparent);
+            ShapeElement t = ShapeElementRegistry.main.GetShapeElementByName(stepParentCode);
+            if (t != null)
+            {
+                //We know that the current selected is a root elem, so we can speed up the check by just finding the topmost parent.
+                while (t.ParentElement != null)
+                {
+                    t = t.ParentElement;
+                }
+                if (t == toChange)
+                {
+                    //No.
+                    uiElements.RefreshSelectionValues();
+                    return;
+                }
+            }
+            TaskSetElementStepparent setStepparentTask = new TaskSetElementStepparent(toChange, stepParentCode);
+            setStepparentTask.DoTask();
+            UndoManager.main.CommitTask(setStepparentTask);
+        } 
+
+        public void SetStepParentElement(string stepParentCode)
+        {
+            //Ugh. Need to ensure that the new step parent is not a child of the selected.
+            ShapeElement t = ShapeElementRegistry.main.GetShapeElementByName(stepParentCode);
+            if (t != null)
+            {
+                //We know that the current selected is a root elem, so we can speed up the check by just finding the topmost parent.
+                while (t.ParentElement != null)
+                {
+                    t = t.ParentElement;
+                }
+                if (t == objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element)
+                {
+                    //No.
+                    uiElements.RefreshSelectionValues();
+                    return;
+                }
+            } 
+            TaskSetElementStepparent setStepparentTask = new TaskSetElementStepparent(objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element, stepParentCode);
+            setStepparentTask.DoTask();
+            UndoManager.main.CommitTask(setStepparentTask);
         }
     }
 }

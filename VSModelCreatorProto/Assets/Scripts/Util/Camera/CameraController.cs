@@ -44,6 +44,7 @@ namespace VSMC
         public float movementSpeed = 0.1f;
         public float rotationSpeed = 0.5f;
         public float zoomSpeed = 0.2f;
+        public float keyboardZoomModifier = 0.05f;
 
         public float uiControlledSpeedMultiplier = 1f;
         public float shiftControlledSpeedMultiplier = 5f;
@@ -67,6 +68,7 @@ namespace VSMC
         void Update()
         {
             DoMouseUpdates();
+            DoKeyboardUpdates();
             gameObject.transform.localPosition = cameraAnchorPos;
             gameObject.transform.localEulerAngles = new Vector3(rotX, rotY, 0);
 
@@ -147,6 +149,20 @@ namespace VSMC
             }
 
             rotX = Mathf.Clamp(rotX, minMaxRotX.x, minMaxRotX.y);
+        }
+
+        public void DoKeyboardUpdates()
+        {
+            float scrollValue = Input.GetAxis("keyboardZoom");
+            if (CurrentCameraMode == CameraMode.Orbital)
+            {
+                distFromAnchor -= scrollValue * zoomSpeed * keyboardZoomModifier * GetTotalSpeedMultiplier();
+                distFromAnchor = Mathf.Clamp(distFromAnchor, minMaxDistance.x, minMaxDistance.y);
+            }
+            else
+            {
+                cameraAnchorPos += scrollValue * zoomSpeed * keyboardZoomModifier * (cameraChild.transform.forward) * GetTotalSpeedMultiplier();
+            }
         }
 
         public void SwapCameraType()

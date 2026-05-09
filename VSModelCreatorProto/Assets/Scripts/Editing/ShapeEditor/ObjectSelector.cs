@@ -104,6 +104,8 @@ namespace VSMC
             if (storedRaycastHitCount <= 0)
             {
                 DeselectAll();
+                //Also deselect attachments at this point, if we have any selected.
+                BackdropAndAttachmentMenuManager.main.DeselectCurrentBackdropOrAttachment();
                 return true;
             }
             //bool groupObjects = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftControl);

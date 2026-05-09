@@ -49,21 +49,6 @@ public class ShapeTester : MonoBehaviour
         string[] selectedFiles = StandaloneFileBrowser.OpenFilePanel("Open Shape Files", "", "json", true);
         if (selectedFiles == null || selectedFiles.Length == 0 || selectedFiles[0].Trim().Length == 0) { return; }
 
-        //Guess the texture path from the file.
-        string vsPath = selectedFiles[0];
-        while (!vsPath.EndsWith("assets") && Directory.GetParent(vsPath) != null)
-        {
-            vsPath = Directory.GetParent(vsPath).FullName;
-        }
-        if (Directory.GetParent(vsPath) == null)
-        {
-            TextureManager.main.textureBasePath = "";
-        }
-        else
-        {
-            TextureManager.main.textureBasePath = Path.Combine(vsPath, "survival", "textures");
-        }
-
         foreach (GameObject joint in joints)
         {
             foreach (Transform child in joint.transform)
@@ -85,23 +70,12 @@ public class ShapeTester : MonoBehaviour
     public void SaveShapeFile()
     {
 
-        if (ShapeHolder.CurrentLoadedShape == null)
-        {
-            Debug.Log("Trying to save nothing...");
-            return;
-        }
-        string saveTo = StandaloneFileBrowser.SaveFilePanel("Save file path", "", "shape.json", "json");
-        if (saveTo == null || saveTo.Length < 1)
-        {
-            return;
-        }
-        ShapeAccessor.SerializeShapeToFile(ShapeHolder.CurrentLoadedShape, saveTo);
-        Debug.Log("Exported successfully.");
+        
     }
 
     void RecalculatePolyCount()
     {
-        int pCount = 0;
+        int pCount = 0; 
         foreach (MeshFilter filters in GetComponentsInChildren<MeshFilter>())
         {
             pCount += filters.mesh.triangles.Length;

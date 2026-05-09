@@ -74,6 +74,16 @@ namespace VSMC
                     }
                 }
             }
+
+            //Backdrops also rely on object names.
+            foreach (ShapeElement e in ShapeElementRegistry.main.GetAllShapeElements())
+            {
+                if (e.StepParentName != null && e.StepParentName.Equals(oldName, System.StringComparison.CurrentCultureIgnoreCase))
+                {
+                    e.StepParentName = newName;
+                }
+            }
+            ShapeLoader.main.shapeHolder.RefreshAllStepparents();            
         }
 
         public override void UndoTask()
@@ -97,6 +107,16 @@ namespace VSMC
                     }
                 }
             }
+
+            //Backdrops also rely on object names.
+            foreach (ShapeElement e in ShapeElementRegistry.main.GetAllShapeElements())
+            {
+                if (e.StepParentName != null && e.StepParentName.Equals(newName, System.StringComparison.CurrentCultureIgnoreCase))
+                {
+                    e.StepParentName = oldName;
+                }
+            }
+            ShapeLoader.main.shapeHolder.RefreshAllStepparents();
         } 
 
         public override bool MergeTasksIfPossible(IEditTask nextTask)

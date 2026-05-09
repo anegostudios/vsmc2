@@ -38,6 +38,12 @@ public class ModelEditorUIElements : MonoBehaviour
     public RotationSlider rotYSlider;
     public RotationSlider rotZSlider;
 
+    [Header("Misc")]
+    public TMP_InputField stepparentInput;
+    public GameObject stepparentInputGameObject;
+    public GameObject nonRootObjectStepparentWarning;
+    public GameObject couldntFindStepParentElementWarning;
+
     string dpString = "0.###";
 
     private void Start()
@@ -50,9 +56,9 @@ public class ModelEditorUIElements : MonoBehaviour
 
         elemName.onEndEdit.AddListener(val => { elemName.SetTextWithoutNotify(shapeEditor.RenameElement(val)); });
 
-        sizeX.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.X, float.Parse(val));});
-        sizeY.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.Y, float.Parse(val));});
-        sizeZ.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.Z, float.Parse(val));});
+        sizeX.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.X, float.Parse(val)); });
+        sizeY.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.Y, float.Parse(val)); });
+        sizeZ.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.Z, float.Parse(val)); });
 
         posX.onEndEdit.AddListener(val => { shapeEditor.SetPosition(EnumAxis.X, float.Parse(val)); });
         posY.onEndEdit.AddListener(val => { shapeEditor.SetPosition(EnumAxis.Y, float.Parse(val)); });
@@ -70,6 +76,8 @@ public class ModelEditorUIElements : MonoBehaviour
         rotXSlider.rotSlider.onValueChanged.AddListener(val => { shapeEditor.SetRotation(EnumAxis.X, rotXSlider.Val); rotX.SetTextWithoutNotify(rotXSlider.Val.ToString()); });
         rotYSlider.rotSlider.onValueChanged.AddListener(val => { shapeEditor.SetRotation(EnumAxis.Y, rotYSlider.Val); rotY.SetTextWithoutNotify(rotYSlider.Val.ToString()); });
         rotZSlider.rotSlider.onValueChanged.AddListener(val => { shapeEditor.SetRotation(EnumAxis.Z, rotZSlider.Val); rotZ.SetTextWithoutNotify(rotZSlider.Val.ToString()); });
+
+        stepparentInput.onEndEdit.AddListener(val => { shapeEditor.SetStepParentElement(val); });
     }
 
     public void OnElementSelected(ShapeElementGameObject element)
@@ -100,6 +108,21 @@ public class ModelEditorUIElements : MonoBehaviour
         rotXSlider.SetToRotationValue((float)elem.RotationX);
         rotYSlider.SetToRotationValue((float)elem.RotationY);
         rotZSlider.SetToRotationValue((float)elem.RotationZ);
+
+        stepparentInput.SetTextWithoutNotify(elem.StepParentName);
+        //Non-root objects should not have step parents.
+        if (elem.ParentElement == null) 
+        {
+            stepparentInputGameObject.SetActive(true);
+            nonRootObjectStepparentWarning.SetActive(false);
+            couldntFindStepParentElementWarning.SetActive(elem.StepParentName != "" && elem.StepParentName != null && elem.StepParentElement == null);
+        }
+        else
+        {
+            stepparentInputGameObject.SetActive(false);
+            nonRootObjectStepparentWarning.SetActive(true);
+            couldntFindStepParentElementWarning.SetActive(false);
+        }
     }
 
     public void RefreshSelectionValues()

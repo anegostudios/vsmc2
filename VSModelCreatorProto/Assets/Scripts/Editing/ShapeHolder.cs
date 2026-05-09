@@ -21,22 +21,50 @@ namespace VSMC
         [Tooltip("Limbo for shape elements.")]
         public Transform deletedElementParent;
 
+        public Material customMaterial;
+
         /// <summary>
         /// Load a shape and creates its model in the noJoint parent.
         /// </summary>
         /// <param name="loadedShape"></param>
         public void OnShapeLoaded(Shape loadedShape, bool alreadyResolved = false)
         {
+            if (loadedShape.isBackdropOrAttachmentShape)
+            {
+                loadedShape.ResolveReferencesAndUIDs(true);
+                CreateAllShapeElementGameObjects(loadedShape);
+                return;
+            }
+            
             if (CurrentLoadedShape != null)
             {
                 Debug.LogError("Trying to load a shape when one is already active. Remember to call UnloadCurrentShape first!");
             }
             if (!alreadyResolved)
             {
-                loadedShape.ResolveReferencesAndUIDs();
+                loadedShape.ResolveReferencesAndUIDs(false);
             }
             CurrentLoadedShape = loadedShape;
-            CreateAllShapeElementGameObjects(CurrentLoadedShape);
+            CreateAllShapeElementGameObjects(loadedShape);
+        }
+
+        public void RefreshAllStepparents()
+        {
+
+            //Check for stepparents in the root elements.
+            foreach (ShapeElement e in CurrentLoadedShape.Elements)
+            {
+                e.ClearStepParent();
+                e.SearchForStepParentInShape(CurrentLoadedShape);
+            }
+            BackdropManager.main.RefreshCurrentStepparents();
+            
+            //Refresh all the element positions.
+            foreach (ShapeElement e in CurrentLoadedShape.Elements)
+            {
+                ShapeTesselator.ResolveMatricesForShapeElementAndChildren(e);
+                e.gameObject.ReapplyTransformsFromMeshData(true);
+            }
         }
 
         /// <summary>
@@ -44,14 +72,27 @@ namespace VSMC
         /// </summary>
         public void CreateAllShapeElementGameObjects(Shape shape, bool tesselateFirst = true)
         {
-            if (tesselateFirst) 
+            if (tesselateFirst)
             {
-                ShapeTesselator.TesselateShape(shape); 
+                ShapeTesselator.TesselateShape(shape);
             }
 
             foreach (ShapeElement elem in shape.Elements)
             {
                 CreateShapeElementGameObject(elem);
+            }
+
+            if (shape.isBackdropOrAttachmentShape) RemovePropertiesOnBackdrops(shape.Elements);
+
+        }
+        
+        public void RemovePropertiesOnBackdrops(ShapeElement[] elements)
+        {
+            foreach (ShapeElement elem in elements)
+            {
+                elem.gameObject.GetComponent<Collider>().enabled = false;
+                elem.gameObject.GetComponent<MeshRenderer>().material = customMaterial;
+                if (elem.Children != null) RemovePropertiesOnBackdrops(elem.Children);
             }
         }
 
@@ -98,7 +139,8 @@ namespace VSMC
                 ShapeElement cElem = elements[0];
                 elements.RemoveAt(0);
                 if (cElem.Children != null) elements.AddRange(cElem.Children);
-
+                elements.AddRange(cElem.CurrentStepChildren);
+                
                 //Create joint IDs if needed.
                 while (jointParents.Count <= cElem.JointId + 1)
                 {

@@ -17,9 +17,9 @@ namespace VSMC
         [Header("Unity References")]
         public GameObject selectableTexturePrefab;
         public Transform selectableTexturesHolder;
-        public TMP_Text baseTexturePathText;
         public TMP_InputField textureCode;
         public TMP_InputField texturePath;
+        public TMP_Text textureFoundAtLabel;
         public TMP_InputField textureWidth;
         public TMP_InputField textureHeight;
 
@@ -66,16 +66,6 @@ namespace VSMC
                 textureImages[i] = texUI;
                 texUI.GetComponent<Button>().onClick.AddListener(() => OnTextureSelected(texUI));
             }
-
-            //Set texture base path.
-            if (TextureManager.main.textureBasePath.Length < 3)
-            {
-                baseTexturePathText.text = "Please select a base texture path.";
-            }
-            else
-            {
-                baseTexturePathText.text = TextureManager.main.textureBasePath;
-            }
             
             gameObject.SetActive(true);
 
@@ -84,15 +74,6 @@ namespace VSMC
                 OnTextureSelected(textureImages[cSelectedTextureIndex]);
             }
 
-        }
-
-        public void OnChangeTextureBasePathButton()
-        {
-            string[] selectedFolder = SFB.StandaloneFileBrowser.OpenFolderPanel("Select 'Textures' Folder", "", false);
-            if (selectedFolder == null || selectedFolder.Length == 0 || selectedFolder[0].Trim().Length == 0) return;
-            TaskChangeTextureBasePath changeBasePathTask = new TaskChangeTextureBasePath(selectedFolder[0]);
-            changeBasePathTask.DoTask();
-            UndoManager.main.CommitTask(changeBasePathTask);
         }
 
         public void OnTextureSelected(GameObject texObj)
@@ -112,6 +93,18 @@ namespace VSMC
             texturePath.SetTextWithoutNotify(tex.path);
             textureWidth.SetTextWithoutNotify(tex.storedWidth.ToString());
             textureHeight.SetTextWithoutNotify(tex.storedHeight.ToString());
+            textureFoundAtLabel.gameObject.SetActive(!ProgramPreferences.HideFilePaths.GetValue());
+
+            if (tex.storedFilepath == null || tex.storedFilepath == "" || !File.Exists(tex.storedFilepath))
+            {
+                textureFoundAtLabel.text = "Cannot find texture file.";
+                textureFoundAtLabel.color = Color.red;
+            }
+            else
+            {
+                textureFoundAtLabel.text = "Texture found at: " + tex.storedFilepath;
+                textureFoundAtLabel.color = new Color(0.7f, 0.7f, 0.7f);
+            }
         }
 
         public void ApplyTextureCode()
@@ -148,14 +141,21 @@ namespace VSMC
         public void SelectTexturePath()
         {
             if (cSelectedTextureIndex == -1) return;
-            string[] selFile = SFB.StandaloneFileBrowser.OpenFilePanel("Select texture...", TextureManager.main.textureBasePath, "png", false);
+            
+            string prefDir = TextureManager.main.loadedTextures[cSelectedTextureIndex].storedFilepath;
+            if (prefDir == "" || prefDir == null)
+            {
+                prefDir = AssetPathManager.main.GetFirstPreferredAssetPath();
+            }
+            else
+            {
+                prefDir = Path.GetDirectoryName(prefDir);
+            }
+            string[] selFile = SFB.StandaloneFileBrowser.OpenFilePanel("Select texture...", prefDir, "png", false);
             if (selFile == null || selFile.Length == 0 || selFile[0].Trim().Length == 0) return;
 
             string p = selFile[0];
-            if (TextureManager.main.textureBasePath.Length > 0)
-            {
-                p = Path.GetRelativePath(TextureManager.main.textureBasePath, p);
-            }
+            p = AssetPathManager.main.GetRelativePathForFile(p, "textures");
             texturePath.text = p.Replace(".png", "");
             ApplyTexturePath();
         }

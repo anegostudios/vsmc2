@@ -35,7 +35,7 @@ namespace VSMC {
             ShapeLoader.RegisterForOnShapeLoadEvent(OnShapeLoaded);
         }
 
-        void OnShapeLoaded(Shape shape)
+        void OnShapeLoaded(Shape shape, LoadingContext context)
         {
             entityTextureModeButtonText.text = GetEntityTextureMode() ? "Disable Entity Texture Mode" : "Enable Entity Texture Mode";
         }
