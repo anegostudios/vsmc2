@@ -27,7 +27,7 @@ namespace VSMC
         public override void DoTask()
         {
             LoadedTexture newTex = new LoadedTexture(newTextureCode, "");
-            newTex.LoadTextureFromCodeAndPath();
+            newTex.LoadTextureFromCodeAndPath(ShapeHolder.CurrentLoadedShape);
             newTex.ResolveTextureSize(ShapeHolder.CurrentLoadedShape);
             TextureManager.main.loadedTextures.Add(newTex);
             TextureManager.main.RegenerateTextureArray();

@@ -58,6 +58,9 @@ namespace VSMC
         //Joints stuff.
         public Dictionary<int, AnimationJoint> JointsById = new Dictionary<int, AnimationJoint>();
 
+        [NonSerialized()]
+        public bool isBackdropOrAttachmentShape = false;
+
         /// <summary>
         /// A rather niave method to load in textures.
         /// Needs a very large update.
@@ -66,7 +69,18 @@ namespace VSMC
         [OnDeserialized()]
         public void ResolveFacesAndTextures(StreamingContext context)
         {
-            TextureManager.main.LoadTexturesFromShape(this);
+            if (context.Context is bool t && t) //If context is a boolean and true, then this is the main loaded object.
+            {
+                TextureManager.main.LoadTexturesFromShape(this);
+            }
+            else //Otherwise, its a backdrop or attachment shape.
+            {
+                isBackdropOrAttachmentShape = true;
+                foreach (ShapeElement elem in Elements)
+                {
+                    elem.ResolveFacesAndTextures(null);
+                }
+            }
         }
 
 
@@ -105,11 +119,11 @@ namespace VSMC
             return elementsByName;
         }
 
-        public void ResolveReferencesAndUIDs()
+        public void ResolveReferencesAndUIDs(bool isBackdropOrAttachment = false)
         {
             for (int i = 0; i < Elements.Length; i++)
             {
-                Elements[i].ResolveReferencesAndUIDs();
+                Elements[i].ResolveReferencesAndUIDs(isBackdropOrAttachment);
             }
         }
 
@@ -259,6 +273,15 @@ namespace VSMC
                     if (joint.Element.CountParents() != depth) continue;
 
                     joint.Element.SetJointIdRecursive(joint.JointId);
+                }
+            }
+
+            //Set step child joints to the same as their step parents.
+            foreach (ShapeElement e in Elements)
+            {
+                if (e.StepParentElement != null)
+                {
+                    e.SetJointIdRecursive(e.StepParentElement.JointId);
                 }
             }
         }

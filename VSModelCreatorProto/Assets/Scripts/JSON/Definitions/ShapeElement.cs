@@ -175,6 +175,16 @@ namespace VSMC
         public ShapeElement ParentElement;
 
         /// <summary>
+        /// The found stepparent element, to use for transform data.
+        /// </summary>
+        public ShapeElement StepParentElement;
+
+        /// <summary>
+        /// A list of step children that have been found.
+        /// </summary>
+        public List<ShapeElement> CurrentStepChildren = new List<ShapeElement>();
+
+        /// <summary>
         /// The id of the joint attached to the parent element.
         /// </summary>
         public int JointId;
@@ -248,6 +258,44 @@ namespace VSMC
         }
 
         /// <summary>
+        /// This wil search for the step parent in the attached shape.
+        /// The shape can be itself.
+        /// </summary>
+        public void SearchForStepParentInShape(Shape shapeToSearch)
+        {
+            //Also only add a new stepparent if there isnt already a stepparent.
+            if (StepParentName != null && StepParentName.Length > 0 && StepParentElement == null)
+            {
+                StepParentElement = shapeToSearch.GetElementByName(StepParentName);
+                if (StepParentElement == null) return;
+                StepParentElement.CurrentStepChildren.Add(this);
+            }
+        }
+
+        public void ClearStepParent()
+        {
+            if (StepParentElement != null)
+            {
+                StepParentElement.CurrentStepChildren.Remove(this);
+                StepParentElement = null;
+            }
+        }
+
+        public ShapeElement GetParentOrStepParent()
+        {
+            if (StepParentElement != null) return StepParentElement;
+            return ParentElement;
+        }
+
+        public ShapeElement[] GetChildrenAndStepChildren()
+        {
+            List<ShapeElement> ch = new List<ShapeElement>();
+            if (Children != null) ch.AddRange(Children);
+            ch.AddRange(CurrentStepChildren);
+            return ch.ToArray();
+        }
+
+        /// <summary>
         /// Removes this object's parents, and removes it from its parent array.
         /// </summary>
         public void RemoveParent()
@@ -299,11 +347,11 @@ namespace VSMC
         public List<ShapeElement> GetParentPath()
         {
             List<ShapeElement> path = new List<ShapeElement>();
-            ShapeElement parentElem = this.ParentElement;
+            ShapeElement parentElem = this.GetParentOrStepParent();
             while (parentElem != null)
             {
                 path.Add(parentElem);
-                parentElem = parentElem.ParentElement;
+                parentElem = parentElem.GetParentOrStepParent();
             }
             path.Reverse();
             return path;
@@ -435,10 +483,10 @@ namespace VSMC
             return modelTransform.inverse;
         }
 
-        internal void ResolveReferencesAndUIDs()
+        internal void ResolveReferencesAndUIDs(bool isBackdropOrAttachment = false)
         {
             //Debug.Log("Resolving references...");
-            elementUID = ShapeElementRegistry.main.AddShapeElement(this);
+            if (!isBackdropOrAttachment) elementUID = ShapeElementRegistry.main.AddShapeElement(this);
             var Children = this.Children;
             if (Children != null)
             {
@@ -446,7 +494,7 @@ namespace VSMC
                 {
                     ShapeElement child = Children[i];
                     child.ParentElement = this;
-                    child.ResolveReferencesAndUIDs();
+                    child.ResolveReferencesAndUIDs(isBackdropOrAttachment);
                 }
             }
 
@@ -643,7 +691,11 @@ namespace VSMC
         /// </summary>
         public Vector3 RotateFromWorldToLocalForThisObjectsRotation(Vector3 world)
         {
-            return Quaternion.Euler((float)RotationX, (float)RotationY, (float)RotationZ) * world;
+            Matrix4x4 x = Matrix4x4.identity;
+            x *= Matrix4x4.Rotate(Quaternion.AngleAxis((float)RotationX, Vector3.right));
+            x *= Matrix4x4.Rotate(Quaternion.AngleAxis((float)RotationY, Vector3.up));
+            x *= Matrix4x4.Rotate(Quaternion.AngleAxis((float)RotationZ, Vector3.forward));
+            return x * world;
         }
 
         /// <summary>
@@ -651,9 +703,9 @@ namespace VSMC
         /// </summary>
         public Vector3 RotateFromWorldToLocalBasedOnParentRotation(Vector3 world)
         {
-            if (ParentElement != null)
+            if (GetParentOrStepParent() != null)
             {
-                return ParentElement.meshData.storedMatrix.inverse.rotation * world;
+                return GetParentOrStepParent().meshData.storedMatrix.inverse.rotation * world;
             }
             return world;
         }
@@ -670,6 +722,8 @@ namespace VSMC
             string json = JsonConvert.SerializeObject(this);
             ShapeElement elem = JsonConvert.DeserializeObject<ShapeElement>(json);
             elem.ParentElement = this.ParentElement;
+            elem.StepParentElement = this.StepParentElement;
+            StepParentElement.CurrentStepChildren.Add(elem);
             elem.ResolveReferencesAndUIDs();
             List<ShapeElement> allElem = new List<ShapeElement>() { elem };
             while (allElem.Count > 0)

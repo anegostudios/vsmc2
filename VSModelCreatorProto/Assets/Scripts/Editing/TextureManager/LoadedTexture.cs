@@ -18,7 +18,7 @@ namespace VSMC
         public Vector2 storedTextureSizeMultiplier;
         private Sprite storedSprite;
         private DateTime lastWriteTimeForFile;
-
+        public string storedFilepath;
 
         public enum LoadedTextureError
         {
@@ -33,7 +33,7 @@ namespace VSMC
             path = texturePath;
         }
 
-        public LoadedTextureError LoadTextureFromCodeAndPath()
+        public LoadedTextureError LoadTextureFromCodeAndPath(Shape forShape)
         {
             //Probably a good idea to unload an already loaded texture if it exists.
             if (loadedTexture != null)
@@ -48,12 +48,12 @@ namespace VSMC
                 storedSprite = null;
             }
 
-            string fullPath = Path.Combine(TextureManager.main.textureBasePath, path + ".png");
-
+            string fullPath = AssetPathManager.main.FindTextureFilePath(path+".png");
+            storedFilepath = fullPath;
             if (!File.Exists(fullPath)) //Failed to load, just load a plain white texture.
             {
                 loadedTexture = new Texture2D(32, 32);
-                ResolveTextureSize(ShapeHolder.CurrentLoadedShape);
+                ResolveTextureSize(forShape);
                 return LoadedTextureError.InvalidFilePath;
             }
 
@@ -71,10 +71,10 @@ namespace VSMC
                 Debug.Log("Failed to load image " + code);
                 Debug.LogException(e);
                 loadedTexture = new Texture2D(32, 32);
-                ResolveTextureSize(ShapeHolder.CurrentLoadedShape);
+                ResolveTextureSize(forShape);
                 return LoadedTextureError.CouldntLoad;
             }
-            ResolveTextureSize(ShapeHolder.CurrentLoadedShape);
+            ResolveTextureSize(forShape);
             return LoadedTextureError.Valid;
         }
 
@@ -111,19 +111,18 @@ namespace VSMC
         /// Checks for texture file changes and update them.
         /// </summary>
         /// <returns>True if file has changed</returns>
-        public bool CheckForAndUpdateTextureFileChanges()
+        public bool CheckForAndUpdateTextureFileChanges(Shape forShape)
         {
-            string fullPath = Path.Combine(TextureManager.main.textureBasePath, path + ".png");
-            if (!File.Exists(fullPath))
+            if (storedFilepath == "" || storedFilepath == null || !File.Exists(storedFilepath))
             {
                 return false;
             }
             else
             {
-                if (lastWriteTimeForFile != File.GetLastWriteTime(fullPath))
+                if (lastWriteTimeForFile != File.GetLastWriteTime(storedFilepath))
                 {
-                    LoadTextureFromCodeAndPath();
-                    Debug.Log("Updating texture at " + fullPath + " due to changes.");
+                    LoadTextureFromCodeAndPath(forShape);
+                    Debug.Log("Updating texture at " + storedFilepath + " due to changes.");
                     return true;
                 }
             }

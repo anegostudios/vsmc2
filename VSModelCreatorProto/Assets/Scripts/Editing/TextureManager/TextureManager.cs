@@ -24,7 +24,6 @@ namespace VSMC
 
         //Runtime things
         public int maxTextureSize = 512;
-        public string textureBasePath;
         public Texture2DArray shapeTextureArray;
         public List<LoadedTexture> loadedTextures;
         public LoadedTexture emptyTexture;
@@ -34,6 +33,11 @@ namespace VSMC
             main = this;
             //Check for live updates every second.
             InvokeRepeating("ReloadAllTexturesFromFiles", 1, 1);
+        }
+
+        void Start()
+        {
+            ShapeLoader.RegisterForOnShapeSaveEvent(ApplyTexturesIntoShape);  
         }
 
         /// <summary>
@@ -86,7 +90,7 @@ namespace VSMC
 
         public void LoadTexture(LoadedTexture tex)
         {
-            LoadedTexture.LoadedTextureError valid = tex.LoadTextureFromCodeAndPath();
+            LoadedTexture.LoadedTextureError valid = tex.LoadTextureFromCodeAndPath(ShapeHolder.CurrentLoadedShape);
             tex.error = valid;  
         }
 
@@ -141,13 +145,13 @@ namespace VSMC
                 }
                 created.SetPixels(cols);
 
-                if (tex.loadedTexture != null) 
-                {   
+                if (tex.loadedTexture != null)
+                {
                     for (int x = 0; x < tex.loadedTexture.width; x++)
                     {
                         for (int y = 0; y < tex.loadedTexture.height; y++)
                         {
-                            created.SetPixel(x, tex.loadedTexture.height - 1 - y, tex.loadedTexture.GetPixel(x, y));            
+                            created.SetPixel(x, tex.loadedTexture.height - 1 - y, tex.loadedTexture.GetPixel(x, y));
                             //This will probably need to change, but it sets the pixel to be completely empty if transparent.
                             /*
                             if (tex.loadedTexture.GetPixel(x, y).a < 0.5)
@@ -166,11 +170,11 @@ namespace VSMC
             shapeTextureArray.Apply();
             OnTexturePropertiesChanged();
         }
-
-        public void ChangeTextureBasePath(string newBasePath)
+        
+        public void ChangeAnyBasePath()
         {
-            textureBasePath = newBasePath;
             Shape shape = ShapeHolder.CurrentLoadedShape;
+            if (shape == null || loadedTextures == null) return;
             int i = 0;
             foreach (LoadedTexture tex in loadedTextures)
             {
@@ -220,7 +224,7 @@ namespace VSMC
             //Edit: After second thought, no it's not.
             //  Changing the texture path should really auto change the texture size too. Oh well, do that later...
             tex.path = newPath;
-            tex.LoadTextureFromCodeAndPath();
+            tex.LoadTextureFromCodeAndPath(ShapeHolder.CurrentLoadedShape);
             RegenerateTextureArray();
             OnTexturePropertiesChanged();
             return true;
@@ -261,7 +265,7 @@ namespace VSMC
             bool hasUpdates = false;
             foreach (LoadedTexture t in loadedTextures)
             {
-                hasUpdates = t.CheckForAndUpdateTextureFileChanges() || hasUpdates;
+                hasUpdates = t.CheckForAndUpdateTextureFileChanges(ShapeHolder.CurrentLoadedShape) || hasUpdates;
             }
             if (hasUpdates)
             {

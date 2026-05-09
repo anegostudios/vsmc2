@@ -22,17 +22,20 @@ namespace VSMC
         /// Undo a task.
         /// </summary>
         public abstract void UndoTask();
-    
+
         /// <summary>
         /// If possible, merges two (usually identical-type) consecutive tasks. This task is always the one that happened first. 
         /// For example, a movement of (0, 0, 1) followed immediately by a movement of (1, 0, 1) may be merged into (1, 0, 2).
         /// Likely used with the 3D editor to group live-movement tasks into one undoable task.
+        /// The task that calls this function is the one that is kept, so change the data of this. Next task is deleted.
         /// </summary>
         public abstract bool MergeTasksIfPossible(IEditTask nextTask);
 
         /// <summary>
         /// Mainly for debugging purposes. 
         /// Returns, roughly, the size in bytes of the task. C# black magic means this will usually not be perfectly accurate.
+        /// 
+        /// I regret adding this function.
         /// </summary>
         public abstract long GetSizeOfTaskInBytes();
 

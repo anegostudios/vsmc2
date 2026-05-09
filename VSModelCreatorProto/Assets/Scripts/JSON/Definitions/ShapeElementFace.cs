@@ -75,6 +75,7 @@ namespace VSMC
         public void ResolveTexture(List<LoadedTexture> textures)
         {
             //If texture is null (i.e. a new shape), give it the first texture found in the texture manager.
+            if (textures == null) return;
             if (Texture == null)
             {
                 Texture = "#"+textures[0].code;

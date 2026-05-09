@@ -4,6 +4,7 @@ namespace VSMC
     /// An undoable task to set the current base texture path.
     /// This may change when multiple texture paths are supported.
     /// </summary>
+    /*
     public class TaskChangeTextureBasePath : IEditTask
     {
         string newPath;
@@ -51,4 +52,5 @@ namespace VSMC
             return "Change Texture Base Path";
         }
     }
+    */
 }

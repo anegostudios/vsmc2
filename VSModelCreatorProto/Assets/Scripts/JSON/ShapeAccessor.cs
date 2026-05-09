@@ -4,13 +4,21 @@ using System.IO;
 using VSMC;
 using UnityEngine;
 using Newtonsoft.Json.Serialization;
+using System.Runtime.Serialization;
+using UnityEngine.Events;
+using System.Collections.Generic;
 
 public class ShapeAccessor
 {
+
+    static UnityEvent<Shape> OnSavingShapeEvent;
+
     
-    public static void SerializeShapeToFile(Shape shape, string filePath)
+
+    public static void SerializeShapeToFile(Shape shape, string filePath, UnityEvent<Shape> onSaveEvent)
     {
         //Save some things to the shape itself first...
+        onSaveEvent.Invoke(shape);
         TextureManager.main.ApplyTexturesIntoShape(shape);
         shape.ResolveForBeforeSerialization();
 
@@ -18,7 +26,12 @@ public class ShapeAccessor
         {
             NullValueHandling = NullValueHandling.Ignore,
             DefaultValueHandling = DefaultValueHandling.Ignore,
-            ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy(false, false) }
+            ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy(false, false) },
+            Converters = new List<JsonConverter>
+            {
+                new DoubleArrayJSONConverter(),
+                new FloatArrayJSONConverter()
+            }
         };
         File.WriteAllText(filePath, JsonConvert.SerializeObject(shape, Formatting.Indented, settings));
         SaveManager.main.OnModelSave(filePath);
@@ -29,7 +42,7 @@ public class ShapeAccessor
     /// </summary>
     /// <param name="filePath"></param>
     /// <returns></returns>
-    public static Shape DeserializeShapeFromFile(string filePath)
+    public static Shape DeserializeShapeFromFile(string filePath, bool isBackdropOrAttachment = false)
     {
         //Load file.
         string contents;
@@ -60,9 +73,17 @@ public class ShapeAccessor
             Debug.LogWarning("Could not write file backup. Exception:" + e.Message);
         }
 
-        //Deserialize.
-        return JsonConvert.DeserializeObject<Shape>(contents);
-    }
+        JsonSerializerSettings settings = new JsonSerializerSettings();
+        settings.Context = new System.Runtime.Serialization.StreamingContext(StreamingContextStates.File, !isBackdropOrAttachment);
 
+        //If this is the main path, lets find the local asset path.
+        if (!isBackdropOrAttachment)
+        {
+            AssetPathManager.main.OnShapeLoaded(filePath);
+        }
+
+        //Deserialize.
+        return JsonConvert.DeserializeObject<Shape>(contents, settings);
+    }
 
 }

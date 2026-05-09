@@ -128,7 +128,7 @@ namespace VSMC
         /// This will fill in all shape elements mesh data fields.
         /// </summary>
         /// <param name="shape"></param>
-        public static void TesselateShape(Shape shape)
+        public static void TesselateShape(Shape shape, List<LoadedTexture> customTextures = null, int customMaxTextureSize = -1)
         {
             /*
              * Generating each shape's box is slightly different to how the game does it.
@@ -155,13 +155,26 @@ namespace VSMC
              * Very promising for the live editor working at 60fps.
              */
             System.DateTime pre = System.DateTime.Now;
-            TesselateShapeElements(shape.Elements);
+            TesselateShapeElements(shape.Elements, customTextures, customMaxTextureSize);
             Debug.Log("Calculating mesh data for shape took " + (DateTime.Now - pre).TotalMilliseconds + "ms.");
-    
+
             pre = System.DateTime.Now;
             ResolveAllMatricesForShape(shape);
+            //RebuildIfHasStepParent(shape);
             Debug.Log("Calculating full shape matrices took " + (DateTime.Now - pre).TotalMilliseconds + "ms.");
 
+
+        }
+
+        public static void RebuildIfHasStepParent(Shape shape)
+        {
+            foreach (ShapeElement e in shape.Elements)
+            {
+                if (e.StepParentElement != null)
+                {
+                    ResolveMatricesForShapeElementAndChildren(e);
+                }
+            }
         }
 
         public static void ResolveMatricesForShapeElementAndChildren(ShapeElement element)
@@ -169,25 +182,25 @@ namespace VSMC
             stackMatrix.Clear();
             stackMatrix.PushIdentity();
             //Add the parents stored matrix first, if it exists.
-            if (element.ParentElement != null)
+            if (element.GetParentOrStepParent() != null)
             {
-                stackMatrix.Push(element.ParentElement.meshData.storedMatrix);
+                stackMatrix.Push(element.GetParentOrStepParent().meshData.storedMatrix);
             }
             ResolveMatricesForShapeElements(new ShapeElement[] { element });
         }
 
-        public static void RecreateMeshesForShapeElement(ShapeElement element)
+        public static void RecreateMeshesForShapeElement(ShapeElement element, List<LoadedTexture> customTextures = null, int customMaxTextureSize = -1)
         {
             //Tesselate element now.
             MeshData elementMeshData = element.meshData;
             if (elementMeshData == null) return;
             elementMeshData.Clear();
             elementMeshData.meshName = element.Name;
-            TesselateShapeElement(elementMeshData, element);
+            TesselateShapeElement(elementMeshData, element, customTextures, customMaxTextureSize);
             elementMeshData.jointID = element.JointId;
         }
 
-        public static void TesselateShapeElements(ShapeElement[] elements)
+        public static void TesselateShapeElements(ShapeElement[] elements, List<LoadedTexture> customTextures = null, int customMaxTextureSize = -1)
         {
             foreach (ShapeElement element in elements)
             {
@@ -195,18 +208,15 @@ namespace VSMC
                 MeshData elementMeshData = new MeshData();
                 elementMeshData.meshName = element.Name;
                 element.meshData = elementMeshData;
-                TesselateShapeElement(elementMeshData, element);
+                TesselateShapeElement(elementMeshData, element, customTextures, customMaxTextureSize);
                 elementMeshData.jointID = element.JointId;
 
                 //Now do children.
-                if (element.Children != null)
-                {
-                    TesselateShapeElements(element.Children);
-                }
+                TesselateShapeElements(element.GetChildrenAndStepChildren(), customTextures, customMaxTextureSize);
             }
         }
 
-        private static void TesselateShapeElement(MeshData meshData, ShapeElement element)
+        private static void TesselateShapeElement(MeshData meshData, ShapeElement element, List<LoadedTexture> customTextures = null, int customMaxTextureSize = -1)
         {
             Vector3 size = new Vector3(
                 ((float)element.To[0] - (float)element.From[0]) / 16f,
@@ -228,20 +238,21 @@ namespace VSMC
                 Vector2 uvSize = uv2 - uv1;
                 int rot = (int)(face.Rotation / 90);
 
-                AddFace(meshData, facing, relativeCenter, size, uv1, uvSize, face.textureIndex, rot % 4);
+                AddFace(meshData, facing, relativeCenter, size, uv1, uvSize, face.textureIndex, rot % 4, customTextures, customMaxTextureSize);
             }
         }
 
-        private static void AddFace(MeshData modeldata, BlockFacing facing, Vector3 relativeCenter, Vector3 size, Vector2 uvStart, Vector2 uvSize, int faceTextureIndex, int uvRotation)
+        private static void AddFace(MeshData modeldata, BlockFacing facing, Vector3 relativeCenter, Vector3 size, Vector2 uvStart, Vector2 uvSize, int faceTextureIndex, int uvRotation, List<LoadedTexture> customTextures = null, int customMaxTextureSize = -1)
         {
             int coordPos = facing.index * 12; // 4 * 3 xyz's perface
             int uvPos = facing.index * 8;     // 4 * 2 uvs per face
             int lastVertexNumber = modeldata.vertices.Count;
 
             Vector2 storedTexSize = Vector2.one;
-            if (faceTextureIndex >= 0 && faceTextureIndex < TextureManager.main.loadedTextures.Count)
+            List<LoadedTexture> textures = customTextures == null ? TextureManager.main.loadedTextures : customTextures;
+            if (faceTextureIndex >= 0 && faceTextureIndex < textures.Count)
             {
-                storedTexSize = TextureManager.main.loadedTextures[faceTextureIndex].storedTextureSizeMultiplier;
+                storedTexSize = textures[faceTextureIndex].storedTextureSizeMultiplier;
             }
 
             for (int i = 0; i < 4; i++)
@@ -251,7 +262,7 @@ namespace VSMC
                     relativeCenter.y + size.y * CubeVertices[coordPos++] / 2,
                     -(relativeCenter.z + size.z * CubeVertices[coordPos++] / 2)));
                 modeldata.uvs.Add(new Vector2(uvStart.x + uvSize.x * CubeUvCoords[uvIndex],
-                    uvStart.y + uvSize.y * CubeUvCoords[uvIndex + 1]) / (TextureManager.main.maxTextureSize * storedTexSize));
+                    uvStart.y + uvSize.y * CubeUvCoords[uvIndex + 1]) / ((customMaxTextureSize == -1 ? TextureManager.main.maxTextureSize : customMaxTextureSize) * storedTexSize));
                 modeldata.textureIndices.Add(faceTextureIndex);
             }
 
@@ -277,14 +288,15 @@ namespace VSMC
             stackMatrix.Clear();
             stackMatrix.PushIdentity();
 
-            ResolveMatricesForShapeElements(shape.Elements);
+            ResolveMatricesForShapeElements(shape.Elements, true);
         }
 
-        private static void ResolveMatricesForShapeElements(ShapeElement[] elements)
+        private static void ResolveMatricesForShapeElements(ShapeElement[] elements, bool root = false)
         {
             Vector3 rotationOrigin = Vector3.zero;
             foreach (ShapeElement element in elements)
             {
+                if (root && element.StepParentElement != null) continue; //Do not process root elements with step parents yet.
                 stackMatrix.Push();
                 if (element.RotationOrigin == null)
                 {
@@ -317,11 +329,8 @@ namespace VSMC
                 //Clone the matrix for the element.
                 element.meshData.storedMatrix = stackMatrix.Top * Matrix4x4.identity;
 
-                //Now do children.
-                if (element.Children != null)
-                {
-                    ResolveMatricesForShapeElements(element.Children);
-                }
+                ResolveMatricesForShapeElements(element.GetChildrenAndStepChildren());
+
                 stackMatrix.Pop();
             }
         }
