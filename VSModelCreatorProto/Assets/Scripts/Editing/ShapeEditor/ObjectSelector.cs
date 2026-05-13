@@ -19,7 +19,6 @@ namespace VSMC
 
         UnityEvent<GameObject> OnObjectSelected;
         UnityEvent<GameObject> OnObjectDeSelected;
-        GameObject cSelected;
 
         List<GameObject> cSelectedList;
 
@@ -27,6 +26,8 @@ namespace VSMC
         RaycastHit[] storedRaycastHits;
         int storedRaycastHitCount;
         int scrollingObjectCounter;
+
+        private bool IsShiftPressed => Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
         private void Awake()
         {
@@ -44,9 +45,19 @@ namespace VSMC
             return cSelectedList.Count > 0;
         }
 
+        public bool IsMultipleSelected()
+        {
+            return cSelectedList.Count > 1;
+        }
+
         public GameObject GetCurrentlySelected()
         {
             return cSelectedList[0];
+        }
+
+        public IEnumerable<GameObject> GetAllCurrentlySelected()
+        {
+            return cSelectedList;
         }
 
         public void RegisterForObjectSelectedEvent(UnityAction<GameObject> toCall)
@@ -101,7 +112,12 @@ namespace VSMC
         public override bool OnSceneViewMouseUp(PointerEventData data)
         {
             if (data.button != 0) return false;
-            if (storedRaycastHitCount <= 0)
+            var isShiftPressed = IsShiftPressed;
+            var isTextureMode = EditModeManager.main.cEditMode == VSEditMode.Texture;
+            var isModelMode = EditModeManager.main.cEditMode == VSEditMode.Model;
+            var deselectedSomething = false;
+
+            if (storedRaycastHitCount <= 0 && (!isModelMode || !isShiftPressed))
             {
                 DeselectAll();
                 //Also deselect attachments at this point, if we have any selected.
@@ -112,14 +128,19 @@ namespace VSMC
             if (scrollingObjectCounter >= storedRaycastHitCount)
             {
                 DeselectLast();
+                deselectedSomething = true;
                 storedRaycastHitCount = 0;
                 scrollingObjectCounter = 0;
-                return true;
+
+                if (!isShiftPressed)
+                {
+                    return true;
+                }
             }
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            if (isShiftPressed)
             {
-                SelectObject(storedRaycastHits[scrollingObjectCounter].collider.gameObject, false, false);
-                if (EditModeManager.main.cEditMode == VSEditMode.Texture)
+                SelectObject(storedRaycastHits[scrollingObjectCounter].collider.gameObject, deselectIfAlreadySelected: isModelMode && !deselectedSomething, group: isModelMode);
+                if (isTextureMode)
                 {
                     //Select a specific face... based on the *local* normal of the contact point.
                     Vector3 normal = storedRaycastHits[scrollingObjectCounter].collider.transform.InverseTransformVector(
@@ -138,13 +159,27 @@ namespace VSMC
                 }
                 return true;
             }
+
+            if (IsMultipleSelected())
+            {
+                DeselectAll();
+            }
+
             SelectObject(storedRaycastHits[scrollingObjectCounter].collider.gameObject, true, false);
             return true;
         }
 
         public void SelectFromUIElement(ElementHierarchyItemPrefab item)
         {
-            SelectObject(ShapeElementRegistry.main.GetShapeElementByUID(item.GetUID()).gameObject.gameObject, false);
+            var isShiftPressed = IsShiftPressed;
+            var multipleSelected = IsMultipleSelected();
+
+            if (multipleSelected && !isShiftPressed)
+            {
+                DeselectAll();
+            }
+
+            SelectObject(ShapeElementRegistry.main.GetShapeElementByUID(item.GetUID()).gameObject.gameObject, deselectIfAlreadySelected: multipleSelected, group: isShiftPressed);
         }
 
         public void DeselectObject(GameObject deselected, bool logErrorIfNotSelected = true)
@@ -190,8 +225,7 @@ namespace VSMC
             {
                 return;
             }
-            //Switch off grouping, for now. I'm unsure how to make it work with actual editing.
-            group = false;
+
             if (cSelectedList.Contains(select))
             {
                 //Object already selected...
@@ -222,6 +256,11 @@ namespace VSMC
             if (editMode == VSEditMode.View || editMode == VSEditMode.None)
             {
                 DeselectAll();
+            }
+            // In texture and animation mode, ensure only 1 object is selected
+            else if ((editMode == VSEditMode.Texture || editMode == VSEditMode.Animation) && IsMultipleSelected())
+            {
+                ReselectCurrent();
             }
         }
 

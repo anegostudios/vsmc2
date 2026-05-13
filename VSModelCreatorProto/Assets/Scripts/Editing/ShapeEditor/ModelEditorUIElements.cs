@@ -12,6 +12,11 @@ public class ModelEditorUIElements : MonoBehaviour
 
     public GameObject entireModelModeObjectGroup;
 
+    [Header("Buttons")]
+    public GameObject deleteElemButton;
+    public GameObject duplicateElemButton;
+    public GameObject reparentElemButton;
+
     [Header("Misc")]
     public TMP_InputField elemName;
 
@@ -142,4 +147,17 @@ public class ModelEditorUIElements : MonoBehaviour
         entireModelModeObjectGroup.SetActive(true);
     }
 
+    public void DisableSingleElementButtons()
+    {
+        deleteElemButton.GetComponent<Button>().interactable = false;
+        duplicateElemButton.GetComponent<Button>().interactable = false;
+        reparentElemButton.GetComponent<Button>().interactable = false;
+    }
+
+    public void EnableSingleElementButtons()
+    {
+        deleteElemButton.GetComponent<Button>().interactable = true;
+        duplicateElemButton.GetComponent<Button>().interactable = true;
+        reparentElemButton.GetComponent<Button>().interactable = true;
+    }
 }

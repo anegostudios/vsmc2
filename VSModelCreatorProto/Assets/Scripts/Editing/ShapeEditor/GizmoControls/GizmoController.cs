@@ -217,12 +217,26 @@ namespace VSMC
             cSelected = selected.GetComponent<ShapeElementGameObject>();
             //Replace the selection, but if not in model mode, do not show the gizmos.
             if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
+
+            // Moving multiple objects not currently supported
+            if (ObjectSelector.main.IsMultipleSelected())
+            {
+                gizmosHolderParent.gameObject.SetActive(false);
+                return;
+            }
+
             SetAppropriateTransformOfGizmos();
             gizmosHolderParent.gameObject.SetActive(true);
         }
 
         public void OnObjectDeselected(GameObject deselected)
         {
+            if (ObjectSelector.main.IsAnySelected() && !ObjectSelector.main.IsMultipleSelected())
+            {
+                OnObjectSelected(ObjectSelector.main.GetCurrentlySelected());
+                return;
+            }
+
             cSelected = null;
             gizmosHolderParent.gameObject.SetActive(false);
         }

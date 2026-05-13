@@ -40,14 +40,30 @@ namespace VSMC
         private void OnObjectSelected(GameObject cSelected)
         {
             if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
+            if (objectSelector.IsMultipleSelected())
+            {
+                uiElements.HideAllUIElements();
+                uiElements.DisableSingleElementButtons();
+                return;
+            }
+
             uiElements.OnElementSelected(cSelected.GetComponent<ShapeElementGameObject>());
             uiElements.ShowAllUIElements();
+            uiElements.EnableSingleElementButtons();
         }
 
         private void OnObjectDeselcted(GameObject deSelected)
         {
             if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
-            uiElements.HideAllUIElements();
+            if (objectSelector.IsAnySelected() && !objectSelector.IsMultipleSelected())
+            {
+                OnObjectSelected(objectSelector.GetCurrentlySelected());
+            }
+            else
+            {
+                uiElements.HideAllUIElements();
+                uiElements.DisableSingleElementButtons();
+            }
         }
 
         public void SetSize(EnumAxis axis, float value)
@@ -125,6 +141,7 @@ namespace VSMC
         public void DeleteSelectedShapeElement()
         {
             if (!objectSelector.IsAnySelected()) return;
+            if (!objectSelector.IsMultipleSelected()) return;
             ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
                 
             TaskDeleteElement deTask = new TaskDeleteElement(cElem);
@@ -139,6 +156,7 @@ namespace VSMC
         {
             //Need to rename the element, but then swap all names in the shape animations too...
             if (!objectSelector.IsAnySelected()) return "";
+            if (!objectSelector.IsMultipleSelected()) return "";
             ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
             TaskRenameElement renameTask = new TaskRenameElement(cElem, newName);
             renameTask.DoTask();
@@ -149,6 +167,7 @@ namespace VSMC
         public void CopyElement()
         {
             if (!objectSelector.IsAnySelected()) return; 
+            if (!objectSelector.IsMultipleSelected()) return;
             ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
             TaskCopyElement copyTask = new TaskCopyElement(cElem);
             copyTask.DoTask();
@@ -158,6 +177,7 @@ namespace VSMC
         public void OpenReparentMenu()
         {
             if (!objectSelector.IsAnySelected()) return;
+            if (!objectSelector.IsMultipleSelected()) return;
             reparentElementOverlay.OpenOverlay(objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element);
         }
 
@@ -171,6 +191,7 @@ namespace VSMC
         public void OpenStepParentMenu()
         {
             if (!objectSelector.IsAnySelected()) return;
+            if (!objectSelector.IsMultipleSelected()) return;
             stepParentOverlay.OpenOverlay(objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element);
         }
     

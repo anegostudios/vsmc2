@@ -12499,7 +12499,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 281548635}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.95626545
+  m_Size: 0.6040085
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -73875,6 +73875,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shapeEditor: {fileID: 1216060312}
   entireModelModeObjectGroup: {fileID: 2021835667}
+  deleteElemButton: {fileID: 710649647}
+  duplicateElemButton: {fileID: 677860962}
+  reparentElemButton: {fileID: 1908266944}
   elemName: {fileID: 1713253671}
   sizeX: {fileID: 926359309}
   sizeY: {fileID: 819145341}
