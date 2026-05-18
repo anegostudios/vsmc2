@@ -21,6 +21,7 @@ public class FrameRateController : MonoBehaviour
         lowPowerModeText.text = lowPowerMode ? "Disable Low Power Mode" : "Enable Low Power Mode";
         Application.targetFrameRate = lowPowerMode ? 30 : 60;
         Application.runInBackground = !lowPowerMode;
+        InfoLogger.main.LogText(lowPowerMode ? "Enabled low power mode" : "Disabled low power mode");
     }
 
 }

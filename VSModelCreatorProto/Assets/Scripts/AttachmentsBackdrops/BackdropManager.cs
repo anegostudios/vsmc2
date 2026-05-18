@@ -173,6 +173,18 @@ namespace VSMC
             catch { return; }
         }
 
+
+        public void AddBackdropFromFileDrop(string path)
+        {
+            string sRel = AssetPathManager.main.GetRelativePathForFile(path, "shapes").Replace(".json", "");
+            if (GetBackdropFromPath(sRel) != null) return; //Cannot duplicate backdrops.
+            TaskCreateNewBackdrop addBackdrop = new TaskCreateNewBackdrop(sRel);
+            addBackdrop.DoTask();
+            UndoManager.main.CommitTask(addBackdrop);
+            BackdropAndAttachmentMenuManager.main.SelectBackdrop(allBackdrops[allBackdrops.Count - 1]);
+            SetEnabledBackdrop(allBackdrops[allBackdrops.Count - 1]);
+        }
+
         /// <summary>
         /// Finds the currently enabled backdrop based on the files, as well as verifying there is only one active.
         /// </summary>

@@ -115,6 +115,7 @@ namespace VSMC
             {
                 g.SetActive(false);
             }
+            InfoLogger.main.LogText("Task \"" + toUndo.GetTaskName() + "\" has been undone.");
         }
 
         public void RedoTopTask()
@@ -136,6 +137,7 @@ namespace VSMC
             {
                 g.SetActive(false);
             }
+            InfoLogger.main.LogText("Task \"" + toRedo.GetTaskName() + "\" has been redone.");
         }
 
         private void Update()

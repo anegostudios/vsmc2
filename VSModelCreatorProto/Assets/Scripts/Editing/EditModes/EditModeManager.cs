@@ -46,6 +46,7 @@ namespace VSMC {
             if (selMode == VSEditMode.None) return;
             OnModeSelectedEvent.Invoke(selMode);
             selectedButtonImages[(int)selMode].color = selectedModeColor;
+            //InfoLogger.main.LogText("Selected edit mode: " + selMode.ToString());
         }
 
         /// <summary>

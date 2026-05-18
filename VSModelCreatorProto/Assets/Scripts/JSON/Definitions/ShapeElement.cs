@@ -27,6 +27,7 @@ namespace VSMC
         /// Whether or not the shape element is shaded.
         /// </summary>
         [JsonProperty]
+        [DefaultValue(true)]
         public bool Shade = true;
 
         [JsonProperty]
@@ -67,25 +68,31 @@ namespace VSMC
         /// How far away are the left/right sides of the shape from the center
         /// </summary>
         [JsonProperty]
+        [DefaultValue(1)]
         public double ScaleX = 1;
 
         /// <summary>
         /// How far away are the top/bottom sides of the shape from the center
         /// </summary>
         [JsonProperty]
+        [DefaultValue(1)]
         public double ScaleY = 1;
 
         /// <summary>
         /// How far away are the front/back sides of the shape from the center.
         /// </summary>
         [JsonProperty]
+        [DefaultValue(1)]
         public double ScaleZ = 1;
 
         [JsonProperty]
         public string ClimateColorMap = null;
+
         [JsonProperty]
         public string SeasonColorMap = null;
+
         [JsonProperty]
+        [DefaultValue(-1)]
         public short RenderPass = -1;
         [JsonProperty]
         public short ZOffset = 0;

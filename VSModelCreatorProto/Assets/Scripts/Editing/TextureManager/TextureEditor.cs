@@ -104,6 +104,7 @@ namespace VSMC {
         {
             entityTextureModeButtonText.text = GetEntityTextureMode() ? "Disable Entity Texture Mode" : "Enable Entity Texture Mode";
             UVLayoutManager.main.OnEntityTextureModeChange();
+            InfoLogger.main.LogText(GetEntityTextureMode() ? "Enabled entity texture mode" : "Disabled entity texture mode");
         }
 
         public static bool GetEntityTextureMode()

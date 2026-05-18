@@ -40,8 +40,6 @@ namespace VSMC
         public GameObject attachmentColorIndexParent;
         public TMP_InputField attachmentColorIndexInput;
 
-        public GameObject loadInContextOverlay;
-
         public BackdropOrAttachmentUIEntry cSelected;
 
         BackdropOrAttachmentUIEntry selectedOnLoadClick;
@@ -307,20 +305,13 @@ namespace VSMC
             if (cSelected != null)
             {
                 selectedOnLoadClick = cSelected;
-                loadInContextOverlay.SetActive(true);
+                SaveOverlayManager.main.OpenSaveOverlayWithFunctions(null, OpenSelectedInContext, "Open In Context",
+                "This will open the selected attachment/backdrop as its own file. This will close the currently loaded file.");
             }
         }
 
-        public void OpenSelectedInContext(int saveIndex)
+        public void OpenSelectedInContext()
         {
-            if (saveIndex == 0) //save normal
-            {
-                ShapeLoader.main.SaveShapeToStoredPath();
-            }
-            else if (saveIndex == 1)
-            {
-                ShapeLoader.main.SaveShapeWithFileSelect();
-            }
             if (selectedOnLoadClick.storedAttachment != null)
             {
                 LoadIntoAttachmentContext context = new LoadIntoAttachmentContext(ShapeLoader.main.storedSaveLocationForFile);
@@ -331,7 +322,6 @@ namespace VSMC
                 LoadIntoBackdropContext context = new LoadIntoBackdropContext(ShapeLoader.main.storedSaveLocationForFile);
                 selectedOnLoadClick.storedBackdrop.LoadInContext(context);
             }
-            loadInContextOverlay.SetActive(false);
         }
 
         #region Backdrop Panel Open/Closing

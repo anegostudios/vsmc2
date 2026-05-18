@@ -72,6 +72,7 @@ namespace VSMC {
             hierarchy.StartCreatingElementPrefabs(newShape);
             EditModeManager.main.SelectMode(VSEditMode.Model);
             onShapeLoadedEvent.Invoke(newShape, null);
+            InfoLogger.main.LogText("New shape created.");
         }
 
         public void LoadShape(string filePath, LoadingContext context = null)
@@ -90,6 +91,7 @@ namespace VSMC {
             hierarchy.StartCreatingElementPrefabs(loadedShape);
             EditModeManager.main.SelectMode(VSEditMode.Model);
             onShapeLoadedEvent.Invoke(loadedShape, context);
+            InfoLogger.main.LogText("Loaded shape successfully.");
         }
 
         public void SaveShapeToStoredPath()
@@ -105,7 +107,7 @@ namespace VSMC {
                 return;
             }
             ShapeAccessor.SerializeShapeToFile(ShapeHolder.CurrentLoadedShape, storedSaveLocationForFile, beforeShapeSaveEvent);
-            Debug.Log("Exported successfully.");
+            InfoLogger.main.LogText("Successfully saved shape.");
         }
 
 
@@ -127,7 +129,7 @@ namespace VSMC {
             }
             storedSaveLocationForFile = saveTo;
             ShapeAccessor.SerializeShapeToFile(ShapeHolder.CurrentLoadedShape, saveTo, beforeShapeSaveEvent);
-            Debug.Log("Exported successfully.");
+            InfoLogger.main.LogText("Successfully saved shape.");
         }
 
         public void UnloadCurrentShape()

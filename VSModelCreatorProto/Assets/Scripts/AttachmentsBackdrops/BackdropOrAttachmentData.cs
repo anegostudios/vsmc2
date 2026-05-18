@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using Newtonsoft.Json;
 using UnityEngine;
 namespace VSMC
 {
@@ -17,6 +19,7 @@ namespace VSMC
         /// Between 0 and 1, the percentage opacity of the rendered backdrop object.
         /// Make sure to use the opaque material when opacity is one to avoid layering issues.
         /// </summary>
+        [DefaultValue(1)]
         public float opacity;
 
         /// <summary>

@@ -44,7 +44,7 @@ namespace VSMC
         /// <summary>
         /// Whether or not the element is enabled.
         /// </summary>
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
+        [DefaultValue(true)]
         public bool Enabled = true;
 
         /// <summary>

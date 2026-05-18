@@ -143,6 +143,18 @@ namespace VSMC
             return allAttachments.FirstOrDefault(x => x.data.shapeFilepath == path);
         }
 
+        public void AddAttachmentFromFileDrop(string path)
+        {
+            string sRel = AssetPathManager.main.GetRelativePathForFile(path, "shapes").Replace(".json", "");
+            if (GetAttachmentFromPath(sRel) != null) return; //Cannot duplicate attachments.
+            TaskCreateNewAttachment addAttachment = new TaskCreateNewAttachment(sRel);
+            addAttachment.DoTask();
+            UndoManager.main.CommitTask(addAttachment);
+            SetEnabledAttachment(allAttachments[allAttachments.Count - 1], true);
+            BackdropAndAttachmentMenuManager.main.SelectAttachment(allAttachments[allAttachments.Count - 1]);
+        }
+
+
         public void SetEnabledAttachment(string attachment, bool enabled)
         {
             SetEnabledAttachment(GetAttachmentFromPath(attachment), enabled);
