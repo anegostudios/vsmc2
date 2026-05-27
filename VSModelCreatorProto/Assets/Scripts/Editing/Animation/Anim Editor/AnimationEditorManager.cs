@@ -120,7 +120,24 @@ namespace VSMC
 
         public void ProgressAnimation(float dt, bool stackOverflowFailsafe = false)
         {
-            if (animator == null || animator.anims == null || cSelectedAnimation == null) return;
+            if (animator == null || animator.anims == null) return;
+
+            if (cSelectedAnimation == null)
+            {
+                for (int i = 0; i < animator.MaxJointId; i++)
+                {
+                    Transform joint = shapeHolder.jointParents[i];
+
+                    //Flip animation matrices too.
+                    Matrix4x4 flipZ = Matrix4x4.Scale(new Vector3(1f, 1f, -1f));
+                    Matrix4x4 m = flipZ * Matrix4x4.identity * flipZ;
+
+                    joint.localPosition = m.GetPosition();
+                    joint.localRotation = m.rotation;
+                    joint.localScale = m.lossyScale;
+                }
+                return;
+            }
 
             RunningAnimation anim = animator.GetAnimationState(cSelectedAnimation.Code);
             if (cSelectedAnimation.KeyFrames.Length == 0) 

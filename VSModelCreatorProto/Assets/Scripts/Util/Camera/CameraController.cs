@@ -54,6 +54,7 @@ namespace VSMC
 
         bool lmbDown = false;
         bool hasMovedSinceLmbDown = false;
+        Vector2 storedLmbOnDown = Vector2.zero;
         bool rmbDown = false;
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -86,6 +87,7 @@ namespace VSMC
             if (data.button == PointerEventData.InputButton.Left)
             {
                 hasMovedSinceLmbDown = false;
+                storedLmbOnDown = Input.mousePosition;
                 lmbDown = true;
                 return false;
             }
@@ -136,9 +138,13 @@ namespace VSMC
                 //Using 'transform.right' and up here allow us to move the camera anchor in reference to the camera's angle.
                 if (mouseMovement.sqrMagnitude >= Mathf.Epsilon)
                 {
+                    
                     cameraAnchorPos -= cameraChild.transform.right * mouseMovement.x * movementSpeed * GetTotalSpeedMultiplier();
                     cameraAnchorPos -= cameraChild.transform.up * mouseMovement.y * movementSpeed * GetTotalSpeedMultiplier();
-                    hasMovedSinceLmbDown = true;
+                    if (!storedLmbOnDown.IsNearlyEqual(Input.mousePosition, 3)) //Allow a tiny amount of movement before blocking further interaction.
+                    {
+                        hasMovedSinceLmbDown = true;
+                    }
                 }
             }
 
@@ -158,10 +164,22 @@ namespace VSMC
             {
                 distFromAnchor -= scrollValue * zoomSpeed * keyboardZoomModifier * GetTotalSpeedMultiplier();
                 distFromAnchor = Mathf.Clamp(distFromAnchor, minMaxDistance.x, minMaxDistance.y);
+                if (Input.GetKeyDown(KeyCode.F) && (EventSystem.current.currentSelectedGameObject?.GetComponent<TMP_InputField>() == null))
+                {
+                    FocusOnSelected();
+                }
             }
             else
             {
                 cameraAnchorPos += scrollValue * zoomSpeed * keyboardZoomModifier * (cameraChild.transform.forward) * GetTotalSpeedMultiplier();
+            }
+        }
+        
+        public void FocusOnSelected()
+        {
+            if (ObjectSelector.main.IsAnySelected())
+            {
+                cameraAnchorPos = ObjectSelector.main.GetCurrentlySelected().transform.position;
             }
         }
 

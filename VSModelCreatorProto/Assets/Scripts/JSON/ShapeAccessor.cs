@@ -13,9 +13,9 @@ public class ShapeAccessor
 
     static UnityEvent<Shape> OnSavingShapeEvent;
 
-    
 
-    public static void SerializeShapeToFile(Shape shape, string filePath, UnityEvent<Shape> onSaveEvent)
+
+    public static void SerializeShapeToFile(Shape shape, string filePath, UnityEvent<Shape> onSaveEvent, bool isAutosave = false)
     {
         //Save some things to the shape itself first...
         onSaveEvent.Invoke(shape);
@@ -34,7 +34,27 @@ public class ShapeAccessor
             }
         };
         File.WriteAllText(filePath, JsonConvert.SerializeObject(shape, Formatting.Indented, settings));
-        SaveManager.main.OnModelSave(filePath);
+        SaveManager.main.OnModelSave(filePath, isAutosave);
+    }
+    
+    public static string SerializeShapeToString(Shape shape, UnityEvent<Shape> onSaveEvent, bool isAutosave = false)
+    {
+        //Save some things to the shape itself first...
+        onSaveEvent.Invoke(shape);
+        shape.ResolveForBeforeSerialization();
+
+        JsonSerializerSettings settings = new JsonSerializerSettings()
+        {
+            NullValueHandling = NullValueHandling.Ignore,
+            DefaultValueHandling = DefaultValueHandling.Ignore,
+            ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy(false, false) },
+            Converters = new List<JsonConverter>
+            {
+                new DoubleArrayJSONConverter(),
+                new FloatArrayJSONConverter()
+            }
+        };
+        return JsonConvert.SerializeObject(shape, Formatting.None, settings);
     }
 
     /// <summary>
@@ -55,23 +75,8 @@ public class ShapeAccessor
             Debug.LogError("Could not read file contents at " + filePath + ". Exception:" + e.Message);
             return null;
         }
-        try //backup.
-        {
-            //Perform an immediate backup.
-            string path = Application.persistentDataPath + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(filePath) + DateTime.Now.ToString("s") + ".json";
 
-            if (Directory.Exists(Path.GetDirectoryName(path)))
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
-            }
-
-            File.WriteAllText(path, contents);
-            Debug.Log("Written file to " + path);
-        }
-        catch (Exception e)
-        {
-            Debug.LogWarning("Could not write file backup. Exception:" + e.Message);
-        }
+        SaveManager.main.CopyFileContentsForBackup(filePath, contents);
 
         JsonSerializerSettings settings = new JsonSerializerSettings();
         settings.Context = new System.Runtime.Serialization.StreamingContext(StreamingContextStates.File, !isBackdropOrAttachment);

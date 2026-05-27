@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
@@ -17,10 +18,7 @@ public class SaveManager : MonoBehaviour
     public Transform recentFilesContentList;
     public GameObject startSectionContent;
     public GameObject modellingSectionContent;
-
-    RenderTexture storedRT;
-    RecentFileEntry storedrec;
-    public Texture2D mostRecentTex;
+    public int autosaveFrequencySeconds = 120;
 
     [System.Serializable]
     public class RecentFiles
@@ -51,7 +49,7 @@ public class SaveManager : MonoBehaviour
                     }
                 }
             }
-            foreach (RecentFileEntry e in toRemove) 
+            foreach (RecentFileEntry e in toRemove)
             {
                 recents = recents.Remove(e);
             }
@@ -65,54 +63,90 @@ public class SaveManager : MonoBehaviour
     void Awake()
     {
         main = this;
-        //LoadRecents();
-        //startSectionContent.SetActive(true);
-        //modellingSectionContent.SetActive(true);
+        LoadRecents();
+        startSectionContent.SetActive(true);
+        modellingSectionContent.SetActive(true);
     }
 
     void Start()
     {
-        //startSectionContent.SetActive(true);
-        //modellingSectionContent.SetActive(false);
+        ShapeLoader.RegisterForOnShapeLoadEvent(OnShapeLoad);
+        modellingSectionContent.SetActive(false);
+        InvokeRepeating("TriggerAutosave", autosaveFrequencySeconds, autosaveFrequencySeconds);
     }
 
-    public void OnModelSave(string path)
+    void Update()
     {
-        return;
+        CheckInputs();
+    }
+
+    void OnShapeLoad(Shape shape, LoadingContext context)
+    {
+        startSectionContent.SetActive(false);
+        modellingSectionContent.SetActive(true);
+    }
+
+    void TriggerAutosave()
+    {
+        ShapeLoader.main.BeginAutosaveThread();
+    }
+
+    public void OnModelSave(string path, bool isAutosave)
+    {
+        if (isAutosave) return;
         RecentFileEntry rec = new RecentFileEntry();
         rec.completeFilePath = path;
         rec.uniqueFileName = Path.GetFileNameWithoutExtension(path);
-        Camera scene = Camera.main;
-        storedRT = scene.targetTexture;
-        RenderTexture nt = new RenderTexture(256, 256, 32, RenderTextureFormat.ARGB32, 0);
-        scene.targetTexture = nt;
-        scene.Render();
         recentFiles.AddToRecents(rec);
-        storedrec = rec;
-        StartCoroutine("SaveModelScreenshot");
         SaveRecents();
     }
 
-
-    IEnumerator SaveModelScreenshot()
+    public void CopyFileContentsForBackup(string path, string contents)
     {
-        //I am 90% sure that most of this is unnecessary, but oh well. It works.
-        yield return new WaitForEndOfFrame();
-        RenderTexture nt = Camera.main.targetTexture;
-        Camera.main.targetTexture = storedRT;
-        storedRT = null;
-        mostRecentTex = new Texture2D(nt.width, nt.height, TextureFormat.ARGB32, false);
-        Graphics.CopyTexture(nt, mostRecentTex);
-        RenderTexture.active = nt;
-        mostRecentTex.ReadPixels(new Rect(0, 0, nt.width, nt.height), 0, 0);
-        RenderTexture.active = Camera.main.targetTexture;
-        storedrec.SavePreviewImage(mostRecentTex);
-        Debug.Log("Saved post render.");
-        yield return null;
+        try //backup.
+        {
+            //Perform an immediate backup.
+            string backupPath = Application.persistentDataPath + Path.DirectorySeparatorChar + "backups" + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(path) + DateTime.Now.ToString("s").Replace(':', '-') + ".json";
+
+            if (!Directory.Exists(Path.GetDirectoryName(backupPath)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(backupPath));
+            }
+
+            File.WriteAllText(backupPath, contents);
+            Debug.Log("Written backup file to " + backupPath);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("Could not write file backup. Exception:" + e.Message);
+        }
+
+        string[] files = Directory.GetFiles(Application.persistentDataPath + Path.DirectorySeparatorChar + "backups");
+        if (files.Length > 32)
+        {
+            //Start of array is one to remove.
+            string[] ordered = files.OrderBy(f => File.GetLastWriteTime(f)).ToArray();
+            File.Delete(ordered[0]);
+        }
+    }
+
+    public void OpenDataFolder()
+    {
+        Application.OpenURL(Application.persistentDataPath);
+    }
+
+    public void OpenWikiPage()
+    {
+        Application.OpenURL("https://wiki.vintagestory.at/Modding:VSMC2");
     }
 
     public void LoadRecents()
     {
+        foreach (Transform t in recentFilesContentList.transform)
+        {
+            Destroy(t.gameObject);
+        }
+
         if (!File.Exists(GetRecentsPath()))
         {
             recentFiles = new RecentFiles();
@@ -122,8 +156,8 @@ public class SaveManager : MonoBehaviour
         if (recentFiles == null || recentFiles.recents == null) recentFiles = new RecentFiles();
 
         //Order the recents based on last write time for the file, then by favourite. (effect is other way around)
-        recentFiles.recents = recentFiles.recents.OrderBy(x => File.GetLastWriteTime(x.completeFilePath))
-        .ThenBy(x => x.markedAsFavourite).Reverse().ToArray();
+        recentFiles.recents = recentFiles.recents.OrderBy(x => x.markedAsFavourite)
+        .ThenBy(x => File.GetLastWriteTime(x.completeFilePath)).Reverse().ToArray();
 
         for (int i = 0; i < recentFiles.recents.Length; i++)
         {
@@ -131,6 +165,13 @@ public class SaveManager : MonoBehaviour
             GetComponentInChildren<RecentFileUIEntry>().Initialize(recentFiles.recents[i]);
         }
 
+    }
+
+    public void DeleteRecent(RecentFileEntry entry)
+    {
+        recentFiles.recents = recentFiles.recents.Remove(entry);
+        SaveRecents();
+        LoadRecents();
     }
 
     public void BeforeFileLoad()
@@ -155,6 +196,24 @@ public class SaveManager : MonoBehaviour
     string GetRecentsPath()
     {
         return Application.persistentDataPath + Path.DirectorySeparatorChar + "recents.json";
+    }
+
+    void CheckInputs()
+    {
+        if (Input.GetKey(KeyCode.LeftControl))
+        {
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                if (Input.GetKey(KeyCode.LeftShift))
+                {
+                    ShapeLoader.main.SaveShapeWithFileSelect();
+                }
+                else
+                {
+                    ShapeLoader.main.SaveShapeToStoredPath();
+                }
+            }
+        }
     }
 
 }

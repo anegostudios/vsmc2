@@ -9,6 +9,7 @@ namespace VSMC
         View = 0,
         Model = 1,
         Texture = 2,
-        Animation = 3
+        Animation = 3,
+        Transform = 4
     }
 }

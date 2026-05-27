@@ -63,14 +63,17 @@ namespace VSMC
             ElementHierarchyManager.ElementHierarchy.GetElementHierarchyItem(elem).elementName.text = newName;
 
             //Animations rely on object names, so we need to rename each entry that has this name.
-            foreach (Animation anim in ShapeHolder.CurrentLoadedShape.Animations)
+            if (ShapeHolder.CurrentLoadedShape.Animations != null)
             {
-                foreach (AnimationKeyFrame keyFrame in anim.KeyFrames)
+                foreach (Animation anim in ShapeHolder.CurrentLoadedShape.Animations)
                 {
-                    if (keyFrame.Elements.ContainsKey(oldName))
+                    foreach (AnimationKeyFrame keyFrame in anim.KeyFrames)
                     {
-                        keyFrame.Elements[newName] = keyFrame.Elements[oldName];
-                        keyFrame.Elements.Remove(oldName);
+                        if (keyFrame.Elements.ContainsKey(oldName))
+                        {
+                            keyFrame.Elements[newName] = keyFrame.Elements[oldName];
+                            keyFrame.Elements.Remove(oldName);
+                        }
                     }
                 }
             }

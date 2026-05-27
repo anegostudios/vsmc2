@@ -33,6 +33,19 @@ namespace VSMC {
         public ScrollRect scrollrect;
         public RectTransform wholeContentRect;
 
+        //Saving of expanded/collapsed timeline elements.
+        public Dictionary<string, List<ShapeElement>> collapsedElements = new Dictionary<string, List<ShapeElement>>();
+
+        void Start()
+        {
+            ShapeLoader.RegisterForOnShapeLoadEvent(OnShapeLoaded);
+        }
+        
+        void OnShapeLoaded(Shape s, LoadingContext c)
+        {
+            collapsedElements = new Dictionary<string, List<ShapeElement>>();
+        }
+
         public void OnNewAnimationSelected(Animation animation)
         {
             //Clear previous entries...
@@ -64,13 +77,14 @@ namespace VSMC {
 
             foreach (KeyValuePair<ShapeElement, List<AnimationKeyFrameElement>> animatedElem in animatedElems)
             {
-                GameObject h = Instantiate(timelineListEntryPrefab, timelineListHolder);
-                h.GetComponent<Image>().color = timelineListHeaderRowColor;
-                GameObject t = Instantiate(timelineListEntryPrefab, timelineListHolder);
-                t.GetComponent<Image>().color = timelineListMainRowColor;
-                GameObject r = Instantiate(timelineListEntryPrefab, timelineListHolder);
-                r.GetComponent<Image>().color = timelineListMainRowColor;
-                Instantiate(elementListEntryPrefab, elementListHolder).GetComponent<TimelineElementCollapsable>().Initialize(this, animatedElem.Key.Name, t, r);
+                GameObject header = Instantiate(timelineListEntryPrefab, timelineListHolder);
+                header.GetComponent<Image>().color = timelineListHeaderRowColor;
+                GameObject translation = Instantiate(timelineListEntryPrefab, timelineListHolder);
+                translation.GetComponent<Image>().color = timelineListMainRowColor;
+                GameObject rotation = Instantiate(timelineListEntryPrefab, timelineListHolder);
+                rotation.GetComponent<Image>().color = timelineListMainRowColor;
+                Instantiate(elementListEntryPrefab, elementListHolder).GetComponent<TimelineElementCollapsable>()
+                .Initialize(this, animatedElem.Key.Name, animatedElem.Key, animation.Code, translation, rotation);
 
                 foreach (AnimationKeyFrameElement kf in animatedElem.Value)
                 {
@@ -78,13 +92,13 @@ namespace VSMC {
                     float posOffset = frame * 32 + 8;
                     if (kf.PositionSet)
                     {
-                        GameObject pkf = Instantiate(translationPrefab, t.transform);
+                        GameObject pkf = Instantiate(translationPrefab, translation.transform);
                         pkf.GetComponent<RectTransform>().localPosition = new Vector3(posOffset, 0);
                         pkf.GetComponent<TimelineKeyFrameElementMarker>().Initialize(this, framelineHolderForWidth, frame, kf, 0, kfSelector);
                     }
                     if (kf.RotationSet)
                     {
-                        GameObject rkf = Instantiate(rotationPrefab, r.transform);
+                        GameObject rkf = Instantiate(rotationPrefab, rotation.transform);
                         rkf.GetComponent<RectTransform>().localPosition = new Vector3(posOffset, 0);
                         rkf.GetComponent<TimelineKeyFrameElementMarker>().Initialize(this, framelineHolderForWidth, frame, kf, 1, kfSelector);
                     }

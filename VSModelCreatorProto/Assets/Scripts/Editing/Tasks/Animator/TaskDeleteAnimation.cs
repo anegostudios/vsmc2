@@ -21,8 +21,8 @@ namespace VSMC
         {
             ShapeHolder.CurrentLoadedShape.Animations =
             ShapeHolder.CurrentLoadedShape.Animations.RemoveAt(removalIndex);
-            AnimationEditorManager.main.OnAnimationDataChanged();
             AnimationSelector.main.DeselectCurrent();
+            AnimationEditorManager.main.OnAnimationDataChanged();
         }
 
         public override void UndoTask()

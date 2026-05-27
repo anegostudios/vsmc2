@@ -66,6 +66,7 @@ namespace VSMC
         {
             //Anim Setup UI events.
             newAnimation.onClick.AddListener(OnNewAnimationClick);
+            deleteAnimation.onClick.AddListener(OnAnimationDeleteClick);
             animName.onEndEdit.AddListener(x => { OnAnimationNameSubmit(x); });
             animCode.onEndEdit.AddListener(x => { OnAnimationCodeSubmit(x); });
             onAnimStopped.onValueChanged.AddListener(x => { OnAnimationStopSelected(x); });

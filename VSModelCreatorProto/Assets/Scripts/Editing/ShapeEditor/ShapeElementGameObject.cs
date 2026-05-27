@@ -124,7 +124,7 @@ namespace VSMC {
                 Vector3[] linePoses = new Vector3[lineSet.Length];
                 for (int li = 0; li < lineSet.Length; li++)
                 {
-                    linePoses[li] = element.meshData.vertices[lineSet[li]];
+                    linePoses[li] = element.meshData.lineVertices[lineSet[li]];
                 }
                 lines.positionCount = linePoses.Length;
                 lines.SetPositions(linePoses);

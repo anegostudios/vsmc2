@@ -20,7 +20,7 @@ namespace VSMC
         public string XGizmoLayer;
         public string YGizmoLayer;
         public string ZGizmoLayer;
-        public float initialiCorrectDistanceForGizmos;
+        public float initialCorrectDistanceForGizmos = 1;
         public TMP_Text toggleGlobalLocalButtonText;
 
         //Each gizmo type has three axes that can be moved.
@@ -56,7 +56,7 @@ namespace VSMC
         {
             //Ideally we want to control the size of the gizmos based on distance from the camera.
             float dist = Vector3.Distance(gizmosHolderParent.transform.position, mainCameraPos.transform.position);
-            float scale = dist / initialiCorrectDistanceForGizmos;
+            float scale = dist / initialCorrectDistanceForGizmos;
             gizmosHolderParent.transform.localScale = scale * Vector3.one;
         }
 
@@ -119,6 +119,11 @@ namespace VSMC
                 GizmoObject gizmo = hit.collider.GetComponent<GizmoObject>();
                 if (gizmo != null)
                 {
+                    //IDEA FOR GIZMO IMPROVEMENT:
+                    //  Upon click, create an infinitely large 3D plane that rotates to be perpendicular to the selected gizmo.
+                    //  Then, raycast each frame to get the position of the mouse on said plane.
+                    //  This will give a position that can be used to set the current object to.
+
                     randomTransformationUID = Random.Range(int.MinValue, int.MaxValue);
                     isAnyAxisSelected = true;
                     cSelAxis = gizmo.gizmoAxis;
