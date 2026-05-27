@@ -14,6 +14,7 @@ namespace VSMC
 
         public static UndoManager main;
         public GameObject[] objectsToDeactivateWhenUndoOrRedo;
+        public GameObject[] objectsToBlockUndoOrRedoIfActive;
         public TMP_Text undoText;
         public TMP_Text redoText;
         public Color defaultTextColor;
@@ -99,6 +100,16 @@ namespace VSMC
         public void UndoTopTask()
         {
             if (completedEditTasks.Count < 1) return;
+
+            foreach (GameObject g in objectsToBlockUndoOrRedoIfActive)
+            {
+                if (g.activeInHierarchy)
+                {
+                    InfoLogger.main.LogText("Please finish the current action before attempting to undo.");
+                    return;
+                }
+            }
+
             IEditTask toUndo = completedEditTasks.First.Value;
 
             //Need to set edit mode to correct mode for undoing.
@@ -121,6 +132,16 @@ namespace VSMC
         public void RedoTopTask()
         {
             if (undoneEditTasks.Count < 1) return;
+
+            foreach (GameObject g in objectsToBlockUndoOrRedoIfActive)
+            {
+                if (g.activeInHierarchy)
+                {
+                    InfoLogger.main.LogText("Please finish the current action before attempting to redo.");
+                    return;
+                }
+            }
+
             IEditTask toRedo = undoneEditTasks.First.Value;
 
             //Need to set edit mode to correct mode for redoing.

@@ -13,12 +13,20 @@ public class WindowsDragAndDropListener : MonoBehaviour
     {
         UnityDragAndDropHook.InstallHook();
         UnityDragAndDropHook.OnDroppedFiles += OnFiles;
+        Application.quitting += OnQuitting;
     }
 
     void OnFiles(List<string> aFiles, POINT aPos)
     {
         fileManager.OnReceivedFile(aFiles);
     }
+
+    void OnQuitting()
+    {
+        UnityDragAndDropHook.UninstallHook();
+    }
+
+    
 
 #endif
 

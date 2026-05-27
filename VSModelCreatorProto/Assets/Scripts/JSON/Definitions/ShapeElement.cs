@@ -125,6 +125,7 @@ namespace VSMC
         /// Is this object shown in the editor?
         /// </summary>
         [JsonProperty]
+        [DefaultValue(true)]
         public bool renderInEditor = true;
 
         /// <summary>
@@ -730,7 +731,10 @@ namespace VSMC
             ShapeElement elem = JsonConvert.DeserializeObject<ShapeElement>(json);
             elem.ParentElement = this.ParentElement;
             elem.StepParentElement = this.StepParentElement;
-            StepParentElement.CurrentStepChildren.Add(elem);
+            if (StepParentElement != null)
+            {
+                StepParentElement.CurrentStepChildren.Add(elem);
+            }
             elem.ResolveReferencesAndUIDs();
             List<ShapeElement> allElem = new List<ShapeElement>() { elem };
             while (allElem.Count > 0)

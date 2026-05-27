@@ -3,6 +3,7 @@ using System.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using VSMC;
 
 public class RecentFileUIEntry : MonoBehaviour
 {
@@ -10,7 +11,6 @@ public class RecentFileUIEntry : MonoBehaviour
     public TMP_Text fileName;
     public TMP_Text fileLastWrite;
     public Image fileFavourite;
-    public RawImage filePreview;
 
     RecentFileEntry entry;
 
@@ -19,8 +19,6 @@ public class RecentFileUIEntry : MonoBehaviour
         this.entry = entry;
         fileName.text = entry.GetModelName();
         fileLastWrite.text = "Last Saved: " + File.GetCreationTime(entry.completeFilePath).ToString("g");
-        filePreview.texture = entry.GetPreviewImage();
-        if (filePreview.texture == null) filePreview.enabled = false;
         Invoke("ResolveFavouriteButton", 0);
     }
 
@@ -29,6 +27,11 @@ public class RecentFileUIEntry : MonoBehaviour
         entry.markedAsFavourite = !entry.markedAsFavourite;
         SaveManager.main.SaveRecents();
         ResolveFavouriteButton();
+    }
+
+    public void OnRemoveButton()
+    {
+        SaveManager.main.DeleteRecent(entry);
     }
 
     void ResolveFavouriteButton()
@@ -41,6 +44,11 @@ public class RecentFileUIEntry : MonoBehaviour
         {
             fileFavourite.CrossFadeColor(Color.white, 0.2f, false, false);
         }
+    }
+
+    public void OpenRecent()
+    {
+        ShapeLoader.main.LoadShape(entry.completeFilePath);
     }
 
 }

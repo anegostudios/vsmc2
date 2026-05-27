@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -25,16 +26,29 @@ public class TimelineElementCollapsable : MonoBehaviour
     public float expandedHeight;
     public float collapsedHeight;
 
+    ShapeElement elem;
+    string animCode;
+
     TimelineManager manager;
 
-    public void Initialize(TimelineManager manager, string elemName, params GameObject[] linkedCollapses)
+    public void Initialize(TimelineManager manager, string elemName, ShapeElement elem, string animCode, params GameObject[] linkedCollapses)
     {
         this.manager = manager;
+        this.elem = elem;
+        this.animCode = animCode;
         nameText.text = elemName;
         elemsToExpandAndCollapse = elemsToExpandAndCollapse.Concat(linkedCollapses).ToArray();
         ObjectSelector.main.RegisterForObjectSelectedEvent(OnAnyElementSelected);
         ObjectSelector.main.RegisterForObjectDeselectedEvent(OnAnyElementDeselected);
         elemNameImage.color = unselColor;
+        if (manager.collapsedElements.TryGetValue(animCode, out List<ShapeElement> elems))
+        {
+            if (elems.Contains(elem))
+            {
+                OnElementCollapsed();
+                return;
+            }
+        }
         OnElementExpanded();
     }
 
@@ -43,10 +57,32 @@ public class TimelineElementCollapsable : MonoBehaviour
         if (collapseButtonImage.sprite == collapseIcon)
         {
             OnElementCollapsed();
+
+            //Add element to collapsed list.
+            if (manager.collapsedElements.TryGetValue(animCode, out List<ShapeElement> elems))
+            {
+                if (!elems.Contains(elem))
+                {
+                    elems.Add(elem);
+                }
+            }
+            else
+            {
+                manager.collapsedElements.Add(animCode, new List<ShapeElement>()
+                {
+                    elem
+                });
+            }
         }
         else
         {
             OnElementExpanded();
+
+            //Remove element from collapsed list.
+            if (manager.collapsedElements.TryGetValue(animCode, out List<ShapeElement> elems))
+            {
+                elems.Remove(elem);
+            }
         }
     }
 

@@ -11,7 +11,7 @@ public class SaveOverlayManager : MonoBehaviour
     public GameObject saveOverlay;
     public TMP_Text saveOverlayTitle;
     public TMP_Text saveOverlayBody;
-    
+
     UnityAction currentOnCancel;
     UnityAction currentOnSaveOrDiscard;
     bool hasCloseBeenConfirmed = false;
@@ -24,6 +24,12 @@ public class SaveOverlayManager : MonoBehaviour
 
     public void OpenSaveOverlayWithFunctions(UnityAction onCancel, UnityAction onSaveOrDiscard, string titleText, string bodyTextP1, bool addConfirmText = true)
     {
+        //No need to prompt for a save if there is nothing to save...
+        if (ShapeHolder.CurrentLoadedShape == null)
+        {
+            onSaveOrDiscard.Invoke();
+            return;
+        }
         saveOverlayTitle.text = titleText;
         saveOverlayBody.text = bodyTextP1 + (addConfirmText ? "\n\nDo you want to save?" : "");
         currentOnCancel = onCancel;
@@ -81,7 +87,12 @@ public class SaveOverlayManager : MonoBehaviour
     void ConfirmClose()
     {
         hasCloseBeenConfirmed = true;
+        Invoke("CloseInvoke", 0.5f); //Give the program a little bit of time before closing.
+    }
+
+    void CloseInvoke()
+    {
         Application.Quit();
     }
-    
+
 }

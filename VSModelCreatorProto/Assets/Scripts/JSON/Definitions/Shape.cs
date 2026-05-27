@@ -34,7 +34,7 @@ namespace VSMC
         /// The animations for the shape.
         /// </summary>
         [JsonProperty]
-        public Animation[] Animations;
+        public Animation[] Animations = new Animation[0];
 
         /// <summary>
         /// The width of the texture. (default: 16)

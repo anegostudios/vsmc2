@@ -29,5 +29,10 @@ public class ProgramPreferences
 
     //Misc
     public static Preference<bool> ShowBackdropsAndAttachmentsPanel = new Preference<bool>("showBackdropsMenu", false);
+    public static Preference<bool> EnableUpdateChecking = new Preference<bool>("enableUpdateChecking", false);
+
+    //Linux file path for desktop settings.
+    public static Preference<string> LastUsedVersion = new Preference<string>("LastUsedVersion", "0.0.0");
+    public static Preference<string> LastUsedLaunchPath = new Preference<string>("LastUsedLaunchPath", "");
 
 }

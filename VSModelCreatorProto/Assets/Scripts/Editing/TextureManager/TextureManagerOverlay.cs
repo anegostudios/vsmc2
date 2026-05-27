@@ -17,6 +17,7 @@ namespace VSMC
         [Header("Unity References")]
         public GameObject selectableTexturePrefab;
         public Transform selectableTexturesHolder;
+        public GameObject selectedTextureProperties;
         public TMP_InputField textureCode;
         public TMP_InputField texturePath;
         public TMP_Text textureFoundAtLabel;
@@ -66,8 +67,9 @@ namespace VSMC
                 textureImages[i] = texUI;
                 texUI.GetComponent<Button>().onClick.AddListener(() => OnTextureSelected(texUI));
             }
-            
+
             gameObject.SetActive(true);
+            selectedTextureProperties.SetActive(false);
 
             if (cSelectedTextureIndex >= 0 && cSelectedTextureIndex < textureImages.Length)
             {
@@ -80,6 +82,8 @@ namespace VSMC
         {
             if (!gameObject.activeSelf) return;
             //We use the tex object name to store its index, this is fine.
+            selectedTextureProperties.SetActive(true);
+
             int selID = int.Parse(texObj.name);
             LoadedTexture tex = TextureManager.main.loadedTextures[selID];
 
@@ -171,7 +175,7 @@ namespace VSMC
         {
             if (cSelectedTextureIndex == -1) return;
             TaskDeleteTexture delTexTask = new TaskDeleteTexture(TextureManager.main.loadedTextures[cSelectedTextureIndex]);
-            cSelectedTextureIndex = -1;
+            DeselectTexture();
             delTexTask.DoTask();
             UndoManager.main.CommitTask(delTexTask);
         }
@@ -193,10 +197,10 @@ namespace VSMC
             UndoManager.main.CommitTask(setTexSizeTask);
         }
 
-        public void OnApplyTextureToAllElements()
+        public void DeselectTexture()
         {
-            if (cSelectedTextureIndex == -1) return;
-            
+            cSelectedTextureIndex = -1;
+            selectedTextureProperties.SetActive(false);
         }
 
         public void RefreshIfOpen()

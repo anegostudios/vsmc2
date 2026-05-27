@@ -229,7 +229,7 @@ namespace VSMC
             for (int f = 0; f < 6; f++)
             {
                 ShapeElementFace face = element.FacesResolved[f];
-                if (face == null || !face.Enabled) continue;
+                if (face == null) continue;
                 BlockFacing facing = BlockFacing.ALLFACES[f];
 
                 Vector2 uv1 = new Vector2(face.Uv[0], face.Uv[3]);
@@ -238,8 +238,31 @@ namespace VSMC
                 Vector2 uvSize = uv2 - uv1;
                 int rot = (int)(face.Rotation / 90);
 
+                AddFaceLineData(meshData, facing, relativeCenter, size);
+                if (!face.Enabled) continue;
                 AddFace(meshData, facing, relativeCenter, size, uv1, uvSize, face.textureIndex, rot % 4, customTextures, customMaxTextureSize);
             }
+        }
+
+        private static void AddFaceLineData(MeshData modeldata, BlockFacing facing, Vector3 relativeCenter, Vector3 size)
+        {
+            int coordPos = facing.index * 12; // 4 * 3 xyz's perface
+            int lastLineVertexNumber = modeldata.lineVertices.Count;
+
+            for (int i = 0; i < 4; i++)
+            {
+                modeldata.lineVertices.Add(new Vector3(relativeCenter.x + size.x * CubeVertices[coordPos++] / 2,
+                    relativeCenter.y + size.y * CubeVertices[coordPos++] / 2,
+                    -(relativeCenter.z + size.z * CubeVertices[coordPos++] / 2)));
+            }
+
+            int[] lines = new int[4];
+            lines[0] = lastLineVertexNumber;
+            lines[1] = lastLineVertexNumber + 1;
+            lines[2] = lastLineVertexNumber + 2;
+            lines[3] = lastLineVertexNumber + 3;
+            modeldata.lineIndices.Add(lines);
+
         }
 
         private static void AddFace(MeshData modeldata, BlockFacing facing, Vector3 relativeCenter, Vector3 size, Vector2 uvStart, Vector2 uvSize, int faceTextureIndex, int uvRotation, List<LoadedTexture> customTextures = null, int customMaxTextureSize = -1)
@@ -273,13 +296,6 @@ namespace VSMC
             modeldata.indices.Add(lastVertexNumber + 0);
             modeldata.indices.Add(lastVertexNumber + 3);
             modeldata.indices.Add(lastVertexNumber + 2);
-
-            int[] lines = new int[4];
-            lines[0] = lastVertexNumber;
-            lines[1] = lastVertexNumber + 1;
-            lines[2] = lastVertexNumber + 2;
-            lines[3] = lastVertexNumber + 3;
-            modeldata.lineIndices.Add(lines);
 
         }
 
