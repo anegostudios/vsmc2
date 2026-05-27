@@ -1,8 +1,9 @@
+using System;
+using System.IO;
 using UnityEngine;
 
 public class LinuxDesktopFileCreator : MonoBehaviour
 {
-#if UNITY_STANDALONE_LINUX
     string desktopFileText = @"[Desktop Entry]
 Categories=Game;Graphics;3DGraphics;
 Comment=Vintage Story Model Creator 2, for creating 3D models for the Vintage Story game
@@ -16,6 +17,8 @@ Version=1.0
 StartupNotify=true";
 
     public GameObject desktopFileCreatorOverlay;
+
+#if UNITY_STANDALONE_LINUX
 
     void Start()
     {
