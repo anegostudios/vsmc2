@@ -338,8 +338,11 @@ namespace VSMC
                     stackMatrix.Rotate(element.RotationZ, 0.0, 0.0, 1.0);
                 }
 
-                //stackMatrix.Rotate(element.RotationX, element.RotationY, element.RotationZ);
                 stackMatrix.Scale(element.ScaleX, element.ScaleY, element.ScaleZ);
+
+                //Save the current matrix for some inverse calculations
+                element.meshData.basisMatrix = stackMatrix.Top * Matrix4x4.identity;
+
                 stackMatrix.Translate((element.From[0] - rotationOrigin.x) / 16.0f, (element.From[1] - rotationOrigin.y) / 16.0f, (element.From[2] - rotationOrigin.z) / 16.0);
 
                 //Clone the matrix for the element.

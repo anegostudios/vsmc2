@@ -211,6 +211,7 @@ namespace VSMC
                 if (t == objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element)
                 {
                     //No.
+                    InfoLogger.main.LogText("Cannot set step-parent as selected object has a child with the given code.");
                     uiElements.RefreshSelectionValues();
                     return;
                 }

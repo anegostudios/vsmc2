@@ -67,6 +67,7 @@ namespace VSMC
             count = 0;
         }
 
+        [Obsolete("You likely want to use the rotate function that works via axis.")]
         public void Rotate(double x, double y, double z)
         {
             Top *= Matrix4x4.Rotate(Quaternion.Euler((float)x, (float)y, (float)z));
@@ -86,8 +87,6 @@ namespace VSMC
         {
             Top *= Matrix4x4.Scale(new Vector3((float)x, (float)y, (float)z));
         }
-
-
         
     }
 }   

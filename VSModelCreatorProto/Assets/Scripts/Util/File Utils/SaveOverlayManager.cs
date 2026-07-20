@@ -25,7 +25,7 @@ public class SaveOverlayManager : MonoBehaviour
     public void OpenSaveOverlayWithFunctions(UnityAction onCancel, UnityAction onSaveOrDiscard, string titleText, string bodyTextP1, bool addConfirmText = true)
     {
         //No need to prompt for a save if there is nothing to save...
-        if (ShapeHolder.CurrentLoadedShape == null)
+        if (ShapeHolder.CurrentLoadedShape == null || !UndoManager.main.HasAnyActionBeenCommitted())
         {
             onSaveOrDiscard.Invoke();
             return;

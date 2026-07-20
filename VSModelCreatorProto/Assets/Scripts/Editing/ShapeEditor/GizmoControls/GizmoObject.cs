@@ -12,6 +12,9 @@ namespace VSMC {
         public GizmoMode gizmoMode;
         public Color hoverColor;
         public Color defaultColor;
+        public Vector3 hoverSize;
+        public Vector3 defaultSize;
+
         MeshRenderer mr;
 
         private void Awake()
@@ -30,11 +33,13 @@ namespace VSMC {
         public void OnHoverStart()
         {
             mr.material.color = hoverColor;
+            transform.localScale = hoverSize;
         }
 
         public void OnHoverEnd()
         {
             mr.material.color = defaultColor;
+            transform.localScale = defaultSize;
         }
 
     }

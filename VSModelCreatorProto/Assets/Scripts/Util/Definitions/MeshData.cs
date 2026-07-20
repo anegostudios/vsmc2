@@ -19,6 +19,9 @@ namespace VSMC
 
         public Matrix4x4 storedMatrix;
 
+        //The matrix before the final translation.
+        public Matrix4x4 basisMatrix;
+
         public MeshData()
         {
             meshName = "New Object";

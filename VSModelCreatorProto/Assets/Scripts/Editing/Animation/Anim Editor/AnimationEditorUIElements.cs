@@ -56,8 +56,8 @@ namespace VSMC
         public RotationSlider rotationKeyframeY;
         public RotationSlider rotationKeyframeZ;
 
-        public CanvasGroup positionKeyFrameBlocker;
-        public CanvasGroup rotationKeyFrameBlocker;
+        public Selectable[] interactablesIfPositionKeyframe;
+        public Selectable[] interactablesIfRotationKeyframe;
 
         //Temp Data
         TaskSetAnimationDuration setAnimDurationTaskAwaitingConfirmation;
@@ -87,9 +87,9 @@ namespace VSMC
             positionKeyframeX.onEndEdit.AddListener(x => { OnPositionXSubmit(x); });
             positionKeyframeY.onEndEdit.AddListener(x => { OnPositionYSubmit(x); });
             positionKeyframeZ.onEndEdit.AddListener(x => { OnPositionZSubmit(x); });
-            rotationKeyframeX.rotSlider.onValueChanged.AddListener(x => { OnRotationXSubmit(x); });
-            rotationKeyframeY.rotSlider.onValueChanged.AddListener(x => { OnRotationYSubmit(x); });
-            rotationKeyframeZ.rotSlider.onValueChanged.AddListener(x => { OnRotationZSubmit(x); });
+            rotationKeyframeX.AddToOnRotationSetEvent(x => { OnRotationXSubmit(x); });
+            rotationKeyframeY.AddToOnRotationSetEvent(x => { OnRotationYSubmit(x); });
+            rotationKeyframeZ.AddToOnRotationSetEvent(x => { OnRotationZSubmit(x); });
 
             //Frame slider and progressor events.
             //frameSlider.onValueChanged.AddListener((x) => { OnFrameSliderChangeValue(x); });
@@ -172,8 +172,10 @@ namespace VSMC
                 if (kfe.PositionSet)
                 {
                     positionKeyframeToggle.SetIsOnWithoutNotify(true);
-                    positionKeyFrameBlocker.interactable = true;
-                    positionKeyFrameBlocker.alpha = 1;
+                    foreach (Selectable sel in interactablesIfPositionKeyframe)
+                    {
+                        sel.interactable = true;
+                    }
                     positionKeyframeX.SetTextWithoutNotify(kfe.OffsetX.Value.ToString("0.###"));
                     positionKeyframeY.SetTextWithoutNotify(kfe.OffsetY.Value.ToString("0.###"));
                     positionKeyframeZ.SetTextWithoutNotify(kfe.OffsetZ.Value.ToString("0.###"));
@@ -181,14 +183,18 @@ namespace VSMC
                 else
                 {
                     positionKeyframeToggle.SetIsOnWithoutNotify(false);
-                    positionKeyFrameBlocker.interactable = false;
-                    positionKeyFrameBlocker.alpha = 0.5f;
+                    foreach (Selectable sel in interactablesIfPositionKeyframe)
+                    {
+                        sel.interactable = false;
+                    }
                 }
                 if (kfe.RotationSet)
                 {
                     rotationKeyframeToggle.SetIsOnWithoutNotify(true);
-                    rotationKeyFrameBlocker.interactable = true;
-                    rotationKeyFrameBlocker.alpha = 1;
+                    foreach (Selectable sel in interactablesIfRotationKeyframe)
+                    {
+                        sel.interactable = true;
+                    }
                     rotationKeyframeX.SetToRotationValue((float)kfe.RotationX.Value);
                     rotationKeyframeY.SetToRotationValue((float)kfe.RotationY.Value);
                     rotationKeyframeZ.SetToRotationValue((float)kfe.RotationZ.Value);
@@ -196,22 +202,26 @@ namespace VSMC
                 else
                 {
                     rotationKeyframeToggle.SetIsOnWithoutNotify(false);
-                    rotationKeyFrameBlocker.interactable = false;
-                    rotationKeyFrameBlocker.alpha = 0.5f;
+                    foreach (Selectable sel in interactablesIfRotationKeyframe)
+                    {
+                        sel.interactable = false;
+                    }
                 }
             }
             else
             {
-                positionKeyframeToggle.SetIsOnWithoutNotify(false);
-                positionKeyFrameBlocker.interactable = false;
-                positionKeyFrameBlocker.alpha = 0.5f;
+                positionKeyframeToggle.SetIsOnWithoutNotify(false); 
+                foreach (Selectable sel in interactablesIfPositionKeyframe)
+                {
+                    sel.interactable = false;
+                }
                 rotationKeyframeToggle.SetIsOnWithoutNotify(false);
-                rotationKeyFrameBlocker.interactable = false;
-                rotationKeyFrameBlocker.alpha = 0.5f;
+                foreach (Selectable sel in interactablesIfRotationKeyframe)
+                {
+                    sel.interactable = false;
+                }
             }
         }
-
-
 
         #endregion
 
@@ -493,8 +503,8 @@ namespace VSMC
                 UndoManager.main.MergeTopTasks();
             }
             else
-            {
-                rotationKeyframeX.SetToRotationValue((float)kfe.RotationX.Value);
+            {   //This shouldn't be possible?
+                //rotationKeyframeX.SetToRotationValue((float)kfe.RotationX.Value);
             }
         }
 
@@ -511,7 +521,7 @@ namespace VSMC
             }
             else
             {
-                rotationKeyframeY.SetToRotationValue((float)kfe.RotationY.Value);
+                //rotationKeyframeY.SetToRotationValue((float)kfe.RotationY.Value);
             }
         }
         
@@ -528,7 +538,7 @@ namespace VSMC
             }
             else
             {
-                rotationKeyframeZ.SetToRotationValue((float)kfe.RotationZ.Value);
+                //rotationKeyframeZ.SetToRotationValue((float)kfe.RotationZ.Value);
             }
         }
 

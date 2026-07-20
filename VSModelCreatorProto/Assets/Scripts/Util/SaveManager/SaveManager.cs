@@ -71,8 +71,32 @@ public class SaveManager : MonoBehaviour
     void Start()
     {
         ShapeLoader.RegisterForOnShapeLoadEvent(OnShapeLoad);
-        modellingSectionContent.SetActive(false);
         InvokeRepeating("TriggerAutosave", autosaveFrequencySeconds, autosaveFrequencySeconds);
+        startSectionContent.SetActive(false);
+        Invoke("CreateNewShapeLateStart", 0.25f);
+        return;
+        /* Enable to enable the home screen.
+        string[] args = Environment.GetCommandLineArgs();
+        foreach (string s in args)
+        {
+            if (s.Contains("-nointroscreen", StringComparison.CurrentCultureIgnoreCase))
+            {
+                startSectionContent.SetActive(false);
+                ShapeLoader.main.CreateNewShape();
+                return;
+            }
+        }
+        modellingSectionContent.SetActive(false);
+        */
+    }
+
+    void CreateNewShapeLateStart()
+    {
+        //There's a chance that at this point, a CLI arg might have been used to open a shape.
+        if (ShapeHolder.CurrentLoadedShape == null)
+        {
+            ShapeLoader.main.CreateNewShape();
+        }
     }
 
     void Update()

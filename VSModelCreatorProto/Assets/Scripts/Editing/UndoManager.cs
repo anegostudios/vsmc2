@@ -194,6 +194,11 @@ namespace VSMC
             }
         }
 
+        public bool HasAnyActionBeenCommitted()
+        {
+            return completedEditTasks.Count > 0;
+        }
+
 
     }
 }

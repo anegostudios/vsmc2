@@ -30,6 +30,13 @@ public class ProgramPreferences
     //Misc
     public static Preference<bool> ShowBackdropsAndAttachmentsPanel = new Preference<bool>("showBackdropsMenu", false);
     public static Preference<bool> EnableUpdateChecking = new Preference<bool>("enableUpdateChecking", false);
+    
+    //Scene Settings
+    public static Preference<bool> EnableLighting = new Preference<bool>("EnableLighting", true);
+    public static Preference<int> ShadowMode = new Preference<int>("shadowMode", 2);
+    public static Preference<bool> EnableTextures = new Preference<bool>("EnableTextures", true);
+    public static Preference<bool> EnableSSAO = new Preference<bool>("EnableSSAO", false);
+
 
     //Linux file path for desktop settings.
     public static Preference<string> LastUsedVersion = new Preference<string>("LastUsedVersion", "0.0.0");

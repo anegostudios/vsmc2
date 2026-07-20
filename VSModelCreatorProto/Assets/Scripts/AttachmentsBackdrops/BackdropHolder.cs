@@ -34,6 +34,8 @@ namespace VSMC
             gameObject.SetActive(data.enabled);
             backdropSolidMaterial = new Material(backdropSolidMaterial);
             backdropTransparentMaterial = new Material(backdropTransparentMaterial);
+            backdropSolidMaterial.SetFloat("_TexturesEnabled", 1);
+            backdropTransparentMaterial.SetFloat("_TexturesEnabled", 1);
             loadedShape.ResolveReferencesAndUIDs(true);
             CreateTextures(loadedShape);
             CreateAllShapeElementGameObjects(loadedShape);

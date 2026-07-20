@@ -29,10 +29,12 @@ namespace VSMC
         public TMP_InputField uvY1;
         public TMP_InputField uvX2;
         public TMP_InputField uvY2;
+        public Selectable[] disableWhenUVsAreMixed;
         public GameObject uvMixedWarningText;
         public Slider uvRotationSlider;
         public MixedElementToggle enabledToggle;
         public MixedElementToggle autoUVToggle;
+        public Selectable[] disableWhenAutoUVIsEnabled;
         public MixedElementToggle snapUVToggle;
         public TMP_InputField elemName;
 
@@ -244,7 +246,7 @@ namespace VSMC
 
             //Set the warning to appear if any UVs are mixed.
             uvMixedWarningText.gameObject.SetActive(anyMixedUVs);
-
+            
             bool areAllSame = true;
             foreach (ShapeElementFace face in selFaces)
             {
@@ -268,7 +270,11 @@ namespace VSMC
             }
             if (!areAllSame) autoUVToggle.SetToggleValue(false, true);
             else autoUVToggle.SetToggleValue(selFaces[0].autoResolutionForUV, false);
-
+            bool interactable = areAllSame && !selFaces[0].autoResolutionForUV;
+            foreach (Selectable sel in disableWhenAutoUVIsEnabled)
+            {
+                sel.interactable = interactable;
+            }
 
             areAllSame = true;
             foreach (ShapeElementFace face in selFaces)

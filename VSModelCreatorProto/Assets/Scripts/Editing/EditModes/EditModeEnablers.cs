@@ -21,7 +21,7 @@ namespace VSMC {
         [Header("Unity References")]
         public EnableList[] enabledObjectsForEditModeID;
 
-        private void Start()
+        void Awake()
         {
             //Disable all...
             foreach (EnableList i in enabledObjectsForEditModeID)
@@ -31,6 +31,10 @@ namespace VSMC {
                     g.SetActive(false);
                 }
             }
+        }
+
+        private void Start()
+        {
             EditModeManager.RegisterForOnModeSelect(OnEditModeSelected);
             EditModeManager.RegisterForOnModeDeselect(OnEditModeDeselected);
         }

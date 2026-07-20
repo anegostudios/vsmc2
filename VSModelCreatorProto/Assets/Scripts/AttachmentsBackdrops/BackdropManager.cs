@@ -52,7 +52,7 @@ namespace VSMC
         /// </summary>
         void LoadBackdropsFromShapeData(Shape shape, LoadingContext context)
         {
-            Debug.Log("Loading backdrop data from shape.");
+            Debug.Log ("Loading backdrop data from shape.");
             cActiveBackdrop = null;
             allBackdrops = new List<LoadedBackdrop>();
             foreach (Transform t in transform)

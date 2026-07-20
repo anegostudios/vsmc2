@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,6 +11,7 @@ namespace VSMC {
         [Space(16)]
         //Grid Objects
         public GameObject gridOuter;
+        public GameObject gridFloorOuter;
         public GameObject gridFloorMinorHori;
         public GameObject gridFloorMinorVert;
         public GameObject gridFloorMajorHori;
@@ -64,6 +63,15 @@ namespace VSMC {
                 gridOuterLinePositions[i] = ConvertToRangedValue(gridOuterDefaultPositions[i], minVals, maxVals) / 16f;
             }
             gridOuterLines.SetPositions(gridOuterLinePositions);
+
+            //Outer grid floor.
+            LineRenderer gridOuterLinesFloor = gridFloorOuter.GetComponent<LineRenderer>();
+            Vector3[] gridOuterLineFloorPositions = new Vector3[4];
+            gridOuterLineFloorPositions[0] = ConvertToRangedValue(gridOuterDefaultPositions[0], minVals, maxVals) / 16f;
+            gridOuterLineFloorPositions[1] = ConvertToRangedValue(gridOuterDefaultPositions[1], minVals, maxVals) / 16f;
+            gridOuterLineFloorPositions[2] = ConvertToRangedValue(gridOuterDefaultPositions[2], minVals, maxVals) / 16f;
+            gridOuterLineFloorPositions[3] = ConvertToRangedValue(gridOuterDefaultPositions[3], minVals, maxVals) / 16f;
+            gridOuterLinesFloor.SetPositions(gridOuterLineFloorPositions);
 
             //Inner Minor Grids...
             //The minor grid works a little differently - It doesn't have stored values but instead follows a pattern.

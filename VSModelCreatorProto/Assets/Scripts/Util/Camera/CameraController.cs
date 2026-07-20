@@ -62,7 +62,7 @@ namespace VSMC
         {
             mousePosAction = InputSystem.actions.FindAction("Look");
             uiControlledSpeedButtonText.text = uiControlledSpeedMultiplier.ToString("0.##") + "x Camera Speed";
-            cameraModeButtonText.text = CurrentCameraMode.ToString();
+            cameraModeButtonText.text = "Camera Mode: " + CurrentCameraMode.ToString();
         }
 
         // Update is called once per frame
@@ -195,7 +195,8 @@ namespace VSMC
                 CurrentCameraMode = CameraMode.Orbital;
                 cameraAnchorPos += (cameraChild.transform.forward) * distFromAnchor;
             }
-            cameraModeButtonText.text = CurrentCameraMode.ToString();
+            InfoLogger.main.LogText("Camera mode has been changed to " + CurrentCameraMode.ToString());
+            cameraModeButtonText.text = "Camera Mode: "+CurrentCameraMode.ToString();
         }
 
         public void ResetCamera()

@@ -155,7 +155,7 @@ namespace VSMC
             {
                 prefDir = Path.GetDirectoryName(prefDir);
             }
-            string[] selFile = SFB.StandaloneFileBrowser.OpenFilePanel("Select texture...", prefDir, "png", false);
+            string[] selFile = SFB.StandaloneFileBrowser.OpenFilePanel("Select texture...", (string)prefDir.Clone(), "png", false);
             if (selFile == null || selFile.Length == 0 || selFile[0].Trim().Length == 0) return;
 
             string p = selFile[0];

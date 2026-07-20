@@ -42,6 +42,7 @@ namespace VSMC
         void Awake()
         {
             main = this;
+            locallyFoundAssetPath = "";
             assetPaths = ProgramPreferences.PreferredAssetPaths.GetValue().Split(new[] { "!#!" }, System.StringSplitOptions.RemoveEmptyEntries).ToList();
             useLocalAssetPathFirst = ProgramPreferences.UseLocalAssetPathFirst.GetValue();
         }
@@ -95,8 +96,10 @@ namespace VSMC
 
         public string GetFullFilePathFromLocal(string localPath, string folderNameToSearchIn)
         {
+            if (Path.IsPathRooted(localPath)) return localPath;
             if (useLocalAssetPathFirst && locallyFoundAssetPath != "")
             {
+                Debug.Log("Intermittent Step: " + locallyFoundAssetPath);
                 foreach (string dirs in GetDefaultSearchOrder(Directory.GetDirectories(locallyFoundAssetPath, folderNameToSearchIn, SearchOption.AllDirectories)))
                 {
                     Debug.Log(dirs);

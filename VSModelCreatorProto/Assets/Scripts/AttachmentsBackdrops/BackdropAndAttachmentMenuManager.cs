@@ -32,13 +32,14 @@ namespace VSMC
         public Toggle backdropDisableTexturesToggle;
         public GameObject backdropColorIndexParent;
         public TMP_InputField backdropColorIndexInput;
-
+        public Button removeBackdropButton;
 
         public GameObject attachmentModificationParent;
         public Slider attachmentOpacitySlider;
         public Toggle attachmentDisableTexturesToggle;
         public GameObject attachmentColorIndexParent;
         public TMP_InputField attachmentColorIndexInput;
+        public Button removeAttachmentButton;
 
         public BackdropOrAttachmentUIEntry cSelected;
 
@@ -116,6 +117,7 @@ namespace VSMC
                     return;
                 }
             }
+            
         }
 
         public void SelectAttachment(LoadedAttachment attachment)
@@ -196,13 +198,26 @@ namespace VSMC
         {
             backdropModificationParent.SetActive(false);
             attachmentModificationParent.SetActive(false);
-            if (cSelected == null) return;
-            if (cSelected.storedBackdrop != null) RefreshValuesForSelectedBackdrop();
-            else if (cSelected.storedAttachment != null) RefreshValuesForSelectedAttachment();
+            if (cSelected == null)
+            {
+                removeAttachmentButton.interactable = false;
+                removeBackdropButton.interactable = false;
+            }
+            else if (cSelected.storedBackdrop != null)
+            {
+                RefreshValuesForSelectedBackdrop();
+                removeAttachmentButton.interactable = false;
+            }
+            else if (cSelected.storedAttachment != null)
+            {
+                RefreshValuesForSelectedAttachment();
+                removeBackdropButton.interactable = false;
+            }
         }
 
         public void RefreshValuesForSelectedBackdrop()
         {
+            removeBackdropButton.interactable = true;
             backdropModificationParent.SetActive(true);
             backdropOpacitySlider.SetValueWithoutNotify(cSelected.storedBackdrop.data.opacity);
             backdropDisableTexturesToggle.SetIsOnWithoutNotify(cSelected.storedBackdrop.data.hideTextures);
@@ -212,6 +227,7 @@ namespace VSMC
 
         public void RefreshValuesForSelectedAttachment()
         {
+            removeAttachmentButton.interactable = true;
             attachmentModificationParent.SetActive(true);
             attachmentOpacitySlider.SetValueWithoutNotify(cSelected.storedAttachment.data.opacity);
             attachmentDisableTexturesToggle.SetIsOnWithoutNotify(cSelected.storedAttachment.data.hideTextures);

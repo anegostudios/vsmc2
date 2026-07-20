@@ -170,7 +170,7 @@ namespace VSMC {
 
             shapeHolder.OnShapeLoaded(newShape, true);
             hierarchy.StartCreatingElementPrefabs(newShape);
-            EditModeManager.main.SelectMode(VSEditMode.Model);
+            EditModeManager.main.SelectMode(VSEditMode.Model, forceRefresh: true);
             onShapeLoadedEvent.Invoke(newShape, null);
             InfoLogger.main.LogText("New shape created.");
         }
@@ -189,7 +189,7 @@ namespace VSMC {
             }
             shapeHolder.OnShapeLoaded(loadedShape);
             hierarchy.StartCreatingElementPrefabs(loadedShape);
-            EditModeManager.main.SelectMode(VSEditMode.Model);
+            EditModeManager.main.SelectMode(VSEditMode.Model, forceRefresh: true);
             onShapeLoadedEvent.Invoke(loadedShape, context);
             InfoLogger.main.LogText("Loaded shape successfully.");
         }

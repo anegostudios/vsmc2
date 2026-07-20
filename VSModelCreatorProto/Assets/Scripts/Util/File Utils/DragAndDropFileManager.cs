@@ -27,6 +27,7 @@ public class DragAndDropFileManager : MonoBehaviour
 
     void Awake()
     {
+
 #if UNITY_STANDALONE_WIN
         //Enable Windows listener.
         windowsListener.gameObject.SetActive(true);
@@ -34,6 +35,7 @@ public class DragAndDropFileManager : MonoBehaviour
         //Enable Linux listener.
 #endif
     }
+
 
     public void OnReceivedFile(List<string> droppedFilePath)
     {
@@ -84,7 +86,7 @@ public class DragAndDropFileManager : MonoBehaviour
         }
         else if (Path.GetExtension(storedFilepath).ToLower() == ".json") //shape... hopefully.
         {
-            InfoLogger.main.LogText("Received dropped file - Loading as shape file.");
+            InfoLogger.main.LogText("Received dropped file - Loading as shape file.");  
             //If no shape file, just load the shape immediately.
             if (ShapeHolder.CurrentLoadedShape == null)
             {
@@ -130,11 +132,24 @@ public class DragAndDropFileManager : MonoBehaviour
 
     LoadedTexture GetTextureFromFilepath()
     {
-        string texPath = AssetPathManager.main.GetRelativePathForFile(storedFilepath, "textures").Replace(".png", "");
-        texPath = Path.GetFullPath(AssetPathManager.main.FindTextureFilePath(texPath + ".png")); //May seem odd, but we want the files to resolve to the exact same path with the same format.
+        string texPath = AssetPathManager.main.GetRelativePathForFile(storedFilepath, "textures");
+        Debug.Log("Fuck " + texPath);
+        if (!Path.IsPathRooted(texPath)) //If the path is rooted, then it has no asset path from the manager.
+        {
+            texPath = AssetPathManager.main.FindTextureFilePath(texPath);
+            Debug.Log("my " + texPath);
+        }
+        texPath = Path.GetFullPath(texPath);
+        Debug.Log("life " + texPath);
         foreach (LoadedTexture loadedTex in TextureManager.main.loadedTextures)
         {
-            if (Path.GetFullPath(AssetPathManager.main.FindTextureFilePath(loadedTex.path + ".png")).Equals(texPath, StringComparison.CurrentCultureIgnoreCase))
+            Debug.Log("ihateeverything " + loadedTex.code);
+            string s = AssetPathManager.main.FindTextureFilePath(loadedTex.path + ".png");
+            if (s == "" || s == null)
+            {
+                continue;
+            }
+            if (Path.GetFullPath(s).Equals(texPath, StringComparison.CurrentCultureIgnoreCase))
             {
                 return loadedTex;
             } 

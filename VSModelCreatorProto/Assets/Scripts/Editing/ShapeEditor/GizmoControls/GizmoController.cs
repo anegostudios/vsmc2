@@ -97,6 +97,12 @@ namespace VSMC
             if (cSelected != null) SetAppropriateTransformOfGizmos();
         }
 
+        public void SetGlobalLocalTranslation(bool doGlobalTranslation)
+        {
+            this.doGlobalTranslation = doGlobalTranslation;
+            if (cSelected != null) SetAppropriateTransformOfGizmos();
+        }
+
         /// <summary>
         /// Calculates and sets the position and rotation of the gizmos.
         /// </summary>

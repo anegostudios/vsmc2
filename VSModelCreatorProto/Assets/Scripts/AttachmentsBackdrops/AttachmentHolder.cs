@@ -32,6 +32,8 @@ namespace VSMC
             gameObject.SetActive(data.enabled);
             attachmentSolidMaterial = new Material(attachmentSolidMaterial);
             attachmentTransparentMaterial = new Material(attachmentTransparentMaterial);
+            attachmentSolidMaterial.SetFloat("_TexturesEnabled", 1);
+            attachmentTransparentMaterial.SetFloat("_TexturesEnabled", 1);
             loadedShape.ResolveReferencesAndUIDs(true);
             CreateTextures(loadedShape);
             CreateAllShapeElementGameObjects(loadedShape);

@@ -14,6 +14,10 @@ public class ModelEditorUIElements : MonoBehaviour
 
     [Header("Misc")]
     public TMP_InputField elemName;
+    [Tooltip("Any selectables in here will be not interactable if an object is not selected.")]
+    public Selectable[] selectablesThatRequireSelection;
+
+    public OptionSlider localOrGlobalOption;
 
     [Header("Size")]
     public TMP_InputField sizeX;
@@ -31,20 +35,16 @@ public class ModelEditorUIElements : MonoBehaviour
     public TMP_InputField originZ;
 
     [Header("Rotations")]
-    public TMP_InputField rotX;
-    public TMP_InputField rotY;
-    public TMP_InputField rotZ;
     public RotationSlider rotXSlider;
     public RotationSlider rotYSlider;
     public RotationSlider rotZSlider;
 
     [Header("Misc")]
+    public GizmoController gizmoController;
     public TMP_InputField stepparentInput;
     public GameObject stepparentInputGameObject;
     public GameObject nonRootObjectStepparentWarning;
     public GameObject couldntFindStepParentElementWarning;
-
-    string dpString = "0.###";
 
     private void Start()
     {
@@ -53,7 +53,7 @@ public class ModelEditorUIElements : MonoBehaviour
 
     private void RegisterUIEvents()
     {
-
+        localOrGlobalOption.AddListenerOnValueChanged(SetLocalOrGlobalMode);
         elemName.onEndEdit.AddListener(val => { elemName.SetTextWithoutNotify(shapeEditor.RenameElement(val)); });
 
         sizeX.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.X, float.Parse(val)); });
@@ -68,14 +68,9 @@ public class ModelEditorUIElements : MonoBehaviour
         originY.onEndEdit.AddListener(val => { shapeEditor.SetRotationOrigin(EnumAxis.Y, float.Parse(val)); });
         originZ.onEndEdit.AddListener(val => { shapeEditor.SetRotationOrigin(EnumAxis.Z, float.Parse(val)); });
 
-        //Rotation fields will also set their respective sliders.
-        rotX.onEndEdit.AddListener(val => { shapeEditor.SetRotation(EnumAxis.X, float.Parse(val)); rotXSlider.SetToRotationValue(float.Parse(val)); });
-        rotY.onEndEdit.AddListener(val => { shapeEditor.SetRotation(EnumAxis.Y, float.Parse(val)); rotZSlider.SetToRotationValue(float.Parse(val)); });
-        rotZ.onEndEdit.AddListener(val => { shapeEditor.SetRotation(EnumAxis.Z, float.Parse(val)); rotYSlider.SetToRotationValue(float.Parse(val)); });
-
-        rotXSlider.rotSlider.onValueChanged.AddListener(val => { shapeEditor.SetRotation(EnumAxis.X, rotXSlider.Val); rotX.SetTextWithoutNotify(rotXSlider.Val.ToString()); });
-        rotYSlider.rotSlider.onValueChanged.AddListener(val => { shapeEditor.SetRotation(EnumAxis.Y, rotYSlider.Val); rotY.SetTextWithoutNotify(rotYSlider.Val.ToString()); });
-        rotZSlider.rotSlider.onValueChanged.AddListener(val => { shapeEditor.SetRotation(EnumAxis.Z, rotZSlider.Val); rotZ.SetTextWithoutNotify(rotZSlider.Val.ToString()); });
+        rotXSlider.AddToOnRotationSetEvent(val => { shapeEditor.SetRotation(EnumAxis.X, rotXSlider.Val); });
+        rotYSlider.AddToOnRotationSetEvent(val => { shapeEditor.SetRotation(EnumAxis.Y, rotYSlider.Val); });
+        rotZSlider.AddToOnRotationSetEvent(val => { shapeEditor.SetRotation(EnumAxis.Z, rotZSlider.Val); });
 
         stepparentInput.onEndEdit.AddListener(val => { shapeEditor.SetStepParentElement(val); });
     }
@@ -85,6 +80,27 @@ public class ModelEditorUIElements : MonoBehaviour
         //Funtime naming of variables here.
         ShapeElement elem = element.element;
         elemName.text = elem.Name;
+        RefreshSelectables();
+
+        Vector3 pos;
+        Vector3 orig;
+        Vector3 rot;
+        //if (true) //This was gonna change the values from local to global but I don't think its necessary right now.
+        //{
+            //Local.
+            pos = new Vector3((float)elem.From[0], (float)elem.From[1], (float)elem.From[2]);
+            orig = new Vector3((float)elem.RotationOrigin[0], (float)elem.RotationOrigin[1], (float)elem.RotationOrigin[2]);
+            rot = new Vector3((float)elem.RotationX, (float)elem.RotationY, (float)elem.RotationZ);
+        //}
+        //else
+        //{
+        //    //Global
+        //    pos = elem.GetWorldFrom();
+        //    orig = elem.GetWorldRotationOrigin();
+        //    rot = elem.meshData.storedMatrix.rotation.eulerAngles;
+        //}
+
+        string dpString = UIConfigManager.main.decimalFormatting;
 
         Vector3 size = new Vector3(
             (float)(elem.To[0] - elem.From[0]),
@@ -94,24 +110,21 @@ public class ModelEditorUIElements : MonoBehaviour
         sizeY.SetTextWithoutNotify(size.y.ToString(dpString));
         sizeZ.SetTextWithoutNotify(size.z.ToString(dpString));
 
-        posX.SetTextWithoutNotify(elem.From[0].ToString(dpString));
-        posY.SetTextWithoutNotify(elem.From[1].ToString(dpString));
-        posZ.SetTextWithoutNotify(elem.From[2].ToString(dpString));
+        posX.SetTextWithoutNotify(pos.x.ToString(dpString));
+        posY.SetTextWithoutNotify(pos.y.ToString(dpString));
+        posZ.SetTextWithoutNotify(pos.z.ToString(dpString));
 
-        originX.SetTextWithoutNotify(elem.RotationOrigin[0].ToString(dpString));
-        originY.SetTextWithoutNotify(elem.RotationOrigin[1].ToString(dpString));
-        originZ.SetTextWithoutNotify(elem.RotationOrigin[2].ToString(dpString));
+        originX.SetTextWithoutNotify(orig.x.ToString(dpString));
+        originY.SetTextWithoutNotify(orig.y.ToString(dpString));
+        originZ.SetTextWithoutNotify(orig.z.ToString(dpString));
 
-        rotX.SetTextWithoutNotify(elem.RotationX.ToString(dpString));
-        rotY.SetTextWithoutNotify(elem.RotationY.ToString(dpString));
-        rotZ.SetTextWithoutNotify(elem.RotationZ.ToString(dpString));
-        rotXSlider.SetToRotationValue((float)elem.RotationX);
-        rotYSlider.SetToRotationValue((float)elem.RotationY);
-        rotZSlider.SetToRotationValue((float)elem.RotationZ);
+        rotXSlider.SetToRotationValue(rot.x);
+        rotYSlider.SetToRotationValue(rot.y);
+        rotZSlider.SetToRotationValue(rot.z);
 
         stepparentInput.SetTextWithoutNotify(elem.StepParentName);
         //Non-root objects should not have step parents.
-        if (elem.ParentElement == null) 
+        if (elem.ParentElement == null)
         {
             stepparentInputGameObject.SetActive(true);
             nonRootObjectStepparentWarning.SetActive(false);
@@ -131,15 +144,29 @@ public class ModelEditorUIElements : MonoBehaviour
         OnElementSelected(ObjectSelector.main.GetCurrentlySelected().GetComponent<ShapeElementGameObject>());
     }
 
+    public void RefreshSelectables()
+    {
+        foreach (Selectable s in selectablesThatRequireSelection)
+        {
+            s.interactable = ObjectSelector.main.IsAnySelected();
+        }
+    }
 
     public void HideAllUIElements()
     {
+        RefreshSelectables();
         entireModelModeObjectGroup.SetActive(false);
     }
 
     public void ShowAllUIElements()
     {
         entireModelModeObjectGroup.SetActive(true);
+    }
+
+    private void SetLocalOrGlobalMode(int val)
+    {
+        gizmoController.SetGlobalLocalTranslation(val == 1);
+        //RefreshSelectionValues();
     }
 
 }

@@ -18,6 +18,25 @@ namespace VSMC
         public ShapeEditorSettings editor = new ShapeEditorSettings();
 
         /// <summary>
+        /// The width of the texture. (default: 16)
+        /// </summary>
+        [JsonProperty]
+        public int TextureWidth = 16;
+
+        /// <summary>
+        /// The height of the texture (default: 16) 
+        /// </summary>
+        [JsonProperty]
+        public int TextureHeight = 16;
+
+        /// <summary>
+        /// The size of each individual texture.
+        /// <br/>You should be using <see cref="LoadedTexture.storedWidth"/> and <see cref="LoadedTexture.storedHeight"/>!
+        /// </summary>
+        [JsonProperty]
+        public Dictionary<string, int[]> TextureSizes = new Dictionary<string, int[]>();
+
+        /// <summary>
         /// The collection of textures in the shape. The Dictionary keys are the texture short names, used in each ShapeElementFace.
         /// <br/>You should be using <see cref="TextureManager.loadedTextures"/>!
         /// </summary>  
@@ -36,24 +55,6 @@ namespace VSMC
         [JsonProperty]
         public Animation[] Animations = new Animation[0];
 
-        /// <summary>
-        /// The width of the texture. (default: 16)
-        /// </summary>
-        [JsonProperty]
-        public int TextureWidth = 16;
-
-        /// <summary>
-        /// The height of the texture (default: 16) 
-        /// </summary>
-        [JsonProperty]
-        public int TextureHeight = 16;
-
-        /// <summary>
-        /// The size of each individual texture.
-        /// <br/>You should be using <see cref="LoadedTexture.storedWidth"/> and <see cref="LoadedTexture.storedHeight"/>!
-        /// </summary>
-        [JsonProperty]
-        public Dictionary<string, int[]> TextureSizes = new Dictionary<string, int[]>();
         
         //Joints stuff.
         public Dictionary<int, AnimationJoint> JointsById = new Dictionary<int, AnimationJoint>();

@@ -16,10 +16,24 @@ public class ReparentElementOverlay : MonoBehaviour
     public Button applyButton;
     public Button setNoParentButton;
     int selID;
+    public GameObject elementHasStepparentError;
 
     public void OpenOverlay(ShapeElement selElem)
     {
         if (clonedHierarchy != null) DestroyImmediate(clonedHierarchy);
+
+        //Do NOT allow reparenting an element that has a step parent.
+        if (selElem.StepParentElement != null || !string.IsNullOrEmpty(selElem.StepParentName))
+        {
+            gameObject.SetActive(true);
+            reparentElementText.text = "Reparent Element " + selElem.Name;
+            setNoParentButton.interactable = false;
+            elementHasStepparentError.SetActive(true);
+            applyButton.interactable = false;
+            return;
+        }
+
+        elementHasStepparentError.SetActive(false);
         clonedHierarchy = Instantiate(elementHierarchyToCopy, hierarchyParent);
         reparentElementText.text = "Reparent Element " + selElem.Name;
         this.selID = selElem.elementUID;

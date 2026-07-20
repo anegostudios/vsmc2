@@ -1,6 +1,8 @@
 using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace VSMC {
@@ -20,9 +22,7 @@ namespace VSMC {
         private UnityEvent<VSEditMode> OnModeDeselectedEvent;
 
         [Header("Unity Refs")]
-        public Image[] selectedButtonImages;
-        public Color deselectedModeColor;
-        public Color selectedModeColor;
+        public TMP_Dropdown editModeDropdown;
         public GameObject[] blockModeChangeIfAnyAreActive;
         public GameObject[] objectsToDeactivateUponModeChange;
 
@@ -32,10 +32,11 @@ namespace VSMC {
             main = this;
             OnModeSelectedEvent = new UnityEvent<VSEditMode>();
             OnModeDeselectedEvent = new UnityEvent<VSEditMode>();
-            foreach (Image i in selectedButtonImages)
-            {
-                i.color = deselectedModeColor;
-            }
+        }
+
+        void Start()
+        {
+            
         }
 
         /// <summary>
@@ -45,7 +46,7 @@ namespace VSMC {
         {
             if (selMode == VSEditMode.None) return;
             OnModeSelectedEvent.Invoke(selMode);
-            selectedButtonImages[(int)selMode].color = selectedModeColor;
+            editModeDropdown.SetValueWithoutNotify((int)selMode);
             //InfoLogger.main.LogText("Selected edit mode: " + selMode.ToString());
         }
 
@@ -56,7 +57,6 @@ namespace VSMC {
         {
             if (deselMode == VSEditMode.None) return;
             OnModeDeselectedEvent.Invoke(deselMode);
-            selectedButtonImages[(int)deselMode].color = deselectedModeColor;
         }
 
         /// <summary>
@@ -89,10 +89,10 @@ namespace VSMC {
         /// Returns false if there is an active gameobject blocking the mode change.
         /// </summary>
         /// <param name="mode"></param>
-        public bool SelectMode(VSEditMode mode, bool shouldCheckForBlockedObjects = false)
+        public bool SelectMode(VSEditMode mode, bool shouldCheckForBlockedObjects = false, bool forceRefresh = false)
         {
             if (ShapeHolder.CurrentLoadedShape == null) return true;
-            if (mode == cEditMode) return true;
+            if (mode == cEditMode && !forceRefresh) return true;
             if (shouldCheckForBlockedObjects)
             {
                 foreach (GameObject g in blockModeChangeIfAnyAreActive)
@@ -109,6 +109,27 @@ namespace VSMC {
                 g.SetActive(false);
             }
             return true;
+        }
+
+        void Update()
+        {
+            CheckForKeybinds();
+        }
+
+        void CheckForKeybinds()
+        {
+            if (Input.GetKey(KeyCode.LeftControl))
+            {
+                int sel = -1;
+                if (Input.GetKeyDown(KeyCode.Alpha0)) sel = 0;
+                else if (Input.GetKeyDown(KeyCode.Alpha1)) sel = 1;
+                else if (Input.GetKeyDown(KeyCode.Alpha2)) sel = 2;
+                else if (Input.GetKeyDown(KeyCode.Alpha3)) sel = 3;
+                if (sel != -1 && (EventSystem.current.currentSelectedGameObject?.GetComponent<TMP_InputField>() == null))
+                {
+                    SelectMode(sel);
+                }   
+            }
         }
 
     }

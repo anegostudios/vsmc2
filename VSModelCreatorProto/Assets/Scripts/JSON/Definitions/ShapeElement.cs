@@ -4,6 +4,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Linq;
+using Unity.VisualScripting;
 
 namespace VSMC
 {
@@ -161,11 +162,20 @@ namespace VSMC
         /// The unique ID for this element.
         /// </summary>
         public int elementUID = -1;
-        
+
         /// <summary>
         /// The stored mesh data for this element.
         /// </summary>
         public MeshData meshData;
+        
+        public Matrix4x4 ParentMatrix
+        {
+            get
+            {
+                if (ParentElement == null) return Matrix4x4.identity;
+                return ParentElement.meshData.storedMatrix;
+            }
+        }
 
         /// <summary>
         /// The game object for this element.
@@ -692,6 +702,41 @@ namespace VSMC
                 }
             }
         }
+
+        public Vector3 GetWorldFrom()
+        {
+            if (meshData == null) return Vector3.zero;
+            return meshData.storedMatrix.MultiplyPoint3x4(Vector3.zero);
+        }
+
+        public Vector3 GetWorldRotationOrigin()
+        {
+            return ParentMatrix.MultiplyPoint3x4(new Vector3((float)RotationOrigin[0],
+            (float)RotationOrigin[1],
+            (float)RotationOrigin[2]) / 16) * 16;
+        }
+
+        public Matrix4x4 ApplyTransform(Matrix4x4 mat)
+        {
+            mat *= Matrix4x4.Translate(new Vector3((float)RotationOrigin[0], (float)RotationOrigin[1], (float)RotationOrigin[2]));
+            if (RotationX != 0.0)
+            {
+                mat *= Matrix4x4.Rotate(Quaternion.AngleAxis((float)RotationX, Vector3.right));
+            }
+            if (RotationY != 0.0)
+            {
+                mat *= Matrix4x4.Rotate(Quaternion.AngleAxis((float)RotationY, Vector3.up));
+            }
+            if (RotationZ != 0.0)
+            {
+                mat *= Matrix4x4.Rotate(Quaternion.AngleAxis((float)RotationZ, Vector3.forward));
+            }
+            mat *= Matrix4x4.Translate(-new Vector3((float)RotationOrigin[0], (float)RotationOrigin[1], (float)RotationOrigin[2]));
+            mat *= Matrix4x4.Translate(new Vector3((float)From[0], (float)From[1], (float)From[2]));
+            return mat;
+        }
+
+        
 
         /// <summary>
         /// A specific function to rotate a vector only by this objects rotation values.

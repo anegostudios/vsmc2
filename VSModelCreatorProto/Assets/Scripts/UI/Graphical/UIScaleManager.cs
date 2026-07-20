@@ -18,7 +18,9 @@ public class UIScaleManager : MonoBehaviour
     private void Awake()
     {
         //Setup events.
-        scaleSlider.onValueChanged.AddListener(x => { scaleText.text = "UI Scale: " + x.ToString("0.00") + "x.\nDetected width: "+ highestWidth.ToString(); 
+        scaleSlider.onValueChanged.AddListener(x =>
+        {
+            scaleText.text = "UI Scale: " + x.ToString("0.00") + "x.\nDetected width: " + highestWidth.ToString();
             mainCanvasScaler.scaleFactor = x;
             ProgramPreferences.UIScale.SetValue(x);
         });
@@ -26,13 +28,17 @@ public class UIScaleManager : MonoBehaviour
         //Testing...
         //ProgramPreferences.UIScale.SetValue(-1);
 
+    }
+
+    void Start()
+    {
         //Set UI Scale based on preferences.
-        if (ProgramPreferences.UIScale.GetValue() < 1)
+        if (ProgramPreferences.UIScale.GetValue() < 1) //scale not set - probably first launch.
         {
             if (GetRecommendedScale() > 1)
             {
                 //Open the scale overlay.
-                OpenScaleSlider();
+                SetScale(GetRecommendedScale());
             }
             return;
         }
