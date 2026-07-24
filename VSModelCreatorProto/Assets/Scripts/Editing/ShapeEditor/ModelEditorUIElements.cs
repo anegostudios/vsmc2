@@ -111,9 +111,9 @@ public class ModelEditorUIElements : MonoBehaviour
         //if (true) //This was gonna change the values from local to global but I don't think its necessary right now.
         //{
         //Local.
-        pos = new Vector3((float)elem.From[0], (float)elem.From[1], (float)elem.From[2]);
-        orig = new Vector3((float)elem.RotationOrigin[0], (float)elem.RotationOrigin[1], (float)elem.RotationOrigin[2]);
-        rot = new Vector3((float)elem.RotationX, (float)elem.RotationY, (float)elem.RotationZ);
+            pos = new Vector3((float)elem.From[0], (float)elem.From[1], (float)elem.From[2]);
+            orig = new Vector3((float)elem.RotationOrigin[0], (float)elem.RotationOrigin[1], (float)elem.RotationOrigin[2]);
+            rot = new Vector3((float)elem.RotationX, (float)elem.RotationY, (float)elem.RotationZ);
         //}
         //else
         //{
@@ -126,7 +126,7 @@ public class ModelEditorUIElements : MonoBehaviour
         string dpString = UIConfigManager.main.decimalFormatting;
 
         Vector3 size = new Vector3(
-            (float)(elem.To[0] - elem.From[0]), 
+            (float)(elem.To[0] - elem.From[0]),
             (float)(elem.To[1] - elem.From[1]),
             (float)(elem.To[2] - elem.From[2]));
         sizeX.SetTextWithoutNotify(size.x.ToString(dpString));
@@ -148,6 +148,7 @@ public class ModelEditorUIElements : MonoBehaviour
         climateColorMap.text = elem.ClimateColorMap;
         seasonColorMap.text = elem.SeasonColorMap;
         renderPass.SetValueWithoutNotify(elem.RenderPass);
+        zOffset.SetTextWithoutNotify(elem.ZOffset.ToString(dpString));
 
         stepparentInput.SetTextWithoutNotify(elem.StepParentName);
         //Non-root objects should not have step parents.
