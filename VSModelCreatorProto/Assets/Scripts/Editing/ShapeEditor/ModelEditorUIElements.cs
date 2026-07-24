@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -39,6 +42,15 @@ public class ModelEditorUIElements : MonoBehaviour
     public RotationSlider rotYSlider;
     public RotationSlider rotZSlider;
 
+    [Header("Climate color map")]
+    public TMP_InputField climateColorMap;
+    [Header("Season color map")]
+    public TMP_InputField seasonColorMap;
+    [Header("Render pass")]
+    public TMP_Dropdown renderPass;
+    [Header("Z Offset")]
+    public TMP_InputField zOffset;
+
     [Header("Misc")]
     public GizmoController gizmoController;
     public TMP_InputField stepparentInput;
@@ -48,6 +60,11 @@ public class ModelEditorUIElements : MonoBehaviour
 
     private void Start()
     {
+        renderPass.ClearOptions();
+
+        var options = Enum.GetNames(typeof(EnumRenderPass)).ToList();
+        renderPass.AddOptions(options);
+
         RegisterUIEvents();
     }
 
@@ -72,6 +89,12 @@ public class ModelEditorUIElements : MonoBehaviour
         rotYSlider.AddToOnRotationSetEvent(val => { shapeEditor.SetRotation(EnumAxis.Y, rotYSlider.Val); });
         rotZSlider.AddToOnRotationSetEvent(val => { shapeEditor.SetRotation(EnumAxis.Z, rotZSlider.Val); });
 
+        climateColorMap.onEndEdit.AddListener(val => { climateColorMap.SetTextWithoutNotify(shapeEditor.SetClimateColorMap(val)); });
+        seasonColorMap.onEndEdit.AddListener(val => { seasonColorMap.SetTextWithoutNotify(shapeEditor.SetSeasonColorMap(val)); });
+        renderPass.onValueChanged.AddListener(val => { shapeEditor.SetRenderPass((EnumRenderPass)(val)); });
+
+        zOffset.onEndEdit.AddListener(val => { shapeEditor.SetZOffset(short.Parse(val)); });
+
         stepparentInput.onEndEdit.AddListener(val => { shapeEditor.SetStepParentElement(val); });
     }
 
@@ -87,7 +110,7 @@ public class ModelEditorUIElements : MonoBehaviour
         Vector3 rot;
         //if (true) //This was gonna change the values from local to global but I don't think its necessary right now.
         //{
-            //Local.
+        //Local.
             pos = new Vector3((float)elem.From[0], (float)elem.From[1], (float)elem.From[2]);
             orig = new Vector3((float)elem.RotationOrigin[0], (float)elem.RotationOrigin[1], (float)elem.RotationOrigin[2]);
             rot = new Vector3((float)elem.RotationX, (float)elem.RotationY, (float)elem.RotationZ);
@@ -121,6 +144,11 @@ public class ModelEditorUIElements : MonoBehaviour
         rotXSlider.SetToRotationValue(rot.x);
         rotYSlider.SetToRotationValue(rot.y);
         rotZSlider.SetToRotationValue(rot.z);
+
+        climateColorMap.text = elem.ClimateColorMap;
+        seasonColorMap.text = elem.SeasonColorMap;
+        renderPass.SetValueWithoutNotify(elem.RenderPass);
+        zOffset.SetTextWithoutNotify(elem.ZOffset.ToString(dpString));
 
         stepparentInput.SetTextWithoutNotify(elem.StepParentName);
         //Non-root objects should not have step parents.
