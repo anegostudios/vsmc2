@@ -23405,7 +23405,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25dcd61907b140e4fa8623b0fb12267a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  faceIndex: 0
+  faceIndex: 1
   zoomAndPanTransform: {fileID: 1867301979}
   mainTexture: {fileID: 1183038819}
   grid: {fileID: 1399179871}
@@ -24877,7 +24877,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25dcd61907b140e4fa8623b0fb12267a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  faceIndex: 0
+  faceIndex: 4
   zoomAndPanTransform: {fileID: 850854547}
   mainTexture: {fileID: 1846803064}
   grid: {fileID: 537111661}
@@ -85323,7 +85323,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25dcd61907b140e4fa8623b0fb12267a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  faceIndex: 0
+  faceIndex: 2
   zoomAndPanTransform: {fileID: 1624632686}
   mainTexture: {fileID: 1808923064}
   grid: {fileID: 1797686306}
@@ -98150,7 +98150,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25dcd61907b140e4fa8623b0fb12267a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  faceIndex: 0
+  faceIndex: 3
   zoomAndPanTransform: {fileID: 901475168}
   mainTexture: {fileID: 1424983482}
   grid: {fileID: 1140978307}
@@ -99255,7 +99255,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25dcd61907b140e4fa8623b0fb12267a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  faceIndex: 0
+  faceIndex: 5
   zoomAndPanTransform: {fileID: 1449358128}
   mainTexture: {fileID: 1932246488}
   grid: {fileID: 320493299}
