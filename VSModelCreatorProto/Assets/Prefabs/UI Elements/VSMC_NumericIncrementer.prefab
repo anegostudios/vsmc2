@@ -84,7 +84,7 @@ MonoBehaviour:
   decButton: {fileID: 5974348592169660806}
   standardInc: 1
   shiftMult: 0.1
-  shiftAndControlMult: 0.01
+  shiftAndAltMult: 0.01
   useAxisColor: 0
   axis: 0
 --- !u!114 &8280214442348036613
@@ -115,6 +115,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2754084075471919081}
     m_Modifications:
+    - target: {fileID: 974015144235239919, guid: eef8246315eedb1fdb5d70a09837d046, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 377d4ed23024c20e883776708dc9ce0b, type: 3}
+    - target: {fileID: 974015144235239919, guid: eef8246315eedb1fdb5d70a09837d046, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 1683390607627746443, guid: eef8246315eedb1fdb5d70a09837d046, type: 3}
       propertyPath: m_Name
       value: VSMC_NumericInput
@@ -357,6 +365,10 @@ PrefabInstance:
       propertyPath: m_Color.r
       value: 0.8
       objectReference: {fileID: 0}
+    - target: {fileID: 5884889481868071409, guid: 6a7a4436addf37c13865c558479eda65, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 9fa98bbb7dbe6093c8025c500f67b11d, type: 3}
     - target: {fileID: 7429548038547612120, guid: 6a7a4436addf37c13865c558479eda65, type: 3}
       propertyPath: m_Name
       value: UpInc
@@ -486,6 +498,10 @@ PrefabInstance:
       propertyPath: m_Color.r
       value: 0.8018868
       objectReference: {fileID: 0}
+    - target: {fileID: 5884889481868071409, guid: 6a7a4436addf37c13865c558479eda65, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 9ea7233508a8e7e96b92715aa29cde2b, type: 3}
     - target: {fileID: 7429548038547612120, guid: 6a7a4436addf37c13865c558479eda65, type: 3}
       propertyPath: m_Name
       value: DownInc
