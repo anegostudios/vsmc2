@@ -1,9 +1,14 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.UI;
+using VSMC;
 
 public class SceneSettings : MonoBehaviour
 {
+
+    public static SceneSettings main;
 
     public Light mainLight;
     public TMP_Text shadowSettingText;
@@ -17,10 +22,39 @@ public class SceneSettings : MonoBehaviour
     public Color lightingDisabledColor;
     public UniversalRendererData rendererData;
 
+    public GameObject modelOpacityOverlay;
+    public float modelOpacity;
+    public Slider modelOpacitySlider;
+    public TMP_InputField modelOpacityInput;
+    public Material transparentMaterialForOpacityControl;
+    public GameObject shapeHolder;
+
+    void Awake()
+    {
+        main = this;
+    }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        modelOpacityInput.onEndEdit.AddListener(x =>
+        {
+            try
+            {
+                modelOpacitySlider.value = float.Parse(x);
+            }
+            catch { modelOpacityInput.SetTextWithoutNotify(modelOpacitySlider.value.ToString("0.00")); }
+        });
+        modelOpacitySlider.onValueChanged.AddListener(x =>
+        {
+            try
+            {
+                modelOpacityInput.SetTextWithoutNotify(x.ToString("0.00"));
+            }
+            catch { };
+        });
+        modelOpacitySlider.value = 1;
+        ApplyModelOpacity();
         RefreshSceneSettings();
     }
 
@@ -122,5 +156,30 @@ public class SceneSettings : MonoBehaviour
         SetSSAOEnabled(!GetSSAOEnabled());
     }
 
+    public void OpenModelOpacityOverlay()
+    {
+        modelOpacityOverlay.SetActive(true);
+        modelOpacitySlider.SetValueWithoutNotify(modelOpacity);
+        modelOpacityInput.SetTextWithoutNotify(modelOpacity.ToString("0.00"));
+    }
 
+    public void OnModelOpacityScroll(BaseEventData e)
+    {
+        if (Input.mouseScrollDelta.y > Mathf.Epsilon) { modelOpacitySlider.value += Input.GetKey(KeyCode.LeftShift) ? 0.01f : 0.1f; }
+        else if (Input.mouseScrollDelta.y < -Mathf.Epsilon) { modelOpacitySlider.value -= Input.GetKey(KeyCode.LeftShift) ? 0.01f : 0.1f; }
+    }
+
+    public void ApplyModelOpacity()
+    {
+        modelOpacity = modelOpacitySlider.value;
+        transparentMaterialForOpacityControl.SetFloat("_OpacityMultiplier", modelOpacity);
+
+        //Refresh all game objects in the shape holder - This will also process deleted elements.
+        foreach (ShapeElementGameObject go in shapeHolder.GetComponentsInChildren<ShapeElementGameObject>(true))
+        {
+            go.RefreshMaterialChoice();
+        }
+
+    }
+    
 }

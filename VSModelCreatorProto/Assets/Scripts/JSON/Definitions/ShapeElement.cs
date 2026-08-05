@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Linq;
 using Unity.VisualScripting;
+using System.Text.RegularExpressions;
 
 namespace VSMC
 {
@@ -720,7 +721,7 @@ namespace VSMC
         {
             mat *= Matrix4x4.Translate(new Vector3((float)RotationOrigin[0], (float)RotationOrigin[1], (float)RotationOrigin[2]));
             if (RotationX != 0.0)
-            {
+            {   
                 mat *= Matrix4x4.Rotate(Quaternion.AngleAxis((float)RotationX, Vector3.right));
             }
             if (RotationY != 0.0)
@@ -792,11 +793,9 @@ namespace VSMC
                 ShapeElementRegistry.main.UnregisterShapeElement(cElem);
 
                 //Now validate the name.
-                int nameCheckCount = 1;
-                string nameStart = cElem.Name;
                 while (ShapeElementRegistry.main.GetShapeElementByName(cElem.Name) != null)
                 {
-                    cElem.Name = nameStart + " (" + ++nameCheckCount + ")";
+                    cElem.Name = IncrementName(cElem.Name);
                 }
             }
             elem.ResolveFacesAndTextures(TextureManager.main.loadedTextures);
@@ -808,6 +807,19 @@ namespace VSMC
             //This may seem odd but we need this to be null for the copy task - However it is used throughout the matrix calculations.
             elem.ParentElement = null;
             return elem;
+        }
+
+        public static string IncrementName(string name)
+        {
+            Match match = Regex.Match(name, @"(\d+)$");
+
+            if (match.Success)
+            {
+                int number = int.Parse(match.Groups[1].Value);
+                return name.Substring(0, match.Index) + (number + 1);
+            }
+
+            return name + "1";
         }
 
         public void ResolveUVForFaces()

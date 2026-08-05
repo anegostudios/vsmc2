@@ -69,8 +69,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Element 1
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: db51c5a68c7ab12218b1192e17e3ee8b, type: 2}
+  m_sharedMaterial: {fileID: 5469504131984319511, guid: db51c5a68c7ab12218b1192e17e3ee8b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -105,6 +105,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -179,6 +180,22 @@ MonoBehaviour:
           m_TargetAssemblyTypeName: VSMC.AnimationEntryPrefab, Assembly-CSharp
           m_MethodName: OnElementNameClicked
           m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventID: 7
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3229805453534220121}
+          m_TargetAssemblyTypeName: VSMC.AnimationEntryPrefab, Assembly-CSharp
+          m_MethodName: OnElementScrolled
+          m_Mode: 0
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
             m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -305,3 +322,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animCode: 
   animationName: {fileID: 4154610545529736311}
+  parentScroll: {fileID: 0}

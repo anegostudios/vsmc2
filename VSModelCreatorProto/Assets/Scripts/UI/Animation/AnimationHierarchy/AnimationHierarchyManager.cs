@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace VSMC
 {
@@ -35,7 +36,7 @@ namespace VSMC
         private void CreateAnimEntry(Animation anim)
         {
             GameObject animUI = GameObject.Instantiate(animEntryPrefab, hierarchyParent);
-            animUI.GetComponent<AnimationEntryPrefab>().InitializePrefab(anim.Name, anim.Code);
+            animUI.GetComponent<AnimationEntryPrefab>().InitializePrefab(anim.Name, anim.Code, hierarchyParent.GetComponentInParent<ScrollRect>(true));
             uiElementsByAnimCode.Add(anim.Code, animUI);
         }
 

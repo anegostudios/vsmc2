@@ -15,7 +15,7 @@ public class FloatIncrementer : MonoBehaviour
     [Space(8)]
     public float standardInc = 1;
     public float shiftMult = 0.1f;
-    public float shiftAndAltMult = 0.01f;
+    //public float shiftAndAltMult = 0.01f;
     string dpFormat;
 
     [Header("Axis Colors")]
@@ -46,7 +46,7 @@ public class FloatIncrementer : MonoBehaviour
         float val = standardInc;
         if (Input.GetKey(KeyCode.LeftShift))
         {
-            val *= Input.GetKey(KeyCode.LeftAlt) ? shiftAndAltMult : shiftMult;
+            val *= shiftMult; //Input.GetKey(KeyCode.LeftControl) ? shiftAndAltMult : shiftMult;
         }
         inputField.text = (float.Parse(inputField.text) + val).ToString(dpFormat);
         inputField.onEndEdit.Invoke(inputField.text);
@@ -59,7 +59,7 @@ public class FloatIncrementer : MonoBehaviour
         float val = standardInc;
         if (Input.GetKey(KeyCode.LeftShift))
         {
-            val *= Input.GetKey(KeyCode.LeftControl) ? shiftAndAltMult : shiftMult;
+            val *= shiftMult; //Input.GetKey(KeyCode.LeftControl) ? shiftAndAltMult : shiftMult;
         }
         inputField.text = (float.Parse(inputField.text) - val).ToString(dpFormat);
         inputField.onEndEdit.Invoke(inputField.text);

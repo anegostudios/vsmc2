@@ -17,6 +17,8 @@ namespace VSMC
 
         void OnLogReceived(string condition, string stackTrace, LogType type)
         {
+            //Replace my home path in the log.
+            stackTrace = stackTrace.Replace("/home/nat/Documents/GitHub/vsmc2/VSModelCreatorProto", "vsmc2");
             //Only show exceptions, errors, and potentially warnings to the user.
             if (type == LogType.Exception || type == LogType.Error || (type == LogType.Warning && showWarningsToUserToo))
             {

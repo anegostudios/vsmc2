@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+    using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using VSMC;
@@ -10,6 +10,8 @@ using System;
 public class DragAndDropFileManager : MonoBehaviour
 {
     public WindowsDragAndDropListener windowsListener;
+
+    public List<string> droppedFilePaths;
 
     public string storedFilepath;
     public GameObject openShapeFileFromFileDropOverlay;
@@ -36,8 +38,26 @@ public class DragAndDropFileManager : MonoBehaviour
 #endif
     }
 
+    void Start()
+    {
+        droppedFilePaths = new List<string>();
+    }
+
+    void Update()
+    {
+        if (droppedFilePaths.Count > 0)
+        {
+            ProcessFiles(droppedFilePaths);
+            droppedFilePaths = new List<string>();
+        }
+    }
 
     public void OnReceivedFile(List<string> droppedFilePath)
+    {
+        droppedFilePaths = droppedFilePath;
+    }
+
+    public void ProcessFiles(List<string> droppedFilePath)
     {
         //Only allow one file drop at a time.
         if (droppedFilePath.Count != 1)
@@ -86,7 +106,7 @@ public class DragAndDropFileManager : MonoBehaviour
         }
         else if (Path.GetExtension(storedFilepath).ToLower() == ".json") //shape... hopefully.
         {
-            InfoLogger.main.LogText("Received dropped file - Loading as shape file.");  
+            InfoLogger.main.LogText("Received dropped file - Loading as shape file.");
             //If no shape file, just load the shape immediately.
             if (ShapeHolder.CurrentLoadedShape == null)
             {

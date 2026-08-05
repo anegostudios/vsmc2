@@ -240,4 +240,9 @@ public class SaveManager : MonoBehaviour
         }
     }
 
+    public void CloseProgram()
+    {
+        Application.Quit();
+    }
+
 }

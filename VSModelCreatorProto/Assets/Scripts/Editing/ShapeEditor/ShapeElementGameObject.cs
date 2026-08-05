@@ -154,7 +154,7 @@ namespace VSMC {
         public void RefreshMaterialChoice()
         {
             if (gameObject == null) return;
-            if (element.RenderPass == 3) gameObject.GetComponent<MeshRenderer>().material = TextureManager.main.transparentMaterial;
+            if (element.RenderPass == 3 || SceneSettings.main.modelOpacity <= 0.99f) gameObject.GetComponent<MeshRenderer>().material = TextureManager.main.transparentMaterial;
             else gameObject.GetComponent<MeshRenderer>().material = TextureManager.main.modelMaterial;
         }
 

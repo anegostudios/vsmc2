@@ -54,27 +54,27 @@ namespace VSMC
         {
             if (completedEditTasks.Count <= 0)
             {
-                undoText.GetComponentInParent<Toggle>(true).interactable = false;
-                undoText.text = "Undo (Ctrl+Z)";
+                undoText.GetComponentInParent<Button>(true).interactable = false;
+                undoText.text = "Undo";
                 undoText.color = disabledTextColor;
             }
             else
             {
-                undoText.GetComponentInParent<Toggle>(true).interactable = true;
-                undoText.text = "Undo " + completedEditTasks.First.Value.GetTaskName() + " (Ctrl+Z)";
+                undoText.GetComponentInParent<Button>(true).interactable = true;
+                undoText.text = "Undo " + completedEditTasks.First.Value.GetTaskName();
                 undoText.color = defaultTextColor;
             }
 
             if (undoneEditTasks.Count <= 0)
             {
-                redoText.GetComponentInParent<Toggle>(true).interactable = false;
-                redoText.text = "Redo (Ctrl+Y)";
+                redoText.GetComponentInParent<Button>(true).interactable = false;
+                redoText.text = "Redo";
                 redoText.color = disabledTextColor;
             }
             else
             {
-                redoText.GetComponentInParent<Toggle>(true).interactable = true;
-                redoText.text = "Redo " + undoneEditTasks.First.Value.GetTaskName() + " (Ctrl+Y)";
+                redoText.GetComponentInParent<Button>(true).interactable = true;
+                redoText.text = "Redo " + undoneEditTasks.First.Value.GetTaskName();
                 redoText.color = defaultTextColor;
             }
         }

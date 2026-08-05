@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class UIScaleManager : MonoBehaviour
@@ -8,7 +9,8 @@ public class UIScaleManager : MonoBehaviour
     public CanvasScaler mainCanvasScaler;
     public GameObject scaleOverlay;
     public Slider scaleSlider;
-    public TMP_Text scaleText;
+    public TMP_InputField scaleInput;
+    public Button applyButton;
 
 
     [Header("Other Vals")]    
@@ -20,9 +22,24 @@ public class UIScaleManager : MonoBehaviour
         //Setup events.
         scaleSlider.onValueChanged.AddListener(x =>
         {
-            scaleText.text = "UI Scale: " + x.ToString("0.00") + "x.\nDetected width: " + highestWidth.ToString();
-            mainCanvasScaler.scaleFactor = x;
-            ProgramPreferences.UIScale.SetValue(x);
+            scaleInput.SetTextWithoutNotify(x.ToString("0.00"));
+        });
+
+        scaleInput.onEndEdit.AddListener(x =>
+        {
+            try
+            {
+                scaleSlider.value = Mathf.Clamp(float.Parse(x), scaleSlider.minValue, scaleSlider.maxValue);
+            }
+            catch
+            {
+                scaleInput.SetTextWithoutNotify(scaleSlider.value.ToString("0.00"));
+            }
+        });
+
+        applyButton.onClick.AddListener(() =>
+        {
+            SetScale(scaleSlider.value);
         });
 
         //Testing...
@@ -37,7 +54,7 @@ public class UIScaleManager : MonoBehaviour
         {
             if (GetRecommendedScale() > 1)
             {
-                //Open the scale overlay.
+                //Default to an appropriate scale..
                 SetScale(GetRecommendedScale());
             }
             return;
@@ -49,13 +66,19 @@ public class UIScaleManager : MonoBehaviour
     {
         scaleSlider.minValue = 1;
         scaleSlider.maxValue = GetRecommendedScale() * 2;
+        SetScale(ProgramPreferences.UIScale.GetValue());
         scaleOverlay.SetActive(true);
-        scaleText.text = "UI Scale: " + mainCanvasScaler.scaleFactor.ToString("0.00") + "x.\nDetected width: " + highestWidth.ToString();
+    }
+
+    public void OnScrollInputFieldOrSlider(BaseEventData data)
+    {
+        if (Input.mouseScrollDelta.y > Mathf.Epsilon) { scaleSlider.value += Input.GetKey(KeyCode.LeftShift) ? 0.01f : 0.1f; }
+        else if (Input.mouseScrollDelta.y < -Mathf.Epsilon) { scaleSlider.value -= Input.GetKey(KeyCode.LeftShift) ? 0.01f : 0.1f; }
     }
 
     public void SetToRecommended()
     {
-        scaleSlider.value = GetRecommendedScale();
+        SetScale(GetRecommendedScale());
     }
 
     void CalcHighestSupportedWidth()
@@ -88,6 +111,8 @@ public class UIScaleManager : MonoBehaviour
     public void SetScale(float scale)
     {
         if (scale < 1) return;
+        mainCanvasScaler.scaleFactor = scale;
+        ProgramPreferences.UIScale.SetValue(scale);
         scaleSlider.value = scale;
     }
 

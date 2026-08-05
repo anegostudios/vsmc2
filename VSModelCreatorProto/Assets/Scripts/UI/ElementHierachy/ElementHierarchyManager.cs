@@ -40,6 +40,8 @@ namespace VSMC
             {
                 CreateElementPrefabs(elem, 0);
                 DetermineIfElementIsMinimized(elem);
+                //We also want to calculate whether the element is hidden here.
+                elem.RecalculateHiddenStatus();
             }
         }
 

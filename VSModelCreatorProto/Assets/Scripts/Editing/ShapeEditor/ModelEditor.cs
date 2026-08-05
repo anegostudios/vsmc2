@@ -161,9 +161,9 @@ namespace VSMC
             reparentElementOverlay.OpenOverlay(objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element);
         }
 
-        public void ReparentElement(int elemToReparentUID, int newParentUID)
+        public void ReparentElement(int elemToReparentUID, int newParentUID, bool keepElementGlobalTransform)
         {
-            TaskReparentElement reTask = new TaskReparentElement(elemToReparentUID, newParentUID);
+            TaskReparentElement reTask = new TaskReparentElement(elemToReparentUID, newParentUID, keepElementGlobalTransform);
             reTask.DoTask();
             UndoManager.main.CommitTask(reTask);
         }

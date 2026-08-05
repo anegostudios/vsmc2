@@ -17,6 +17,8 @@ public class ReparentElementOverlay : MonoBehaviour
     public Button setNoParentButton;
     int selID;
     public GameObject elementHasStepparentError;
+    public Toggle retainGlobalTransform;
+
 
     public void OpenOverlay(ShapeElement selElem)
     {
@@ -82,13 +84,13 @@ public class ReparentElementOverlay : MonoBehaviour
 
     public void ApplyChanges()
     {
-        modelEditor.ReparentElement(selID, int.Parse(cSelected.name));
+        modelEditor.ReparentElement(selID, int.Parse(cSelected.name), retainGlobalTransform.isOn);
         gameObject.SetActive(false);
     }   
 
     public void SetNoParent()
     {
-        modelEditor.ReparentElement(selID, -1);
+        modelEditor.ReparentElement(selID, -1, retainGlobalTransform.isOn);
         gameObject.SetActive(false);
     }
 

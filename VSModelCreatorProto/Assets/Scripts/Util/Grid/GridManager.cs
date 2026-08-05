@@ -7,6 +7,7 @@ namespace VSMC {
 
         //Grid Properties
         public GridPreferences prefs;
+        public Material linesMaterial;
 
         [Space(16)]
         //Grid Objects
@@ -16,6 +17,11 @@ namespace VSMC {
         public GameObject gridFloorMinorVert;
         public GameObject gridFloorMajorHori;
         public GameObject gridFloorMajorVert;
+
+        public Color gridOuterColor;
+        public Color gridFloorOuterColor;
+        public Color gridFloorMinorColor;
+        public Color gridFloorMajorColor;
 
         #region Default Grid Position Definitions
         Vector3[] gridOuterDefaultPositions = new Vector3[]
@@ -40,6 +46,13 @@ namespace VSMC {
         };
         #endregion
 
+        Vector3[] gridOuterLinePositions;
+        Vector3[] gridOuterLineFloorPositions;
+        Vector3[] innerHoriLinesPositions;
+        Vector3[] innerVertLinesPositions;
+        Vector3[] majorHoriLinesPositions;
+        Vector3[] majorVertLinesPositions;
+
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
         {
@@ -55,7 +68,7 @@ namespace VSMC {
 
             //Outer grid...
             LineRenderer gridOuterLines = gridOuter.GetComponent<LineRenderer>();
-            Vector3[] gridOuterLinePositions = new Vector3[gridOuterDefaultPositions.Length];
+            gridOuterLinePositions = new Vector3[gridOuterDefaultPositions.Length];
             Vector3 minVals = new Vector3(8 - (prefs.gridSizes.x / 2f), 0, 8 - (prefs.gridSizes.z / 2f));
             Vector3 maxVals = new Vector3(8 + (prefs.gridSizes.x / 2f), prefs.gridSizes.y, 8 + (prefs.gridSizes.z / 2f));
             for (int i = 0; i < gridOuterLinePositions.Length; i++)
@@ -66,7 +79,7 @@ namespace VSMC {
 
             //Outer grid floor.
             LineRenderer gridOuterLinesFloor = gridFloorOuter.GetComponent<LineRenderer>();
-            Vector3[] gridOuterLineFloorPositions = new Vector3[4];
+            gridOuterLineFloorPositions = new Vector3[4];
             gridOuterLineFloorPositions[0] = ConvertToRangedValue(gridOuterDefaultPositions[0], minVals, maxVals) / 16f;
             gridOuterLineFloorPositions[1] = ConvertToRangedValue(gridOuterDefaultPositions[1], minVals, maxVals) / 16f;
             gridOuterLineFloorPositions[2] = ConvertToRangedValue(gridOuterDefaultPositions[2], minVals, maxVals) / 16f;
@@ -77,7 +90,7 @@ namespace VSMC {
             //The minor grid works a little differently - It doesn't have stored values but instead follows a pattern.
             //Hori
             float cX = minVals.x;
-            Vector3[] innerHoriLinesPositions = new Vector3[prefs.gridSizes.x * 2];
+            innerHoriLinesPositions = new Vector3[prefs.gridSizes.x * 2];
             for (int i = 0; i < prefs.gridSizes.x * 2; i++)
             {
                 innerHoriLinesPositions[i] = new Vector3(cX, 0, i % 4 < 2 ? minVals.z : maxVals.z) / 16f;
@@ -89,7 +102,7 @@ namespace VSMC {
 
             //Vert
             float cZ = minVals.z;
-            Vector3[] innerVertLinesPositions = new Vector3[prefs.gridSizes.z * 2];
+            innerVertLinesPositions = new Vector3[prefs.gridSizes.z * 2];
             for (int i = 0; i < prefs.gridSizes.z * 2; i++)
             {
                 innerVertLinesPositions[i] = new Vector3(i % 4 < 2 ? minVals.x : maxVals.x, 0, cZ) / 16f;
@@ -128,7 +141,7 @@ namespace VSMC {
             LineRenderer majorHoriLines = gridFloorMajorHori.GetComponent<LineRenderer>();
             majorHoriLines.positionCount = majorHoriLinesPositions.Count;
             majorHoriLines.SetPositions(majorHoriLinesPositions.ToArray());
-
+            this.majorHoriLinesPositions = majorHoriLinesPositions.ToArray();
             //Vert
             int mjrZ = 8;
             mjrCount = 0;
@@ -156,6 +169,7 @@ namespace VSMC {
             LineRenderer majorVertLines = gridFloorMajorVert.GetComponent<LineRenderer>();
             majorVertLines.positionCount = majorVertLinesPositions.Count;
             majorVertLines.SetPositions(majorVertLinesPositions.ToArray());
+            this.majorVertLinesPositions = majorVertLinesPositions.ToArray();
 
         }
 
@@ -165,7 +179,30 @@ namespace VSMC {
             x = value.x < 0 ? value.x * -min.x : value.x * max.x;
             y = value.y < 0 ? value.y * -min.y : value.y * max.y;
             z = value.z < 0 ? value.z * -min.z : value.z * max.z;
-            return new Vector3 (x, y, z);
+            return new Vector3(x, y, z);
         }
+
+        void OnRenderObject()
+        {
+            return; //Just for the update...
+            if (gridOuterLinePositions == null) return;
+            //if (Camera.current == null || Camera.current.tag != "MainCamera") return;
+            linesMaterial.SetPass(0);
+            GL.Begin(GL.LINE_STRIP);
+            GL.Color(gridOuterColor);
+            foreach (Vector3 v in gridOuterLinePositions)
+            {
+                GL.Vertex(v);
+            }
+
+
+            GL.Color(gridFloorOuterColor);
+            foreach (Vector3 v in gridOuterLineFloorPositions)
+            {
+                
+            }
+            GL.End();
+        }
+
     }
 }

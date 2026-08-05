@@ -24,13 +24,16 @@ namespace VSMC
         public Vector3 worldRotation;
         public double[] size;
 
+        public bool keepGlobalTransform;
+
         /// <summary>
         /// Reparents an element. CAUTION - This does NOT include a failsafe for reparenting an object to itself or its children.
         /// </summary>
-        public TaskReparentElement(int elemToReparentID, int newParentID, bool keepGlobalTransform = true)
+        public TaskReparentElement(int elemToReparentID, int newParentID, bool keepGlobalTransform)
         {
             this.elemToReparentID = elemToReparentID;
             this.newParentID = newParentID;
+            this.keepGlobalTransform = keepGlobalTransform;
 
             ShapeElement child = ShapeElementRegistry.main.GetShapeElementByUID(elemToReparentID);
             //worldFrom = child.GetWorldFrom();
@@ -63,12 +66,6 @@ namespace VSMC
         {
             ShapeElement child = ShapeElementRegistry.main.GetShapeElementByUID(elemToReparentID);
 
-            Matrix4x4 matrix2 = Matrix4x4.identity;
-            matrix2 = child.ApplyTransform(matrix2);
-
-            Debug.Log(matrix2);
-            Debug.Log(ExtractEulerXYZ(matrix2));
-
             List<ShapeElement> oldParentPath = child.GetParentPath();
             
             //Remove old parent first.
@@ -100,42 +97,43 @@ namespace VSMC
                 }
             }
 
-            List<ShapeElement> newParentPath = child.GetParentPath();
-
-            Matrix4x4 matrix = Matrix4x4.identity;
-
-            foreach (ShapeElement e in newParentPath)
+            if (keepGlobalTransform)
             {
-                //Debug.Log("Analysing element " + e.Name + "in NEW parent path.");
-                matrix = e.ApplyTransform(matrix);
+
+                List<ShapeElement> newParentPath = child.GetParentPath();
+
+                Matrix4x4 matrix = Matrix4x4.identity;
+
+                foreach (ShapeElement e in newParentPath)
+                {
+                    //Debug.Log("Analysing element " + e.Name + "in NEW parent path.");
+                    matrix = e.ApplyTransform(matrix);
+                }
+                matrix = matrix.inverse;
+                foreach (ShapeElement e in oldParentPath)
+                {
+                    //Debug.Log("Analysing element " + e.Name + "in OLD parent path.");
+                    matrix = e.ApplyTransform(matrix);
+                }
+
+                Vector3 originPos = matrix * new Vector4((float)child.RotationOrigin[0], (float)child.RotationOrigin[1], (float)child.RotationOrigin[2], 1);
+                matrix = child.ApplyTransform(matrix);
+                Vector3 angles = ExtractEulerXYZ(matrix);
+                child.RotationOrigin = new double[] { originPos.x, originPos.y, originPos.z };
+                child.RotationX = -angles.x;
+                child.RotationY = -angles.y;
+                child.RotationZ = -angles.z;
+
+                matrix = matrix.inverse;
+                matrix = child.ApplyTransform(matrix);
+                matrix = matrix.inverse;
+
+                Vector3 startPos = matrix * new Vector4((float)child.From[0], (float)child.From[1], (float)child.From[2], 1);
+                child.From = new double[] { startPos.x, startPos.y, startPos.z };
+                child.To = new double[] { startPos.x + size[0], startPos.y + size[1], startPos.z + size[2] };
             }
-            matrix = matrix.inverse;
-            Debug.Log("Got angle of new parent path of "+ ExtractEulerXYZ(matrix));
-            foreach (ShapeElement e in oldParentPath)
-            {
-                //Debug.Log("Analysing element " + e.Name + "in OLD parent path.");
-                matrix = e.ApplyTransform(matrix);
-            }
 
-            Vector3 originPos = matrix * new Vector4((float)child.RotationOrigin[0], (float)child.RotationOrigin[1], (float)child.RotationOrigin[2], 1);
-            matrix = child.ApplyTransform(matrix);
-            Vector3 angles = ExtractEulerXYZ(matrix);
-            Debug.Log("Got full rotation of " + angles);
-
-            child.RotationOrigin = new double[] { originPos.x, originPos.y, originPos.z };
-            child.RotationX = -angles.x;
-            child.RotationY = -angles.y;
-            child.RotationZ = -angles.z;
-
-            matrix = matrix.inverse;
-            matrix = child.ApplyTransform(matrix);
-            matrix = matrix.inverse;
-
-            Vector3 startPos = matrix * new Vector4((float)child.From[0], (float)child.From[1], (float)child.From[2], 1);
-            child.From = new double[] { startPos.x, startPos.y, startPos.z };
-            child.To = new double[] { startPos.x + size[0], startPos.y + size[1], startPos.z + size[2] };
-
-            child.RecreateObjectMeshAndTransforms();
+                child.RecreateObjectMeshAndTransforms();
             ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
         }
 
