@@ -16,19 +16,19 @@ namespace SFB {
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate void AsyncCallback(string path);
 
-        [DllImport("StandaloneFileBrowser")]
+        [DllImport("libStandaloneFileBrowser.so")]
         private static extern void DialogInit();
-        [DllImport("StandaloneFileBrowser")]
+        [DllImport("libStandaloneFileBrowser.so")]
         private static extern IntPtr DialogOpenFilePanel(string title, string directory, string extension, bool multiselect);
-        [DllImport("StandaloneFileBrowser")]
+        [DllImport("libStandaloneFileBrowser.so")]
         private static extern void DialogOpenFilePanelAsync(string title, string directory, string extension, bool multiselect, AsyncCallback callback);
-        [DllImport("StandaloneFileBrowser")]
+        [DllImport("libStandaloneFileBrowser.so")]
         private static extern IntPtr DialogOpenFolderPanel(string title, string directory, bool multiselect);
-        [DllImport("StandaloneFileBrowser")]
+        [DllImport("libStandaloneFileBrowser.so")]
         private static extern void DialogOpenFolderPanelAsync(string title, string directory, bool multiselect, AsyncCallback callback);
-        [DllImport("StandaloneFileBrowser")]
+        [DllImport("libStandaloneFileBrowser.so")]
         private static extern IntPtr DialogSaveFilePanel(string title, string directory, string defaultName, string extension);
-        [DllImport("StandaloneFileBrowser")]
+        [DllImport("libStandaloneFileBrowser.so")]
         private static extern void DialogSaveFilePanelAsync(string title, string directory, string defaultName, string extension, AsyncCallback callback);
 
         public StandaloneFileBrowserLinux()

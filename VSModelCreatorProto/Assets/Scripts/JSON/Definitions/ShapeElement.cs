@@ -69,23 +69,23 @@ namespace VSMC
         /// <summary>
         /// How far away are the left/right sides of the shape from the center
         /// </summary>
-        [JsonProperty]
-        [DefaultValue(1)]
-        public double ScaleX = 1;
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [DefaultValue(1.0)]
+        public double ScaleX = 1.0;
 
         /// <summary>
         /// How far away are the top/bottom sides of the shape from the center
         /// </summary>
-        [JsonProperty]
-        [DefaultValue(1)]
-        public double ScaleY = 1;
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [DefaultValue(1.0)]
+        public double ScaleY = 1.0;
 
         /// <summary>
         /// How far away are the front/back sides of the shape from the center.
         /// </summary>
-        [JsonProperty]
-        [DefaultValue(1)]
-        public double ScaleZ = 1;
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [DefaultValue(1.0)]
+        public double ScaleZ = 1.0;
 
         [JsonProperty]
         public string ClimateColorMap = null;
@@ -93,7 +93,7 @@ namespace VSMC
         [JsonProperty]
         public string SeasonColorMap = null;
 
-        [JsonProperty]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         [DefaultValue(-1)]
         public short RenderPass = -1;
         [JsonProperty]
@@ -108,7 +108,7 @@ namespace VSMC
         /// <summary>
         /// The child shapes of this shape element
         /// </summary>
-        [JsonProperty]
+        [JsonProperty(Order = int.MaxValue)]
         public ShapeElement[] Children;
 
         /// <summary>

@@ -56,9 +56,10 @@ public class BackdropOrAttachmentUIEntry : MonoBehaviour
         backgroundImage.color = BackdropAndAttachmentMenuManager.main.selectedColor;
         foreach (ShapeElementGameObject g in GetGameObjects())
         {
-            foreach (LineRenderer r in g.GetComponentsInChildren<LineRenderer>())
+            foreach (VSMCLineRenderer r in g.GetComponentsInChildren<VSMCLineRenderer>())
             {
-                r.enabled = true;
+                r.lineColor = BackdropAndAttachmentMenuManager.main.selectedColor;
+                r.doRendering = true;
             }
         }
     }
@@ -68,9 +69,9 @@ public class BackdropOrAttachmentUIEntry : MonoBehaviour
         backgroundImage.color = BackdropAndAttachmentMenuManager.main.deselectedColor;
         foreach (ShapeElementGameObject g in GetGameObjects())
         {
-            foreach (LineRenderer r in g.GetComponentsInChildren<LineRenderer>())
+            foreach (VSMCLineRenderer r in g.GetComponentsInChildren<VSMCLineRenderer>())
             {
-                r.enabled = false;
+                r.doRendering = false;
             }
         }
     }

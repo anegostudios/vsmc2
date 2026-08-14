@@ -17,9 +17,6 @@ namespace VSMC
         public ModelEditor shapeModelEditor;
         public GameObject gizmosHolderParent;
         public GameObject[] gizmoParentsByMode;
-        public string XGizmoLayer;
-        public string YGizmoLayer;
-        public string ZGizmoLayer;
         public float initialCorrectDistanceForGizmos = 1;
         public TMP_Text toggleGlobalLocalButtonText;
 

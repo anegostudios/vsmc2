@@ -29,7 +29,7 @@ public class VSMCButton : Button
         }
         foreach (Graphic g in GetComponentsInChildren<Graphic>())
         {
-            if (g.gameObject != gameObject)
+            if (g.gameObject != gameObject && g.tag == "DoButtonColorChange")
             {
                 g.CrossFadeColor(color, 0, true, true);
             }

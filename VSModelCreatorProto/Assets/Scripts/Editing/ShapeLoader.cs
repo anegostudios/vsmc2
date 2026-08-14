@@ -218,7 +218,13 @@ namespace VSMC {
                 Debug.Log("Trying to save nothing...");
                 return;
             }
-            string saveTo = StandaloneFileBrowser.SaveFilePanel("Save file path", Path.GetDirectoryName(storedSaveLocationForFile), Path.GetFileName(storedSaveLocationForFile), "json");
+            string p = "shape.json";
+            if (!(storedSaveLocationForFile == "" || storedSaveLocationForFile == null))
+            {
+                p = Path.GetFileName(storedSaveLocationForFile);
+            }
+            
+            string saveTo = StandaloneFileBrowser.SaveFilePanel("Save file path", Path.GetDirectoryName(storedSaveLocationForFile), p, "json");
             if (saveTo == null || saveTo.Length < 1)
             {
                 return;

@@ -13,7 +13,7 @@ public class ShapeAccessor
 
     static UnityEvent<Shape> OnSavingShapeEvent;
 
-
+    public static JsonSerializerSettings BasicSerializerSettings;
 
     public static void SerializeShapeToFile(Shape shape, string filePath, UnityEvent<Shape> onSaveEvent, bool isAutosave = false)
     {
@@ -21,6 +21,13 @@ public class ShapeAccessor
         onSaveEvent.Invoke(shape);
         TextureManager.main.ApplyTexturesIntoShape(shape);
         shape.ResolveForBeforeSerialization();
+
+        BasicSerializerSettings = new JsonSerializerSettings()
+        {
+            NullValueHandling = NullValueHandling.Ignore,
+            DefaultValueHandling = DefaultValueHandling.Ignore,
+            ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy(false, false) },
+        };
 
         JsonSerializerSettings settings = new JsonSerializerSettings()
         {
@@ -30,7 +37,9 @@ public class ShapeAccessor
             Converters = new List<JsonConverter>
             {
                 new DoubleArrayJSONConverter(),
-                new FloatArrayJSONConverter()
+                new FloatArrayJSONConverter(),
+                new FacesJSONConverter(),
+                new AnimationElementJSONConverter(),
             }
         };
         File.WriteAllText(filePath, JsonConvert.SerializeObject(shape, Formatting.Indented, settings));
@@ -51,7 +60,9 @@ public class ShapeAccessor
             Converters = new List<JsonConverter>
             {
                 new DoubleArrayJSONConverter(),
-                new FloatArrayJSONConverter()
+                new FloatArrayJSONConverter(),
+                new FacesJSONConverter(),
+                new AnimationElementJSONConverter(),
             }
         };
         return JsonConvert.SerializeObject(shape, Formatting.None, settings);

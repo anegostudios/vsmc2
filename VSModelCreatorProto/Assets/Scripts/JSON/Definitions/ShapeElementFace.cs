@@ -229,7 +229,8 @@ namespace VSMC
                 return;
             }
         }
-
+        
+        [JsonIgnore]
         public int RotationIndex
         {
             get

@@ -159,9 +159,9 @@ namespace VSMC
             }
             if (deselected != null)
             {
-                foreach (LineRenderer lines in deselected.GetComponentsInChildren<LineRenderer>())
+                foreach (VSMCLineRenderer lines in deselected.GetComponentsInChildren<VSMCLineRenderer>())
                 {
-                    lines.enabled = false;
+                    lines.doRendering = false;
                 }
                 OnObjectDeSelected.Invoke(deselected);
             }
@@ -208,9 +208,9 @@ namespace VSMC
             cSelectedList.Add(select);
 
             //Highlight Object
-            foreach (LineRenderer lines in select.GetComponentsInChildren<LineRenderer>())
+            foreach (VSMCLineRenderer lines in select.GetComponentsInChildren<VSMCLineRenderer>())
             {
-                lines.enabled = true;
+                lines.doRendering = true;
             }
 
             OnObjectSelected.Invoke(select);

@@ -9,7 +9,7 @@ Shader "Unlit/RenderOnTopShader"
         Tags { "RenderType"="Transparent" }
         LOD 100
         Blend SrcAlpha OneMinusSrcAlpha
-        ZWrite On
+        ZWrite Off
         ZTest Always
         Cull Off
 

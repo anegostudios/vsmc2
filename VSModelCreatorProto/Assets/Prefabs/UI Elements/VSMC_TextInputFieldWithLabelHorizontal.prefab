@@ -185,6 +185,18 @@ PrefabInstance:
       propertyPath: m_FlexibleWidth
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 8998325753571713410, guid: 097459c195175ba3db4447c9523c9575, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8998325753571713410, guid: 097459c195175ba3db4447c9523c9575, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8998325753571713410, guid: 097459c195175ba3db4447c9523c9575, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

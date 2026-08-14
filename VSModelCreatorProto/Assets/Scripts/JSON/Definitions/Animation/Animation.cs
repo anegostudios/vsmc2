@@ -43,15 +43,16 @@ namespace VSMC
     [JsonObject(MemberSerialization.OptIn)]
     public class Animation
     {
-        [JsonProperty("quantityframes")]
-        public int QuantityFrames;
 
-        [JsonProperty]
+        [JsonProperty(Order = -2)]
         public string Name;
 
-        [JsonProperty]
+        [JsonProperty(Order = -1)]
         public string Code;
 
+        [JsonProperty("quantityframes")]
+        public int QuantityFrames;
+        
         /*
         /// <summary>
         /// A group name that helps seperate animations in the editor.
@@ -66,7 +67,7 @@ namespace VSMC
         [JsonProperty]
         public bool EaseAnimationSpeed = false;
 
-        [JsonProperty("keyframes")]
+        [JsonProperty("keyframes", Order = int.MaxValue)]
         public AnimationKeyFrame[] KeyFrames;
 
         [JsonProperty]

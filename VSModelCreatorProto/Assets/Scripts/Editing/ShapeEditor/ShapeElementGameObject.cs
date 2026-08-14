@@ -109,31 +109,30 @@ namespace VSMC {
         {
             //Do Object Lines
             //First remove existing lines, but always make sure there is one remaining since we need to clone it.
-            LineRenderer[] lineRenderers = gameObject.GetComponentsInChildren<LineRenderer>();
+            VSMCLineRenderer[] lineRenderers = gameObject.GetComponentsInChildren<VSMCLineRenderer>();
             for (int i = 0; i < lineRenderers.Length - 1; i++)
             {
                 DestroyImmediate(lineRenderers[i].gameObject);
             }
 
             //Now recreate the lines. All properties are copied from the linesBase object - Except with specific line positions.
-            LineRenderer linesBase = gameObject.GetComponentInChildren<LineRenderer>();
+            VSMCLineRenderer linesBase = gameObject.GetComponentInChildren<VSMCLineRenderer>();
             foreach (int[] lineSet in element.meshData.lineIndices)
             {
-                LineRenderer lines = Instantiate(linesBase.gameObject, gameObject.transform).GetComponentInChildren<LineRenderer>();
+                VSMCLineRenderer lines = Instantiate(linesBase.gameObject, gameObject.transform).GetComponentInChildren<VSMCLineRenderer>();
                 lines.gameObject.name = "Lines";
                 Vector3[] linePoses = new Vector3[lineSet.Length];
                 for (int li = 0; li < lineSet.Length; li++)
                 {
                     linePoses[li] = element.meshData.lineVertices[lineSet[li]];
                 }
-                lines.positionCount = linePoses.Length;
-                lines.SetPositions(linePoses);
+                lines.positions = linePoses;
             }
 
             //We need to have one line that exists at all times so that we can clone it.
             if (element.meshData.lineIndices.Count == 0)
             {
-                linesBase.positionCount = 0;
+                linesBase.positions = new Vector3[0];
             }
             else
             {

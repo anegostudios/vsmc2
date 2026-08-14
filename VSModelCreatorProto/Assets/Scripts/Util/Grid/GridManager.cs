@@ -18,6 +18,7 @@ namespace VSMC {
         public GameObject gridFloorMajorHori;
         public GameObject gridFloorMajorVert;
 
+        public Camera mainCamera;
         public Color gridOuterColor;
         public Color gridFloorOuterColor;
         public Color gridFloorMinorColor;
@@ -184,25 +185,37 @@ namespace VSMC {
 
         void OnRenderObject()
         {
-            return; //Just for the update...
             if (gridOuterLinePositions == null) return;
+
+            //It appears we can't use Camera.current as it always returns null, but we _can_ use the current render texture!
+            if (mainCamera.targetTexture.width != RenderTexture.active.width || mainCamera.targetTexture.height != RenderTexture.active.height)
+            {
+                return;
+            }
             //if (Camera.current == null || Camera.current.tag != "MainCamera") return;
             linesMaterial.SetPass(0);
-            GL.Begin(GL.LINE_STRIP);
-            GL.Color(gridOuterColor);
-            foreach (Vector3 v in gridOuterLinePositions)
-            {
-                GL.Vertex(v);
-            }
-
-
-            GL.Color(gridFloorOuterColor);
-            foreach (Vector3 v in gridOuterLineFloorPositions)
-            {
-                
-            }
+            GL.PushMatrix();
+            GL.modelview = mainCamera.worldToCameraMatrix;
+            GL.LoadProjectionMatrix(mainCamera.projectionMatrix);
+            GL.Begin(GL.LINES);
+            DrawFromLines(innerHoriLinesPositions, gridFloorMinorColor);
+            DrawFromLines(innerVertLinesPositions, gridFloorMinorColor);
+            DrawFromLines(majorHoriLinesPositions, gridFloorMajorColor);
+            DrawFromLines(majorVertLinesPositions, gridFloorMajorColor);
+            DrawFromLines(gridOuterLinePositions, gridOuterColor);
+            DrawFromLines(gridOuterLineFloorPositions, gridFloorOuterColor);
             GL.End();
+            GL.PopMatrix();
         }
 
+        void DrawFromLines(Vector3[] positions, Color c)
+        {
+            GL.Color(c);
+            for (int i = 0; i < positions.Length - 1; i++)
+            {
+                GL.Vertex(positions[i]);
+                GL.Vertex(positions[i + 1]);
+            }
+        }
     }
 }
