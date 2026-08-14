@@ -70,11 +70,12 @@ namespace VSMC
         [OnDeserialized()]
         public void ResolveFacesAndTextures(StreamingContext context)
         {
-            if (context.Context is bool t && t) //If context is a boolean and true, then this is the main loaded object.
+            JSONStreamingContexts con = (JSONStreamingContexts)(context.Context);
+            if (con == JSONStreamingContexts.standard)
             {
                 TextureManager.main.LoadTexturesFromShape(this);
             }
-            else //Otherwise, its a backdrop or attachment shape.
+            else if (con == JSONStreamingContexts.backdropOrAttachment)
             {
                 isBackdropOrAttachmentShape = true;
                 foreach (ShapeElement elem in Elements)
@@ -371,6 +372,105 @@ namespace VSMC
             {
                 elem.ResolveBeforeSerialization();
             }
+        }
+
+
+        public void MergeWithOtherShape(Shape importedShape)
+        {
+            //Textures should be added through the texture manager...
+            TextureManager.main.LoadTexturesFromImportedShape(importedShape);
+
+            //Every element needs a unique name.
+            List<string> shapeNames = new List<string>();
+            List<ShapeElement> elems = new List<ShapeElement>();
+            elems.AddRange(Elements);
+            while (elems.Count > 0)
+            {
+                ShapeElement c = elems[0];
+                elems.RemoveAt(0);
+                if (c.Children != null) elems.AddRange(c.Children);
+                shapeNames.Add(c.Name);
+            }
+
+            List<string> importShapeNames = new List<string>();
+            elems.AddRange(importedShape.Elements);
+            while (elems.Count > 0)
+            {
+                ShapeElement c = elems[0];
+                elems.RemoveAt(0);
+                if (c.Children != null) elems.AddRange(c.Children);
+                importShapeNames.Add(c.Name);
+            }
+
+            elems.AddRange(importedShape.Elements);
+            Dictionary<string, string> renamedShapesForAnimations = new Dictionary<string, string>();
+            while (elems.Count > 0)
+            {
+                ShapeElement c = elems[0];
+                elems.RemoveAt(0);
+                if (c.Children != null) elems.AddRange(c.Children);
+                string oldName = c.Name;
+                while (shapeNames.Contains(c.Name))
+                {
+                    //This is correct - We only want the names of the imported shapes to interfere if the name has already been changed.
+                    while (importShapeNames.Contains(c.Name))
+                    {
+                        c.Name = ShapeElement.IncrementName(c.Name);
+                    }
+                }
+                //If the name changed...
+                if (c.Name != oldName)
+                {
+                    shapeNames.Add(c.Name);
+                    renamedShapesForAnimations.Add(oldName, c.Name);
+                }
+            }
+
+            //Do name changes on the new animations:
+            //Animations rely on object names, so we need to rename each entry that has this name.
+            if (importedShape.Animations != null)
+            {
+                foreach (KeyValuePair<string, string> vals in renamedShapesForAnimations)
+                {
+                    string oldName = vals.Key;
+                    string newName = vals.Value;
+                    foreach (Animation anim in importedShape.Animations)
+                    {
+                        foreach (AnimationKeyFrame keyFrame in anim.KeyFrames)
+                        {
+                            if (keyFrame.Elements.ContainsKey(oldName))
+                            {
+                                keyFrame.Elements[newName] = keyFrame.Elements[oldName];
+                                keyFrame.Elements.Remove(oldName);
+                            }
+                        }
+                    }
+                }
+            }
+
+            //Sort out the references...
+            importedShape.ResolveReferencesAndUIDs();
+
+            //Now add in the shape elements
+            foreach (ShapeElement e in importedShape.Elements)
+            {
+                Elements = Elements.Append(e);
+            }
+
+            //Now add the animations...
+            //Rename animations that already exist.
+            if (importedShape.Animations != null)
+            {
+                foreach (Animation a in importedShape.Animations)
+                {
+                    while (ShapeHolder.CurrentLoadedShape.Animations.FirstOrDefault(x => x.Code == a.Code) != null)
+                    {
+                        a.Code = ShapeElement.IncrementName(a.Code);
+                    }
+                    Animations = Animations.Append(a);
+                }
+            }
+
         }
     }
 }

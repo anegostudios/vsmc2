@@ -15,6 +15,8 @@ public class ShapeAccessor
 
     public static JsonSerializerSettings BasicSerializerSettings;
 
+
+
     public static void SerializeShapeToFile(Shape shape, string filePath, UnityEvent<Shape> onSaveEvent, bool isAutosave = false)
     {
         //Save some things to the shape itself first...
@@ -73,7 +75,7 @@ public class ShapeAccessor
     /// </summary>
     /// <param name="filePath"></param>
     /// <returns></returns>
-    public static Shape DeserializeShapeFromFile(string filePath, bool isBackdropOrAttachment = false)
+    public static Shape DeserializeShapeFromFile(string filePath, JSONStreamingContexts streamingContext)
     {
         //Load file.
         string contents;
@@ -90,10 +92,10 @@ public class ShapeAccessor
         SaveManager.main.CopyFileContentsForBackup(filePath, contents);
 
         JsonSerializerSettings settings = new JsonSerializerSettings();
-        settings.Context = new System.Runtime.Serialization.StreamingContext(StreamingContextStates.File, !isBackdropOrAttachment);
+        settings.Context = new System.Runtime.Serialization.StreamingContext(StreamingContextStates.File, streamingContext);
 
         //If this is the main path, lets find the local asset path.
-        if (!isBackdropOrAttachment)
+        if (streamingContext == JSONStreamingContexts.backdropOrAttachment)
         {
             AssetPathManager.main.OnShapeLoaded(filePath);
         }

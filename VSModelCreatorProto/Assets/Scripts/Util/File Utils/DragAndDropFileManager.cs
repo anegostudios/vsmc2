@@ -143,6 +143,11 @@ public class DragAndDropFileManager : MonoBehaviour
         "Open shape file", "This will open the dropped file as a new shape. Any unsaved changes will be lost.");
     }
 
+    public void OnOpenDroppedShapeAsImport()
+    {
+        ShapeLoader.main.ImportShape(storedFilepath);
+        openShapeFileFromFileDropOverlay.SetActive(false);
+    }
 
     public void OnOpenDroppedShapeAsNewFileAfterSaveDialog()
     {

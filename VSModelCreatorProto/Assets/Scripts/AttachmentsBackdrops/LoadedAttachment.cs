@@ -36,7 +36,7 @@ namespace VSMC
                 return;
             }
             storedFilepath = path;
-            loadedAttachmentShape = ShapeAccessor.DeserializeShapeFromFile(path, true);
+            loadedAttachmentShape = ShapeAccessor.DeserializeShapeFromFile(path, JSONStreamingContexts.backdropOrAttachment);
             //Check for stepparents in the root elements.
             foreach (ShapeElement e in loadedAttachmentShape.Elements)
             {

@@ -86,56 +86,6 @@ public class ShapeTester : MonoBehaviour
         }
     }
 
-    void AddNewShapeFromPath(string filePath)
-    {
-        try
-        {
-            // The tesselator will be used to generate the mesh data.
-            ShapeTesselator tess = new ShapeTesselator();
-
-            //ShapeAccessor turns the shape from JSON into the appropriate JSON properties.
-            // We also load textures at this point.
-            shape = ShapeAccessor.DeserializeShapeFromFile(filePath);
-
-            
-            shape.InitForAnimations("root");
-            if (shape.Animations != null)
-            {
-                foreach (VSMC.Animation i in shape.Animations)
-                {
-                    Debug.Log("Loaded animation: " + i.Name);
-                }
-            }
-            foreach (var joint in shape.JointsById)
-            {
-                Debug.Log("Loaded joint for element " + joint.Value.Element.Name + " with ID " + joint.Key);
-            }
-            foreach (var elem in shape.Elements)
-            {
-                ListElementJoints(elem);
-            }
-
-            //Create the element hierarchy.
-            //hierarchy.StartCreatingElementPrefabs(shape);
-
-            //Create the animator.
-            
-            //VSMeshData stores a single 'box' in the modeler.
-            ShapeTesselator.TesselateShape(shape);
-            //CreateShapes(shape.Elements);
-            
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogException(e);
-            if (errorDetails != null)
-            {
-                errorDetails.text = "Failed to add shape from path: " + filePath + " with following exception: " + e.Message;
-                errorDetails.color = Color.red;
-            }
-        }
-    }
-
     void ListElementJoints(ShapeElement elem)
     {
         if (elem.Children != null)

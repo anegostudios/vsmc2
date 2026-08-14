@@ -147,9 +147,20 @@ namespace VSMC {
 
         public void DoLoadShape()
         {
-            string[] selectedFiles = StandaloneFileBrowser.OpenFilePanel("Open Shape Files", "", "json", true);
+            string[] selectedFiles = StandaloneFileBrowser.OpenFilePanel("Open Shape File", "", "json", true);
             if (selectedFiles == null || selectedFiles.Length == 0 || selectedFiles[0].Trim().Length == 0) { return; }
             LoadShape(selectedFiles[0]);
+        }
+
+        public void DoImportShape()
+        {
+            if (ShapeHolder.CurrentLoadedShape == null)
+            {
+                DoLoadShape();
+            }
+            string[] selectedFiles = StandaloneFileBrowser.OpenFilePanel("Import Shape File", "", "json", true);
+            if (selectedFiles == null || selectedFiles.Length == 0 || selectedFiles[0].Trim().Length == 0) { return; }
+            ImportShape(selectedFiles[0]);
         }
 
         public void CreateNewShape()
@@ -165,7 +176,7 @@ namespace VSMC {
             newShape.Textures = new System.Collections.Generic.Dictionary<string, string>();
             newShape.Textures.Add("texture", "");
 
-            newShape.ResolveFacesAndTextures(new StreamingContext(StreamingContextStates.File, true));
+            newShape.ResolveFacesAndTextures(new StreamingContext(StreamingContextStates.File, JSONStreamingContexts.standard));
 
 
             shapeHolder.OnShapeLoaded(newShape, true);
@@ -181,7 +192,7 @@ namespace VSMC {
             storedSaveLocationForFile = filePath;
             //Load shape and then enter model mode.
             SaveManager.main.BeforeFileLoad();
-            Shape loadedShape = ShapeAccessor.DeserializeShapeFromFile(filePath);
+            Shape loadedShape = ShapeAccessor.DeserializeShapeFromFile(filePath, JSONStreamingContexts.standard);
             //Check for stepparents in the root elements.
             foreach (ShapeElement e in loadedShape.Elements)
             {
@@ -192,6 +203,23 @@ namespace VSMC {
             EditModeManager.main.SelectMode(VSEditMode.Model, forceRefresh: true);
             onShapeLoadedEvent.Invoke(loadedShape, context);
             InfoLogger.main.LogText("Loaded shape successfully.");
+        }
+
+        public void ImportShape(string filePath)
+        {
+            Shape importShape = ShapeAccessor.DeserializeShapeFromFile(filePath, JSONStreamingContexts.import);
+            ShapeHolder.CurrentLoadedShape.MergeWithOtherShape(importShape);
+            hierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
+            //Check for stepparents in the root elements.
+            foreach (ShapeElement e in ShapeHolder.CurrentLoadedShape.Elements)
+            {
+                e.SearchForStepParentInShape(ShapeHolder.CurrentLoadedShape);
+            }
+            ShapeTesselator.TesselateShape(ShapeHolder.CurrentLoadedShape);
+            foreach (ShapeElement e in importShape.Elements)
+            {
+                shapeHolder.CreateShapeElementGameObject(e, true);
+            }
         }
 
         public void SaveShapeToStoredPath()

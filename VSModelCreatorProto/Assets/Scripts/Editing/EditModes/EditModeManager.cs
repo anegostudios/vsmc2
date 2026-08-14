@@ -128,8 +128,13 @@ namespace VSMC {
                 if (sel != -1 && (EventSystem.current.currentSelectedGameObject?.GetComponent<TMP_InputField>() == null))
                 {
                     SelectMode(sel);
-                }   
+                }
             }
+        }
+        
+        public void RefreshMode()
+        {
+            SelectMode(cEditMode, forceRefresh: true);
         }
 
     }

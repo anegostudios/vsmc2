@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 using static UnityEngine.Rendering.ProbeAdjustmentVolume;
@@ -72,6 +74,32 @@ namespace VSMC
                 elem.ResolveFacesAndTextures(loadedTextures);
             }
 
+        }
+
+        public void LoadTexturesFromImportedShape(Shape importedShape)
+        {
+            foreach (var pair in importedShape.Textures)
+            {
+                while (loadedTextures.FirstOrDefault(x => x.code == pair.Key) != null)
+                {
+                    //Already exists, move on...
+                    continue;
+                }
+                LoadedTexture tex = new LoadedTexture(pair.Key, pair.Value);
+                loadedTextures.Add(tex);
+                LoadTexture(tex);
+                tex.ResolveTextureSize(importedShape);
+            }
+            //Add the textures to the appropriate shape data.
+            ApplyTexturesIntoShape(ShapeHolder.CurrentLoadedShape);
+
+            RegenerateTextureArray();
+
+            // We resolve all the textures and whatnot for each element.
+            foreach (ShapeElement elem in importedShape.Elements)
+            {
+                elem.ResolveFacesAndTextures(loadedTextures);
+            }
         }
 
         /// <summary>

@@ -42,7 +42,7 @@ namespace VSMC
                 return;
             }
             storedFilepath = path;
-            loadedBackdropShape = ShapeAccessor.DeserializeShapeFromFile(path, true);
+            loadedBackdropShape = ShapeAccessor.DeserializeShapeFromFile(path, JSONStreamingContexts.backdropOrAttachment);
             //Check for stepparents in the root elements.
             foreach (ShapeElement e in loadedBackdropShape.Elements)
             {
