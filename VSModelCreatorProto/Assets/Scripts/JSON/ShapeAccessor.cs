@@ -92,10 +92,10 @@ public class ShapeAccessor
         SaveManager.main.CopyFileContentsForBackup(filePath, contents);
 
         JsonSerializerSettings settings = new JsonSerializerSettings();
-        settings.Context = new System.Runtime.Serialization.StreamingContext(StreamingContextStates.File, streamingContext);
+        settings.Context = new StreamingContext(StreamingContextStates.File, streamingContext);
 
         //If this is the main path, lets find the local asset path.
-        if (streamingContext == JSONStreamingContexts.backdropOrAttachment)
+        if (streamingContext == JSONStreamingContexts.standard)
         {
             AssetPathManager.main.OnShapeLoaded(filePath);
         }

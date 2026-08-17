@@ -76,17 +76,23 @@ namespace VSMC
 
         }
 
-        public void LoadTexturesFromImportedShape(Shape importedShape)
+        /// <summary>
+        /// Loads textures from an imported shape into another.
+        /// </summary>
+        /// <returns>A list of new textures that were loaded</returns>
+        public List<LoadedTexture> LoadTexturesFromImportedShape(Shape importedShape)
         {
+            List<LoadedTexture> importedTextures = new List<LoadedTexture>();
             foreach (var pair in importedShape.Textures)
             {
-                while (loadedTextures.FirstOrDefault(x => x.code == pair.Key) != null)
+                if (loadedTextures.FirstOrDefault(x => x.code == pair.Key) != null)
                 {
                     //Already exists, move on...
                     continue;
                 }
                 LoadedTexture tex = new LoadedTexture(pair.Key, pair.Value);
                 loadedTextures.Add(tex);
+                importedTextures.Add(tex);
                 LoadTexture(tex);
                 tex.ResolveTextureSize(importedShape);
             }
@@ -100,6 +106,7 @@ namespace VSMC
             {
                 elem.ResolveFacesAndTextures(loadedTextures);
             }
+            return importedTextures;
         }
 
         /// <summary>

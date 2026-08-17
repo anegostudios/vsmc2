@@ -13,7 +13,9 @@ namespace VSMC
 
         public override void DoTask()
         {
-            AttachmentManager.main.CreateNewAttachment(localPathToAttachmentShape);
+            LoadedAttachment att = AttachmentManager.main.CreateNewAttachment(localPathToAttachmentShape);
+            AttachmentManager.main.SetEnabledAttachment(att, true);
+            BackdropAndAttachmentMenuManager.main.SelectAttachment(att);
         }
 
         public override void UndoTask()

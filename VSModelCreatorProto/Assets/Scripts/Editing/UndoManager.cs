@@ -82,8 +82,8 @@ namespace VSMC
         public void CommitTask(IEditTask newTask)
         {
             completedEditTasks.AddFirst(newTask);
-            OnAnyActionDoneOrUndone.Invoke();
             undoneEditTasks.Clear();
+            OnAnyActionDoneOrUndone.Invoke();
             //uiElements.RefreshSelectionValues();
         }
 

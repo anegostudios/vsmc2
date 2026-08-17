@@ -374,11 +374,12 @@ namespace VSMC
             }
         }
 
-
-        public void MergeWithOtherShape(Shape importedShape)
+        public TaskImportShape.ImportData MergeWithOtherShape(Shape importedShape)
         {
+            TaskImportShape.ImportData importData = new TaskImportShape.ImportData();
+
             //Textures should be added through the texture manager...
-            TextureManager.main.LoadTexturesFromImportedShape(importedShape);
+            importData.importedTextures = TextureManager.main.LoadTexturesFromImportedShape(importedShape);
 
             //Every element needs a unique name.
             List<string> shapeNames = new List<string>();
@@ -451,12 +452,15 @@ namespace VSMC
             //Sort out the references...
             importedShape.ResolveReferencesAndUIDs();
 
+            importData.importedElements = new List<ShapeElement>();
             //Now add in the shape elements
             foreach (ShapeElement e in importedShape.Elements)
             {
                 Elements = Elements.Append(e);
+                importData.importedElements.Add(e);
             }
 
+            importData.importedAnimations = new List<Animation>();
             //Now add the animations...
             //Rename animations that already exist.
             if (importedShape.Animations != null)
@@ -468,9 +472,11 @@ namespace VSMC
                         a.Code = ShapeElement.IncrementName(a.Code);
                     }
                     Animations = Animations.Append(a);
+                    importData.importedAnimations.Add(a);
                 }
             }
 
+            return importData;
         }
     }
 }

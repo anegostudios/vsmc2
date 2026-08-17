@@ -207,19 +207,23 @@ namespace VSMC {
 
         public void ImportShape(string filePath)
         {
-            Shape importShape = ShapeAccessor.DeserializeShapeFromFile(filePath, JSONStreamingContexts.import);
-            ShapeHolder.CurrentLoadedShape.MergeWithOtherShape(importShape);
-            hierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
-            //Check for stepparents in the root elements.
-            foreach (ShapeElement e in ShapeHolder.CurrentLoadedShape.Elements)
-            {
-                e.SearchForStepParentInShape(ShapeHolder.CurrentLoadedShape);
-            }
-            ShapeTesselator.TesselateShape(ShapeHolder.CurrentLoadedShape);
-            foreach (ShapeElement e in importShape.Elements)
-            {
-                shapeHolder.CreateShapeElementGameObject(e, true);
-            }
+            TaskImportShape importTask = new TaskImportShape(filePath);
+            importTask.DoTask();
+            UndoManager.main.CommitTask(importTask);
+
+            // Shape importShape = ShapeAccessor.DeserializeShapeFromFile(filePath, JSONStreamingContexts.import);
+            // ShapeHolder.CurrentLoadedShape.MergeWithOtherShape(importShape);
+            // hierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
+            // //Check for stepparents in the root elements.
+            // foreach (ShapeElement e in ShapeHolder.CurrentLoadedShape.Elements)
+            // {
+            //     e.SearchForStepParentInShape(ShapeHolder.CurrentLoadedShape);
+            // }
+            // ShapeTesselator.TesselateShape(ShapeHolder.CurrentLoadedShape);
+            // foreach (ShapeElement e in importShape.Elements)
+            // {
+            //     shapeHolder.CreateShapeElementGameObject(e, true);
+            // }
         }
 
         public void SaveShapeToStoredPath()

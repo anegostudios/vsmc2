@@ -87,6 +87,7 @@ namespace VSMC
             {
                 allAttachments.Insert(specificIndex, attachment);
             }
+            SetEnabledAttachment(attachment, data.enabled);
             BackdropAndAttachmentMenuManager.main.RecreateAttachmentsList(allAttachments);
             return attachment;
         }
@@ -150,8 +151,6 @@ namespace VSMC
             TaskCreateNewAttachment addAttachment = new TaskCreateNewAttachment(sRel);
             addAttachment.DoTask();
             UndoManager.main.CommitTask(addAttachment);
-            SetEnabledAttachment(allAttachments[allAttachments.Count - 1], true);
-            BackdropAndAttachmentMenuManager.main.SelectAttachment(allAttachments[allAttachments.Count - 1]);
         }
 
 

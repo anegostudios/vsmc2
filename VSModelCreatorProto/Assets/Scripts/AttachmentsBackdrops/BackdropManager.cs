@@ -127,6 +127,7 @@ namespace VSMC
             {
                 allBackdrops.Insert(specificIndex, backdrop);
             }
+            if (data.enabled) SetEnabledBackdrop(backdrop);
             BackdropAndAttachmentMenuManager.main.RecreateBackdropList(allBackdrops);
             return backdrop;
         }
@@ -147,7 +148,7 @@ namespace VSMC
 
         public void RemoveBackdrop(LoadedBackdrop backdrop)
         {
-            if (cActiveBackdrop == backdrop) DisableCurrentBackdrop();
+            if (cActiveBackdrop == backdrop) DisableCurrentBackdrop(false);
             allBackdrops.Remove(backdrop);
             Destroy(backdrop.backdropHolder.gameObject);
             BackdropAndAttachmentMenuManager.main.RecreateBackdropList(allBackdrops);
@@ -233,10 +234,13 @@ namespace VSMC
             SetEnabledBackdrop(GetBackdropFromPath(backdrop));
         }
 
-        public void DisableCurrentBackdrop()
+        public void DisableCurrentBackdrop(bool setInBackdropData = true)
         {
             if (cActiveBackdrop == null) return;
-            cActiveBackdrop.data.enabled = false;
+            if (setInBackdropData)
+            {
+                cActiveBackdrop.data.enabled = false;
+            }
             cActiveBackdrop.OnBackdropDisabled();
             BackdropAndAttachmentMenuManager.main.RecreateBackdropList(allBackdrops);
             cActiveBackdrop = null;
