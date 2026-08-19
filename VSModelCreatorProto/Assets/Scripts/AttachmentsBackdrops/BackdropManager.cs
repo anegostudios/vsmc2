@@ -71,6 +71,12 @@ namespace VSMC
             if (context is LoadIntoAttachmentContext attContext)
             {
                 //Check if attachment is loaded.
+                if (attContext.fullPathToShapeLoadedFrom == "" || attContext.fullPathToShapeLoadedFrom == null)
+                {
+                    Debug.Log("Trying to open in context, but the original shape has no filepath.");
+                    return;
+                }
+
                 string localPath = AssetPathManager.main.GetRelativePathForFile(attContext.fullPathToShapeLoadedFrom, "shapes").Replace(".json", "");
                 LoadedBackdrop bd = GetBackdropFromPath(localPath);
                 if (bd != null)

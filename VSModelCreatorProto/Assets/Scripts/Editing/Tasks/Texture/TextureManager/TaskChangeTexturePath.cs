@@ -40,11 +40,6 @@ namespace VSMC
             return false;
         }
 
-        public override long GetSizeOfTaskInBytes()
-        {
-            return sizeof(int) + sizeof(char) * (oldPath.Length + newPath.Length);
-        }
-
         public override VSEditMode GetRequiredEditMode()
         {
             return VSEditMode.Texture;

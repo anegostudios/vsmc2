@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using SFB;
 using Unity.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace VSMC
@@ -55,17 +56,22 @@ namespace VSMC
 
             if (context is LoadIntoBackdropContext bdContext)
             {
-                //Check if attachment is loaded.
-                string localPath = AssetPathManager.main.GetRelativePathForFile(bdContext.fullPathToShapeLoadedFrom, "shapes").Replace(".json", "");
-                LoadedAttachment att = GetAttachmentFromPath(localPath);
-                if (att != null)
+                if (bdContext.fullPathToShapeLoadedFrom == "" || bdContext.fullPathToShapeLoadedFrom == null)
                 {
-                    SetEnabledAttachment(att, true);
+                    Debug.Log("Trying to open in context, but the original shape has no filepath.");
                 }
                 else
                 {
-                    SetEnabledAttachment(CreateNewAttachment(localPath), true);
-                    return;
+                    //Check if attachment is loaded.
+                    string localPath = AssetPathManager.main.GetRelativePathForFile(bdContext.fullPathToShapeLoadedFrom, "shapes").Replace(".json", "");
+                    LoadedAttachment att = GetAttachmentFromPath(localPath);
+                    if (att != null)
+                    {
+                        SetEnabledAttachment(att, true);
+                    }
+                    else
+                    {
+                        SetEnabledAttachment(CreateNewAttachment(localPath), true);                    }
                 }
             }
             BackdropAndAttachmentMenuManager.main.RecreateAttachmentsList(allAttachments);

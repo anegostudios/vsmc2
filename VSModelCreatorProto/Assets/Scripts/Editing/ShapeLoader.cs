@@ -25,6 +25,8 @@ namespace VSMC {
         public UnityEvent<Shape> beforeShapeSaveEvent;
         public TMP_Text currentlyLoaded;
 
+        public GameObject saveDisabledFacesToggleIcon;
+
         string storedSaveLocation;
 
         public string storedSaveLocationForFile
@@ -49,6 +51,7 @@ namespace VSMC {
         void Start()
         {
             UndoManager.RegisterForAnyActionDoneOrUndone(OnAnyActionDone);
+            saveDisabledFacesToggleIcon.SetActive(ProgramPreferences.SaveDisabledFaces.GetValue());
         }
 
         void Update()
@@ -288,6 +291,12 @@ namespace VSMC {
                 return;
             }
             currentlyLoaded.text = "Editing " + Path.GetFileName(storedSaveLocation);
+        }
+
+        public void ToggleSaveDisabledFaces()
+        {
+            ProgramPreferences.SaveDisabledFaces.SetValue(!ProgramPreferences.SaveDisabledFaces.GetValue());
+            saveDisabledFacesToggleIcon.SetActive(ProgramPreferences.SaveDisabledFaces.GetValue());
         }
 
     }

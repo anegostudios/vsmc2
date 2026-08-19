@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace VSMC {
     /// <summary>
@@ -17,8 +18,10 @@ namespace VSMC {
         public ObjectSelector objectSelector;
 
         [Header("Entity Texturing")]
-        public TMP_Text entityTextureModeButtonText;
+        public GameObject entityTextureModeButtonToggleIcon;
         public GameObject entityTextureEnableOverlay;
+
+        public Selectable[] onlyActiveOnTextureModeInteractables;
 
         void Awake()
         {
@@ -37,11 +40,15 @@ namespace VSMC {
 
         void OnShapeLoaded(Shape shape, LoadingContext context)
         {
-            entityTextureModeButtonText.text = GetEntityTextureMode() ? "Disable Entity Texture Mode" : "Enable Entity Texture Mode";
+            entityTextureModeButtonToggleIcon.SetActive(GetEntityTextureMode());
         }
 
         public void OnModeSelect(VSEditMode editMode)
         {
+            foreach (var v in onlyActiveOnTextureModeInteractables)
+            {
+                v.interactable = editMode == VSEditMode.Texture;
+            }
             if (editMode == VSEditMode.Texture)
             {
                 if (objectSelector.IsAnySelected()) OnObjectSelected(objectSelector.GetCurrentlySelected());
@@ -102,7 +109,7 @@ namespace VSMC {
 
         public void OnEntityTextureModeChange()
         {
-            entityTextureModeButtonText.text = GetEntityTextureMode() ? "Disable Entity Texture Mode" : "Enable Entity Texture Mode";
+            entityTextureModeButtonToggleIcon.SetActive(GetEntityTextureMode());
             UVLayoutManager.main.OnEntityTextureModeChange();
             InfoLogger.main.LogText(GetEntityTextureMode() ? "Enabled entity texture mode" : "Disabled entity texture mode");
         }
@@ -111,6 +118,24 @@ namespace VSMC {
         {
             if (ShapeHolder.CurrentLoadedShape == null) return false;
             return ShapeHolder.CurrentLoadedShape.editor.entityTextureMode;
+        }
+
+        public void RandomizeUVs(int randOption)
+        {
+            if (ShapeHolder.CurrentLoadedShape == null) return;
+            if (EditModeManager.main.cEditMode != VSEditMode.Texture) return;
+            if (randOption <= 1 && ObjectSelector.main.IsAnySelected())
+            {
+                TaskRandomizeUVs randUVTask = new TaskRandomizeUVs(randOption, ObjectSelector.main.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element);
+                randUVTask.DoTask();
+                UndoManager.main.CommitTask(randUVTask);
+            }
+            else if (randOption == 2) 
+            {
+                TaskRandomizeUVs randUVTask = new TaskRandomizeUVs(randOption, null);
+                randUVTask.DoTask();
+                UndoManager.main.CommitTask(randUVTask);
+            }
         }
 
     }

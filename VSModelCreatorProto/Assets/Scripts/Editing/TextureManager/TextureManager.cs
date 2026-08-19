@@ -30,11 +30,14 @@ namespace VSMC
         public List<LoadedTexture> loadedTextures;
         public LoadedTexture emptyTexture;
 
+        public GameObject autoReloadTexturesToggleIcon;
+
         private void Awake()
         {
             main = this;
+            autoReloadTexturesToggleIcon.SetActive(ProgramPreferences.AutoRefreshTextures.GetValue());
             //Check for live updates every second.
-            InvokeRepeating("ReloadAllTexturesFromFiles", 1, 1);
+            InvokeRepeating("AutoReloadTextures", 1, 1);
         }
 
         void Start()
@@ -294,9 +297,15 @@ namespace VSMC
             return overlay;
         }
 
-        public void ReloadAllTexturesFromFiles()
+        public void AutoReloadTextures()
+        {
+            ReloadAllTexturesFromFiles();
+        }
+
+        public void ReloadAllTexturesFromFiles(bool force = false)
         {
             if (loadedTextures == null) return;
+            if (!force && !ProgramPreferences.AutoRefreshTextures.GetValue()) return;
             bool hasUpdates = false;
             foreach (LoadedTexture t in loadedTextures)
             {
@@ -309,6 +318,12 @@ namespace VSMC
                 overlay.RefreshIfOpen();
                 UVLayoutManager.main.RefreshAllUVSpaces(true);
             }
+        }
+
+        public void ToggleAutoReloadTextures()
+        {
+            ProgramPreferences.AutoRefreshTextures.SetValue(!ProgramPreferences.AutoRefreshTextures.GetValue());
+            autoReloadTexturesToggleIcon.SetActive(ProgramPreferences.AutoRefreshTextures.GetValue());
         }
 
     }

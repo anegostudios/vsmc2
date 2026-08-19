@@ -99,11 +99,6 @@ namespace VSMC
             return false;
         }
 
-        public override long GetSizeOfTaskInBytes()
-        {
-            return 0;
-        }
-
         public override VSEditMode GetRequiredEditMode()
         {
             return VSEditMode.Texture;

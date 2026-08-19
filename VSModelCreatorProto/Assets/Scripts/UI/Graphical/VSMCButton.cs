@@ -27,11 +27,18 @@ public class VSMCButton : Button
                 color = Color.black;
                 break;
         }
-        foreach (Graphic g in GetComponentsInChildren<Graphic>())
+        foreach (Graphic g in GetComponentsInChildren<Graphic>(true))
         {
-            if (g.gameObject != gameObject && g.tag == "DoButtonColorChange")
+            if (g.gameObject != gameObject)
             {
-                g.CrossFadeColor(color, 0, true, true);
+                if (state == SelectionState.Disabled)
+                {
+                    g.CrossFadeAlpha(0.5f, 0, true);
+                }
+                else
+                {
+                    g.CrossFadeAlpha(1, 0, true);
+                }
             }
         }
         base.DoStateTransition(state, instant);

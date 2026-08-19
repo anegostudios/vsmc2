@@ -128,13 +128,6 @@ namespace VSMC
             return false;
         }
 
-        public override long GetSizeOfTaskInBytes()
-        {
-            return ASCIIEncoding.ASCII.GetByteCount(newName) +
-                ASCIIEncoding.ASCII.GetByteCount(oldName) +
-                sizeof(int);
-        }
-
         public override VSEditMode GetRequiredEditMode()
         {
             //Definitely requires model mode for this one.

@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - Menubar
+  - DoButtonColorChange
   layers:
   - Default
   - TransparentFX

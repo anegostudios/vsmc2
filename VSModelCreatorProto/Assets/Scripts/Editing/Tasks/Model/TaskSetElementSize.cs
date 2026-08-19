@@ -55,14 +55,6 @@ namespace VSMC {
             return false;
         }
 
-        public override long GetSizeOfTaskInBytes()
-        {
-            return 
-                sizeof(int) +
-                sizeof(double) * 2 +
-                sizeof(EnumAxis);
-        }
-
         public override VSEditMode GetRequiredEditMode()
         {
             return VSEditMode.Model;

@@ -40,12 +40,6 @@ namespace VSMC
             return false;
         }
 
-        public override long GetSizeOfTaskInBytes()
-        {
-            //This is uh... the loaded texture can store a fair amount of data that can't easily be calculated.
-            return sizeof(int);
-        }
-
         public override VSEditMode GetRequiredEditMode()
         {
             return VSEditMode.Texture;

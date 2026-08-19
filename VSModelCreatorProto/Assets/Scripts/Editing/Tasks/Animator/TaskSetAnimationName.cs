@@ -48,9 +48,5 @@ namespace VSMC
             return false;
         }
 
-        public override long GetSizeOfTaskInBytes()
-        {
-            return sizeof(char) * (newName.Length + oldName.Length);
-        }
     }
 }

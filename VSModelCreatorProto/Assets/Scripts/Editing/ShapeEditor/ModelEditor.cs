@@ -1,6 +1,8 @@
+using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using static UnityEngine.Rendering.DebugUI;
+using UnityEngine.UI;
 
 namespace VSMC
 {
@@ -20,6 +22,8 @@ namespace VSMC
 
         [Header("UI References")]
         public ModelEditorUIElements uiElements;
+
+        public Selectable[] onlyOnModelModeMenubarButtons;
 
         private void Start()
         {
@@ -92,6 +96,10 @@ namespace VSMC
 
         void OnEditModeSelect(VSEditMode sel)
         {
+            foreach (Selectable s in onlyOnModelModeMenubarButtons)
+            {
+                s.interactable = sel == VSEditMode.Model;
+            }
             if (sel != VSEditMode.Model) return;
             ShapeLoader.main.shapeHolder.ReparentGameObjectsToNoJoints();
             if (!objectSelector.IsAnySelected())
@@ -111,13 +119,28 @@ namespace VSMC
 
         public void CreateNewShapeElement()
         {
-            ShapeElement cElem = null;  
+            if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
+            ShapeElement cElem = null;
             if (objectSelector.IsAnySelected())
             {
                 cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
             }
 
             TaskCreateNewElement cnTask = new TaskCreateNewElement(cElem);
+            cnTask.DoTask();
+            UndoManager.main.CommitTask(cnTask);
+        }
+        
+        public void CreateNewFaceElement()
+        {
+            if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
+            ShapeElement cElem = null;
+            if (objectSelector.IsAnySelected())
+            {
+                cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
+            }
+
+            TaskCreateNewFace cnTask = new TaskCreateNewFace(cElem);
             cnTask.DoTask();
             UndoManager.main.CommitTask(cnTask);
         }
@@ -195,7 +218,7 @@ namespace VSMC
             TaskSetElementStepparent setStepparentTask = new TaskSetElementStepparent(toChange, stepParentCode);
             setStepparentTask.DoTask();
             UndoManager.main.CommitTask(setStepparentTask);
-        } 
+        }
 
         public void SetStepParentElement(string stepParentCode)
         {
@@ -215,10 +238,19 @@ namespace VSMC
                     uiElements.RefreshSelectionValues();
                     return;
                 }
-            } 
+            }
             TaskSetElementStepparent setStepparentTask = new TaskSetElementStepparent(objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element, stepParentCode);
             setStepparentTask.DoTask();
             UndoManager.main.CommitTask(setStepparentTask);
+        }
+        
+        public void GenerateSnowLayers()
+        {
+            if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
+            
+            TaskGenerateSnowLayer genSnowTask = new TaskGenerateSnowLayer();
+            genSnowTask.DoTask();
+            UndoManager.main.CommitTask(genSnowTask);
         }
     }
 }

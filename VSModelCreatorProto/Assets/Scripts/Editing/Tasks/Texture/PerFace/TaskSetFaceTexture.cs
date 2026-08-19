@@ -64,11 +64,6 @@ namespace VSMC
             return false;
         }
 
-        public override long GetSizeOfTaskInBytes()
-        {
-            return sizeof(int) + sizeof(bool) * selFaces.Length + sizeof(char) * (newTexture.Length + oldTextures.Sum(x => x.Length));
-        }
-
         public override VSEditMode GetRequiredEditMode()
         {
             return VSEditMode.Texture;

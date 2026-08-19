@@ -12,10 +12,10 @@ public class SceneSettings : MonoBehaviour
 
     public Light mainLight;
     public TMP_Text shadowSettingText;
-    public TMP_Text lightingEnabledText;
-    public TMP_Text texturesEnabledText;
+    public GameObject lightingEnabledToggleIcon;
+    public GameObject texturesEnabledToggleIcon;
     public TMP_Text texturesDisabledWarningText;
-    public TMP_Text ssaoEnabledText;
+    public GameObject ssaoEnabledToggleIcon;
 
     public Material[] sceneMaterialsForTextureControl;
     public Color lightingEnabledColor;
@@ -28,6 +28,12 @@ public class SceneSettings : MonoBehaviour
     public TMP_InputField modelOpacityInput;
     public Material transparentMaterialForOpacityControl;
     public GameObject shapeHolder;
+    public bool forceTransparentShader;
+
+    public GameObject gridEnabledToggleIcon;
+    public GameObject grid;
+    public GameObject compassEnabledToggleIcon;
+    public GameObject compass;
 
     void Awake()
     {
@@ -66,18 +72,18 @@ public class SceneSettings : MonoBehaviour
         bool lightingEnabled = GetLightingEnabled();
         mainLight.enabled = lightingEnabled;
         RenderSettings.ambientSkyColor = lightingEnabled ? lightingEnabledColor : lightingDisabledColor;
-        lightingEnabledText.text = "Lighting: " + (lightingEnabled ? "Enabled" : "Disabled");
+        lightingEnabledToggleIcon.SetActive(lightingEnabled);
 
         bool texturesEnabled = GetTexturesEnabled();
         texturesDisabledWarningText.text = texturesEnabled ? "" : "Warning: Textures are currently disabled in settings!";
-        texturesEnabledText.text = "Textures: " + (texturesEnabled ? "Enabled" : "Disabled");
+        texturesEnabledToggleIcon.SetActive(texturesEnabled);
         foreach (Material m in sceneMaterialsForTextureControl)
         {
             m.SetInt("_TexturesEnabled", texturesEnabled ? 1 : 0);
         }
 
         bool ssaoEnabled = GetSSAOEnabled();
-        ssaoEnabledText.text = "SSAO: " + (ssaoEnabled ? "Enabled" : "Disabled");
+        ssaoEnabledToggleIcon.SetActive(ssaoEnabled);
         try
         {
             rendererData.rendererFeatures.Find(x => x is ScreenSpaceAmbientOcclusion).SetActive(ssaoEnabled);
@@ -86,6 +92,8 @@ public class SceneSettings : MonoBehaviour
         {
             InfoLogger.main.LogText("Setting SSAO failed!");
         }
+        gridEnabledToggleIcon.SetActive(grid.activeSelf);
+        compassEnabledToggleIcon.SetActive(compass.activeSelf);
     }
 
     int GetShadowMode()
@@ -179,7 +187,18 @@ public class SceneSettings : MonoBehaviour
         {
             go.RefreshMaterialChoice();
         }
+    }
 
+    public void ToggleGridVisibility()
+    {
+        grid.SetActive(!grid.activeSelf);
+        gridEnabledToggleIcon.SetActive(grid.activeSelf);
     }
     
+    public void ToggleCompassVisibility()
+    {
+        compass.SetActive(!compass.activeSelf);
+        compassEnabledToggleIcon.SetActive(compass.activeSelf);
+    }
+
 }

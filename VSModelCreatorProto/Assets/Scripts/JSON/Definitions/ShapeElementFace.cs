@@ -116,11 +116,38 @@ namespace VSMC
             Texture = "#" + ResolvedTexture;
         }
 
+        public Vector4 GetAutoUVPositions(Vector2 faceDimension, Vector2 startPos)
+        {
+            float[] cloneUv = new float[4];
+            // We prevent subpixel UV mapping so that one can still resize elements slighty to fix z-fighting
+            // without messing up the UV map
+            Vector2 scale = GetVoxelToPixelScale();
+
+            cloneUv[0] = (int)Mathf.Round(startPos[0] * scale.x) / scale.x;
+            cloneUv[1] = (int)Mathf.Round(startPos[1] * scale.y) / scale.y;
+
+            float width = faceDimension.x;
+            float height = faceDimension.y;
+
+            if (RotationIndex == 0 || RotationIndex == 2)
+            {
+                // Math.max because if the element is not even a full pixel wide, we should still use a single pixel to texture itx
+                cloneUv[2] = cloneUv[0] + Mathf.Max(1 / scale.x, Mathf.Floor(width * scale.x + 0.000001f) / scale.x);      // Stupid rounding errors -.-
+                cloneUv[3] = cloneUv[1] + Mathf.Max(1 / scale.y, Mathf.Floor(height * scale.y + 0.000001f) / scale.y);
+            }
+            else
+            {
+                cloneUv[2] = cloneUv[0] + Math.Max(1 / scale.x, Mathf.Floor(height * scale.x + 0.000001f) / scale.x);
+                cloneUv[3] = cloneUv[1] + Math.Max(1 / scale.y, Mathf.Floor(width * scale.y + 0.000001f) / scale.y);
+            }
+
+            return new Vector4(cloneUv[0], cloneUv[1], cloneUv[2], cloneUv[3]);
+        }
+
         public void CalculateAutoUV(Vector2 faceDimension, bool forceAutoAndSnap = false)
         {
             if (autoResolutionForUV || forceAutoAndSnap)
             {
-
                 if (snapUV || forceAutoAndSnap)
                 {
                     // We prevent subpixel UV mapping so that one can still resize elements slighty to fix z-fighting

@@ -37,9 +37,9 @@ namespace VSMC
         public int cEntityUVSelectionIndex = 0;
         public TMP_Text cEntityUVSelectionText;
 
-        public TMP_Text showUVGridText;
-        public TMP_Text showUVLabelsText;
-        public TMP_Text showUVOrientationMarkersText;
+        public GameObject showUVGridToggleIcon;
+        public GameObject showUVLabelsToggleIcon;
+        public GameObject showUVOrientationMarkersToggleIcon;
 
         bool hasCreatedEntityTextureUVSpaces = false; 
         bool[] mostRecentSelFaces;
@@ -53,9 +53,9 @@ namespace VSMC
         {
             ObjectSelector.main.RegisterForObjectSelectedEvent(OnElementSelect);
             ObjectSelector.main.RegisterForObjectDeselectedEvent(OnElementDeselect);
-            showUVGridText.text = ProgramPreferences.UVShowGrid.GetValue() ? "Hide UV Grid" : "Show UV Grid";
-            showUVLabelsText.text = ProgramPreferences.UVShowLabels.GetValue() ? "Hide UV Labels" : "Show UV Labels";
-            showUVOrientationMarkersText.text = ProgramPreferences.UVShowOrientationMarkers.GetValue() ? "Hide UV Orientations" : "Show UV Orientations";
+            showUVGridToggleIcon.SetActive(ProgramPreferences.UVShowGrid.GetValue());
+            showUVLabelsToggleIcon.SetActive(ProgramPreferences.UVShowLabels.GetValue());
+            showUVOrientationMarkersToggleIcon.SetActive(ProgramPreferences.UVShowOrientationMarkers.GetValue());
         }
 
         public void RefreshAllUVSpaces(bool forceReset = false)
@@ -328,7 +328,7 @@ namespace VSMC
             {
                 RefreshAllUVSpaces(true);
             }
-            showUVGridText.text = ProgramPreferences.UVShowGrid.GetValue() ? "Hide UV Grid" : "Show UV Grid";
+            showUVGridToggleIcon.SetActive(ProgramPreferences.UVShowGrid.GetValue());
         }
 
         public void OnShowElementNamesToggled()
@@ -338,7 +338,7 @@ namespace VSMC
             {
                 RefreshAllUVSpaces(true);
             }
-            showUVLabelsText.text = ProgramPreferences.UVShowLabels.GetValue() ? "Hide UV Labels" : "Show UV Labels";
+            showUVLabelsToggleIcon.SetActive(ProgramPreferences.UVShowLabels.GetValue());
         }
         
         public void OnShowOrientationsToggled()
@@ -348,7 +348,7 @@ namespace VSMC
             {
                 RefreshAllUVSpaces(true);
             }
-            showUVOrientationMarkersText.text = ProgramPreferences.UVShowOrientationMarkers.GetValue() ? "Hide UV Orientations" : "Show UV Orientations";
+            showUVOrientationMarkersToggleIcon.SetActive(ProgramPreferences.UVShowOrientationMarkers.GetValue());
         }
 
     }

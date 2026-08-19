@@ -46,6 +46,7 @@ namespace VSMC
 
         public GameObject GetCurrentlySelected()
         {
+            if (!IsAnySelected()) return null;
             return cSelectedList[0];
         }
 

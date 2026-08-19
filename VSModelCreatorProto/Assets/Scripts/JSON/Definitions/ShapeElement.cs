@@ -237,7 +237,7 @@ namespace VSMC
             int nameCheckCount = 1;
             while (ShapeElementRegistry.main.GetShapeElementByName(Name) != null)
             {
-                Name = "Cube (" + ++nameCheckCount+ ")";
+                Name = "Cube (" + ++nameCheckCount + ")";
             }
             ResolveReferencesAndUIDs();
             Faces = new Dictionary<string, ShapeElementFace>();
@@ -252,7 +252,35 @@ namespace VSMC
                 {
                     Enabled = true,
                     Uv = new float[] { 0, 0, 1, 1 },
-                    Texture = "#"+texCode
+                    Texture = "#" + texCode
+                });
+            }
+        }
+        
+        public ShapeElement(int enabledFaceCount)
+        {
+            From = new double[] { 0, 0, 0 };
+            To = new double[] { 1, 1, 1 };
+            Name = "Cube";
+            int nameCheckCount = 1;
+            while (ShapeElementRegistry.main.GetShapeElementByName(Name) != null)
+            {
+                Name = "Cube (" + ++nameCheckCount + ")";
+            }
+            ResolveReferencesAndUIDs();
+            Faces = new Dictionary<string, ShapeElementFace>();
+            string texCode = "texture";
+            if (ShapeHolder.CurrentLoadedShape?.Textures?.Count > 0)
+            {
+                texCode = ShapeHolder.CurrentLoadedShape.Textures.First().Key;
+            }
+            for (int i = 0; i < 6; i++)
+            {
+                Faces.Add(FaceNames[i], new ShapeElementFace()
+                {
+                    Enabled = i < enabledFaceCount,
+                    Uv = new float[] { 0, 0, 1, 1 },
+                    Texture = "#" + texCode
                 });
             }
         }
@@ -687,7 +715,7 @@ namespace VSMC
                 Faces = new Dictionary<string, ShapeElementFace>(6);
                 for (int i = 0; i < 6; i++)
                 {
-                    if (FacesResolved[i].Enabled)
+                    if (FacesResolved[i].Enabled || ProgramPreferences.SaveDisabledFaces.GetValue())
                     {
                         Faces[FaceNames[i]] = FacesResolved[i];
                     }

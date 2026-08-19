@@ -190,11 +190,6 @@ namespace VSMC
             return VSEditMode.Model;
         }
 
-        public override long GetSizeOfTaskInBytes()
-        {
-            return sizeof(int) * 3 + sizeof(bool);
-        }
-
         public override bool MergeTasksIfPossible(IEditTask nextTask)
         {
             return false;

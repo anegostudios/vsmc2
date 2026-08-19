@@ -33,11 +33,6 @@ public class TaskSetAttachmentHideTexture : IEditTask
         return VSEditMode.Model;
     }
 
-    public override long GetSizeOfTaskInBytes()
-    {
-        return 2;
-    }
-
     public override string GetTaskName()
     {
         return "Set Attachment Hide Textures";

@@ -87,16 +87,6 @@ namespace VSMC
             //uiElements.RefreshSelectionValues();
         }
 
-        public long GetSizeOfTaskList()
-        {
-            long totRam = 0;
-            foreach (IEditTask i in completedEditTasks)
-            {
-                totRam += i.GetSizeOfTaskInBytes();
-            }
-            return totRam;
-        }
-
         public void UndoTopTask()
         {
             if (completedEditTasks.Count < 1) return;

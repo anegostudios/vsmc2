@@ -71,10 +71,5 @@ namespace VSMC
             return false;
         }
 
-        public override long GetSizeOfTaskInBytes()
-        {
-            //Shrug again.
-            return 128;
-        }
     }
 }

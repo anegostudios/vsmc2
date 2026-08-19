@@ -28,10 +28,6 @@ namespace VSMC
             return VSEditMode.Model;
         }
 
-        public override long GetSizeOfTaskInBytes()
-        {
-            return 0;
-        }
 
         public override string GetTaskName()
         {

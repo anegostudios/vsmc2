@@ -78,11 +78,6 @@ namespace VSMC
             return false;
         }
 
-        public override long GetSizeOfTaskInBytes()
-        {
-            return 8 + sizeof(int);
-        }
-
         public override VSEditMode GetRequiredEditMode()
         {
             return VSEditMode.Model;

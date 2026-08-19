@@ -97,11 +97,6 @@ namespace VSMC
             return VSEditMode.None;
         }
 
-        public override long GetSizeOfTaskInBytes()
-        {
-            return 0;
-        }
-
         public override string GetTaskName()
         {
             return "Import Shape";

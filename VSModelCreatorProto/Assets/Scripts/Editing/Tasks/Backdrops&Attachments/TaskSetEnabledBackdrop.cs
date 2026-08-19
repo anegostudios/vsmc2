@@ -48,11 +48,6 @@ namespace VSMC
             return "Enable/Disable Backdrop";
         }
 
-        public override long GetSizeOfTaskInBytes()
-        {
-            return 17;
-        }
-
         public override bool MergeTasksIfPossible(IEditTask nextTask)
         {
             return false;

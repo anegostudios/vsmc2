@@ -31,13 +31,6 @@ namespace VSMC
         /// </summary>
         public abstract bool MergeTasksIfPossible(IEditTask nextTask);
 
-        /// <summary>
-        /// Mainly for debugging purposes. 
-        /// Returns, roughly, the size in bytes of the task. C# black magic means this will usually not be perfectly accurate.
-        /// 
-        /// I regret adding this function.
-        /// </summary>
-        public abstract long GetSizeOfTaskInBytes();
 
         /// <summary>
         /// Returns the edit mode that must be active to perform or undo this task.

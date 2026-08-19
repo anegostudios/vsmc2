@@ -147,22 +147,6 @@ namespace VSMC
             return false;
         }
 
-        public override long GetSizeOfTaskInBytes()
-        {
-            //Inefficient but this is an uncommon and difficult task to compute.
-            //Marshalling doesn't work, since these are not structs.
-            long tot = 0;
-            foreach (AnimationEntryAndLocation animEntry in animationEntries)
-            {
-                tot += System.Text.ASCIIEncoding.ASCII.GetByteCount(animEntry.elemName);
-                tot += sizeof(int) * 2;
-                tot += 8; //Pointer to keyframe elem.
-                tot += 8; //Pointer to this entry in the list, I think?
-            }
-            tot += 8; //Pointer to element.
-            return tot;
-        }
-
         public override VSEditMode GetRequiredEditMode()
         {
             //We very much need model mode for delete operations.

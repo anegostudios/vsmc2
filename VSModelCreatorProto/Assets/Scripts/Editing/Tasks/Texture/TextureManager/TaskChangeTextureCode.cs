@@ -40,12 +40,7 @@ namespace VSMC
         {
             return false;
         }
-
-        public override long GetSizeOfTaskInBytes()
-        {
-            return sizeof(int) + sizeof(char) * (oldCode.Length + newCode.Length);
-        }
-
+        
         public override VSEditMode GetRequiredEditMode()
         {
             return VSEditMode.Texture;

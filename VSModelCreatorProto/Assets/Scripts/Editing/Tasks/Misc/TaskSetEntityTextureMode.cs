@@ -112,10 +112,5 @@ namespace VSMC
             return false;
         }
 
-        public override long GetSizeOfTaskInBytes()
-        {
-            return sizeof(bool) * 2 + 2048;
-        }
-
     }
 }

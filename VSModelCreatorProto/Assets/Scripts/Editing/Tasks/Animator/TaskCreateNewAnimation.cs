@@ -70,9 +70,5 @@ namespace VSMC {
             return false;
         }
 
-        public override long GetSizeOfTaskInBytes()
-        {
-            return sizeof(char) * animationName.Length;
-        }
     }
 }
