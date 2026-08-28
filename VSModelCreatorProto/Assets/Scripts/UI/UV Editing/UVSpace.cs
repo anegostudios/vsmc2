@@ -30,6 +30,7 @@ namespace VSMC
         Vector2 rmbStartPosForPanner;
         bool rmbDown;
         float[] rmbStartUVs;
+        Vector2 storedAspectMultiplier;
 
 
         private void Start()
@@ -39,9 +40,39 @@ namespace VSMC
 
         public void SetTexture(LoadedTexture tex)
         {
+            if (mainTexture.texture == tex.loadedTexture) return;
             mainTexture.texture = tex.loadedTexture;
             grid.uvRect = new Rect(0, 0, tex.storedWidth, tex.storedHeight);
             grid.gameObject.SetActive(ProgramPreferences.UVShowGrid.GetValue());
+
+            zoomSlider.value = 1;
+            panner.SetPan(new Vector2(0.5f, 0.5f));
+            //OnZoomOrPositionChanged();
+
+            //Calculate aspect ratio...
+            float rat = tex.storedWidth / (float)tex.storedHeight;
+            storedAspectMultiplier = Vector2.one;
+            zoomAndPanTransform.anchorMin = Vector2.zero;
+            zoomAndPanTransform.anchorMax = Vector2.one;
+            zoomAndPanTransform.sizeDelta = Vector2.zero;
+            if (rat > 1)
+            {
+                //Horizontally large texture, so scale on the Y axis.
+                rat = (1 - (1f / rat)) / 2f;
+                zoomAndPanTransform.anchorMin = new Vector2(0, rat);
+                zoomAndPanTransform.anchorMax = new Vector2(1, 1 - rat);
+                storedAspectMultiplier = new Vector2(1, 1 - (rat * 2));
+                zoomAndPanTransform.sizeDelta = Vector2.zero;
+            }
+            else if (rat < 1)
+            {
+                //Vertically large texture, so scale on the X axis.
+                rat = (1 - rat) / 2f;
+                zoomAndPanTransform.anchorMin = new Vector2(rat, 0);
+                zoomAndPanTransform.anchorMax = new Vector2(1 - rat, 1);
+                storedAspectMultiplier = new Vector2(1 - (rat * 2), 1);
+                zoomAndPanTransform.sizeDelta = Vector2.zero;
+            }
         }
 
         private void Update()
@@ -170,11 +201,11 @@ namespace VSMC
         public void OnZoomOrPositionChanged()
         {
             zoomAndPanTransform.localScale = Vector3.one * zoomSlider.value;
-            Vector2 panVal = (panner.cVal - new Vector2(0.5f, 0.5f)) * zoomSlider.value;
+            Vector2 panVal = (panner.cVal - new Vector2(0.5f, 0.5f)) * zoomSlider.value * storedAspectMultiplier;
             zoomAndPanTransform.anchoredPosition = myRect.rect.size * -panVal;
 
             //Calculate the mouse per pixel stuff.
-            uiPixelsPerUVPixel = new Vector2((myRect.rect.width) / grid.uvRect.width, (myRect.rect.height) / grid.uvRect.height) * zoomSlider.value;
+            uiPixelsPerUVPixel = new Vector2((myRect.rect.width) / grid.uvRect.width, (myRect.rect.height) / grid.uvRect.height) * zoomSlider.value * storedAspectMultiplier;
             uvShape.GetComponentInChildren<Image>().pixelsPerUnitMultiplier = uvShape.transform.lossyScale.x;
         }
 
@@ -186,7 +217,6 @@ namespace VSMC
                 lmbDown = true;
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(myRect, Input.mousePosition, null, out lmbStartPos);
                 lmbStartUVs = (float[])cUVs.Clone();
-
             }
             else if (ped.button == PointerEventData.InputButton.Right)
             {

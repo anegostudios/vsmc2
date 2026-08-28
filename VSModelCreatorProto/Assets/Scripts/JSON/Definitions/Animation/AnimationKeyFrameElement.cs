@@ -78,5 +78,18 @@ namespace VSMC
             return false;
         }
 
+        public void ScaleAll(float size)
+        {
+            OffsetX *= size;
+            OffsetY *= size;
+            OffsetZ *= size;
+            StretchX *= size;
+            StretchY *= size;
+            StretchZ *= size;
+            OriginX *= size;
+            OriginY *= size;
+            OriginZ *= size;
+        }
+
     }
 }

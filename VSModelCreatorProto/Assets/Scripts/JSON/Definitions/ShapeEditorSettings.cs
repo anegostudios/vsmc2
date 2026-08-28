@@ -11,6 +11,12 @@ public class ShapeEditorSettings
 {
 
     /// <summary>
+    /// The version of the editor that was last used to save this model.
+    /// </summary>
+    [JsonProperty]
+    public string editorVersion = "";
+
+    /// <summary>
     /// Are angles locked to 15degree intervals?
     /// </summary>
     [JsonProperty(PropertyName = "allAngles")]
@@ -35,6 +41,11 @@ public class ShapeEditorSettings
     [JsonProperty]
     public string mountBackDropShape = null;
 
-    
+    /// <summary>
+    /// Should the auto UVs sizes be rounded rather than clamped?
+    /// </summary>
+    [JsonProperty("roundUVs")]
+    public bool roundAutoUVs = false;
+
 
 }

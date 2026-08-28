@@ -348,6 +348,7 @@ namespace VSMC
             ProgramPreferences.ShowBackdropsAndAttachmentsPanel.SetValue(cOpen);
             if (cOpen)
             {
+                AttachmentPointsManager.main.OnOpenedBackdropsPanel();
                 OpenPanel();
             }
             else
@@ -363,13 +364,20 @@ namespace VSMC
                 g.SetActive(true);
             }
         }
-        
+
         public void ClosePanel()
         {
+            DeselectCurrentBackdropOrAttachment();
             foreach (GameObject g in onBackdropsEnabledActive)
             {
                 g.SetActive(false);
             }
+        }
+        
+        public void OnOpenedAPPanel()
+        {
+            ProgramPreferences.ShowBackdropsAndAttachmentsPanel.SetValue(false);
+            ClosePanel();
         }
 
         /// <summary>
@@ -380,6 +388,7 @@ namespace VSMC
             if (mode != VSEditMode.Model) return;
             if (ProgramPreferences.ShowBackdropsAndAttachmentsPanel.GetValue())
             {
+                Debug.Log("Opening BD Panel.");
                 OpenPanel();
             }
         }
@@ -388,7 +397,6 @@ namespace VSMC
         {
             if (mode != VSEditMode.Model) return;
             ClosePanel();
-            DeselectCurrentBackdropOrAttachment();
         }
         
         #endregion

@@ -140,7 +140,7 @@ namespace VSMC
                     UndoManager.main.CommitTask(addAttachment);
                     SetEnabledAttachment(allAttachments[allAttachments.Count - 1], true);
                 }
-                BackdropAndAttachmentMenuManager.main.SelectAttachment(allAttachments[allAttachments.Count - 1]);
+                //BackdropAndAttachmentMenuManager.main.SelectAttachment(allAttachments[allAttachments.Count - 1]);
             }
             catch { return; }
         }

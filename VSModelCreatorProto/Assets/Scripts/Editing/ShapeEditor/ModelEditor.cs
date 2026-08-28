@@ -1,5 +1,6 @@
 using System.IO;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -25,6 +26,12 @@ namespace VSMC
 
         public Selectable[] onlyOnModelModeMenubarButtons;
 
+        [Header("Resize Overlay")]
+        public TMP_InputField scaleInput;
+        public Toggle scaleUVsToggle;
+        public Selectable[] scaleButtonsOnlyForSelection;
+        
+
         private void Start()
         {
             objectSelector.RegisterForObjectSelectedEvent(OnObjectSelected);
@@ -43,6 +50,10 @@ namespace VSMC
 
         private void OnObjectSelected(GameObject cSelected)
         {
+            foreach (var s in scaleButtonsOnlyForSelection)
+            {
+                s.interactable = true;
+            }
             if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
             uiElements.OnElementSelected(cSelected.GetComponent<ShapeElementGameObject>());
             uiElements.ShowAllUIElements();
@@ -50,6 +61,10 @@ namespace VSMC
 
         private void OnObjectDeselcted(GameObject deSelected)
         {
+            foreach (var s in scaleButtonsOnlyForSelection)
+            {
+                s.interactable = false;
+            }
             if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
             uiElements.HideAllUIElements();
         }
@@ -243,14 +258,55 @@ namespace VSMC
             setStepparentTask.DoTask();
             UndoManager.main.CommitTask(setStepparentTask);
         }
-        
+
+        public void SetRenderPass(int value)
+        {
+            ShapeElement sel = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
+            if (sel.RenderPass == value) return;
+            TaskSetElementRenderPass setRenderPassTask = new TaskSetElementRenderPass(sel, value);
+            setRenderPassTask.DoTask();
+            UndoManager.main.CommitTask(setRenderPassTask);
+        }
+
         public void GenerateSnowLayers()
         {
             if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
-            
+
             TaskGenerateSnowLayer genSnowTask = new TaskGenerateSnowLayer();
             genSnowTask.DoTask();
             UndoManager.main.CommitTask(genSnowTask);
+        }
+
+        public void ScaleSelected()
+        {
+            TaskResizeElement resize = new TaskResizeElement(null, true, 2f, false);
+            resize.DoTask();
+            UndoManager.main.CommitTask(resize);
+        }
+
+        public void ResizeElements(int resizeOption)
+        {
+            float resizeAmount = 0;
+            if (!float.TryParse(scaleInput.text, out resizeAmount))
+            {
+                InfoLogger.main.LogText("Cannot perform resize - Invalid scale given.");
+                return;
+            }
+            if (resizeOption <= 1 && !ObjectSelector.main.IsAnySelected())
+            {
+                InfoLogger.main.LogText("Cannot perform resize - No object selected.");
+                return;
+            }
+            else if (resizeOption <= 1)
+            {
+                TaskResizeElement resizeTask = new TaskResizeElement(ObjectSelector.main.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element, resizeOption == 1, resizeAmount, scaleUVsToggle.isOn);
+                resizeTask.DoTask();
+                UndoManager.main.CommitTask(resizeTask);
+                return;
+            }
+            TaskResizeElement resizeAllTask = new TaskResizeElement(null, true, resizeAmount, scaleUVsToggle.isOn);
+            resizeAllTask.DoTask();
+            UndoManager.main.CommitTask(resizeAllTask);
         }
     }
 }

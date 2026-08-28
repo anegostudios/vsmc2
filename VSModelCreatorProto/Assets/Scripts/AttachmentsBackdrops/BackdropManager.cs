@@ -104,7 +104,8 @@ namespace VSMC
                 if (shape?.editor?.backDropShape != null && shape?.editor?.backDropShape != "")
                 {
                     Debug.LogWarning("Loading old backdrop path.");
-                    SetEnabledBackdrop(CreateNewBackdrop(shape.editor.backDropShape));
+                    LoadedBackdrop b = CreateNewBackdrop(shape.editor.backDropShape);
+                    if (b != null) SetEnabledBackdrop(b);
                 }
                 shape.editor.backDropShape = null;
 #pragma warning restore CS0618 //Ignore obsolete warning.
@@ -125,6 +126,7 @@ namespace VSMC
             Debug.LogWarning("Creating new prefab for backdrop.");
             LoadedBackdrop backdrop = new LoadedBackdrop(data,
                     Instantiate(backdropHolderPrefab, transform).GetComponentInChildren<BackdropHolder>());
+            if (!backdrop.IsLoaded()) return null;
             if (specificIndex == -1)
             {
                 allBackdrops.Add(backdrop);
@@ -174,7 +176,7 @@ namespace VSMC
                     addBackdrop.DoTask();
                     UndoManager.main.CommitTask(addBackdrop);
                 }
-                BackdropAndAttachmentMenuManager.main.SelectBackdrop(allBackdrops[allBackdrops.Count - 1]);
+                //BackdropAndAttachmentMenuManager.main.SelectBackdrop(allBackdrops[allBackdrops.Count - 1]);
                 SetEnabledBackdrop(allBackdrops[allBackdrops.Count - 1]);
             }
             catch { return; }
@@ -188,7 +190,7 @@ namespace VSMC
             TaskCreateNewBackdrop addBackdrop = new TaskCreateNewBackdrop(sRel);
             addBackdrop.DoTask();
             UndoManager.main.CommitTask(addBackdrop);
-            BackdropAndAttachmentMenuManager.main.SelectBackdrop(allBackdrops[allBackdrops.Count - 1]);
+            //BackdropAndAttachmentMenuManager.main.SelectBackdrop(allBackdrops[allBackdrops.Count - 1]);
             SetEnabledBackdrop(allBackdrops[allBackdrops.Count - 1]);
         }
 

@@ -11,8 +11,6 @@ using System.Collections.Generic;
 public class ShapeAccessor
 {
 
-    static UnityEvent<Shape> OnSavingShapeEvent;
-
     public static JsonSerializerSettings BasicSerializerSettings;
 
 

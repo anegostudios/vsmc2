@@ -15,6 +15,7 @@ namespace VSMC
         public int newParentID;
         public int oldParentID;
 
+        public int oldSiblingIndex;
         public Vector3 oldFrom;
         public Vector3 oldRotOrigin;
         public Vector3 oldRotation;
@@ -25,6 +26,7 @@ namespace VSMC
         public double[] size;
 
         public bool keepGlobalTransform;
+        protected bool updateHierarchy = true;
 
         /// <summary>
         /// Reparents an element. CAUTION - This does NOT include a failsafe for reparenting an object to itself or its children.
@@ -60,6 +62,14 @@ namespace VSMC
             oldFrom = new Vector3((float)child.From[0], (float)child.From[1], (float)child.From[2]);
             oldRotOrigin = new Vector3((float)child.RotationOrigin[0], (float)child.RotationOrigin[1], (float)child.RotationOrigin[2]);
             oldRotation = new Vector3((float)child.RotationX, (float)child.RotationY, (float)child.RotationZ);
+            if (child.ParentElement == null)
+            {
+                oldSiblingIndex = ShapeHolder.CurrentLoadedShape.Elements.IndexOf(child);
+            }
+            else
+            {
+                oldSiblingIndex = child.ParentElement.Children.IndexOf(child);
+            }
         }
 
         public override void DoTask()
@@ -133,8 +143,8 @@ namespace VSMC
                 child.To = new double[] { startPos.x + size[0], startPos.y + size[1], startPos.z + size[2] };
             }
 
-                child.RecreateObjectMeshAndTransforms();
-            ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
+            child.RecreateObjectMeshAndTransforms();
+            if (updateHierarchy) ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
         }
 
         public override void UndoTask()
@@ -165,7 +175,7 @@ namespace VSMC
             //Now add the old parent back.
             if (oldParentID == -1)
             {
-                ShapeHolder.CurrentLoadedShape.AddRootShapeElement(child);
+                ShapeHolder.CurrentLoadedShape.Elements = ShapeHolder.CurrentLoadedShape.Elements.InsertAt(child, oldSiblingIndex);
                 child.ParentElement = null;
                 child.RecreateObjectMeshAndTransforms();
             }
@@ -177,11 +187,12 @@ namespace VSMC
                 if (oldParent.Children == null) oldParent.Children = new ShapeElement[] { child };
                 else
                 {
-                    oldParent.Children = oldParent.Children.Append(child);
+                    oldParent.Children = oldParent.Children.InsertAt(child, oldSiblingIndex);
+
                 }
                 oldParent.RecreateObjectMeshAndTransforms();
             }
-            ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
+            if (updateHierarchy) ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
 
         }
 

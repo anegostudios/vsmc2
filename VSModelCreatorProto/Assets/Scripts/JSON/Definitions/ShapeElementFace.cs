@@ -160,22 +160,33 @@ namespace VSMC
                     float width = faceDimension.x;
                     float height = faceDimension.y;
 
-                    if (RotationIndex == 0 || RotationIndex == 2)
+                    float rw, rh;
+                    if (ShapeHolder.CurrentLoadedShape.editor.roundAutoUVs)
                     {
-                        // Math.max because if the element is not even a full pixel wide, we should still use a single pixel to texture it
-
-                        Uv[2] = Uv[0] + Mathf.Max(1 / scale.x, Mathf.Floor(width * scale.x + 0.000001f) / scale.x);      // Stupid rounding errors -.-
-                        Uv[3] = Uv[1] + Mathf.Max(1 / scale.y, Mathf.Floor(height * scale.y + 0.000001f) / scale.y);
+                        rw = Mathf.Round(width * scale.x + 0.000001f);      // Stupid rounding errors -.-
+                        rh = Mathf.Round(height * scale.y + 0.000001f);
                     }
                     else
                     {
-                        Uv[2] = Uv[0] + Math.Max(1 / scale.x, Mathf.Floor(height * scale.x + 0.000001f) / scale.x);
-                        Uv[3] = Uv[1] + Math.Max(1 / scale.y, Mathf.Floor(width * scale.y + 0.000001f) / scale.y);
+                        rw = Mathf.Floor(width * scale.x + 0.000001f);      // Stupid rounding errors -.-
+                        rh = Mathf.Floor(height * scale.y + 0.000001f);
+                    }
+
+
+                    if (RotationIndex == 0 || RotationIndex == 2)
+                    {
+                        // Math.max because if the element is not even a full pixel wide, we should still use a single pixel to texture it
+                        Uv[2] = Uv[0] + Mathf.Max(1 / scale.x, rw / scale.x);
+                        Uv[3] = Uv[1] + Mathf.Max(1 / scale.y, rh / scale.y);
+                    }
+                    else
+                    {
+                        Uv[2] = Uv[0] + Math.Max(1 / scale.x, rh / scale.y);
+                        Uv[3] = Uv[1] + Math.Max(1 / scale.y, rw / scale.x);
                     }
                 }
                 else
                 {
-
 
                     if (RotationIndex == 0 || RotationIndex == 2)
                     {

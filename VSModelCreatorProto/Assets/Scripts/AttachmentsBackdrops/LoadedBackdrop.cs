@@ -32,6 +32,11 @@ namespace VSMC
             LoadBackdropFromShapeFile();
         }
 
+        public bool IsLoaded()
+        {
+            return storedFilepath != "";
+        }
+
         public void LoadBackdropFromShapeFile()
         {
             //backdropHolder.OnShapeLoaded();
@@ -39,6 +44,7 @@ namespace VSMC
             if (!File.Exists(path))
             {
                 Debug.LogError("Cannot find file path at " + path);
+                storedFilepath = "";
                 return;
             }
             storedFilepath = path;

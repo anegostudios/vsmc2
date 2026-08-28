@@ -24,6 +24,7 @@ namespace VSMC
         public Color[] faceColors;
         public TMP_Text textureNameText;
         public float mousewheelScrollSpeed = 0.1f;
+        public RectTransform moveableContentForScale;
         Vector2 uiPixelsPerUVPixel;
         RectTransform myRect;
 
@@ -42,6 +43,7 @@ namespace VSMC
         EntityTextureUVEntry[] uvEntriesUnderMouseCursorOnClick;
         int lastSelectedUvEntryOnClick;
         Vector2 lmbPositionForScrollingThroughEntries;
+        Vector2 storedAspectMultiplier;
 
         void Start()
         {
@@ -56,6 +58,36 @@ namespace VSMC
             grid.uvRect = new Rect(0, 0, tex.storedWidth, tex.storedHeight);
             grid.gameObject.SetActive(ProgramPreferences.UVShowGrid.GetValue());
             textureNameText.text = tex.code.ToUpper();
+
+            zoomSlider.value = 1;
+            panner.SetPan(new Vector2(0.5f, 0.5f));
+            //OnZoomOrPositionChanged();
+
+            //Calculate aspect ratio...
+            float rat = tex.storedWidth / (float)tex.storedHeight;
+            storedAspectMultiplier = Vector2.one;
+            moveableContentForScale.anchorMin = Vector2.zero;
+            moveableContentForScale.anchorMax = Vector2.one;
+            moveableContentForScale.sizeDelta = Vector2.zero;
+            if (rat > 1)
+            {
+                //Horizontally large texture, so scale on the Y axis.
+                rat = (1 - (1f / rat)) / 2f;
+                moveableContentForScale.anchorMin = new Vector2(0, rat);
+                moveableContentForScale.anchorMax = new Vector2(1, 1 - rat);
+                storedAspectMultiplier = new Vector2(1, 1 - (rat * 2));
+                moveableContentForScale.sizeDelta = Vector2.zero;
+            }
+            else if (rat < 1)
+            {
+                //Vertically large texture, so scale on the X axis.
+                rat = (1 - rat) / 2f;
+                moveableContentForScale.anchorMin = new Vector2(rat, 0);
+                moveableContentForScale.anchorMax = new Vector2(1 - rat, 1);
+                storedAspectMultiplier = new Vector2(1 - (rat * 2), 1);
+                moveableContentForScale.sizeDelta = Vector2.zero;
+            }
+
             //RefreshAllUISpacePositions();
         }
 
@@ -182,11 +214,11 @@ namespace VSMC
         public void OnZoomOrPositionChanged()
         {
             zoomAndPanTransform.localScale = Vector3.one * zoomSlider.value;
-            Vector2 panVal = (panner.cVal - new Vector2(0.5f, 0.5f)) * zoomSlider.value;
+            Vector2 panVal = (panner.cVal - new Vector2(0.5f, 0.5f)) * zoomSlider.value * storedAspectMultiplier;
             zoomAndPanTransform.anchoredPosition = myRect.rect.size * -panVal;
 
             //Calculate the mouse per pixel stuff.
-            uiPixelsPerUVPixel = new Vector2((myRect.rect.width) / grid.uvRect.width, (myRect.rect.height) / grid.uvRect.height) * zoomSlider.value;
+            uiPixelsPerUVPixel = new Vector2((myRect.rect.width) / grid.uvRect.width, (myRect.rect.height) / grid.uvRect.height) * zoomSlider.value * storedAspectMultiplier;
 
         }
 
@@ -266,9 +298,11 @@ namespace VSMC
             lmbStartEntityUvs = new Vector2((float)entry.elem.entityTextureUV[0], (float)entry.elem.entityTextureUV[1]);
         }
 
-        public Color GetColorForFace(int index)
+        public Color GetColorForFace(int index, ShapeElement element)
         {
-            return faceColors[index];
+            Color c = faceColors[index] * element.GetFaceBrightness(index);
+            c.a = 0.3f;
+            return c;
         }
 
     }

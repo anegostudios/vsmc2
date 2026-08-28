@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -41,6 +43,7 @@ public class ModelEditorUIElements : MonoBehaviour
 
     [Header("Misc")]
     public GizmoController gizmoController;
+    public TMP_Dropdown renderPassDropdown;
     public TMP_InputField stepparentInput;
     public GameObject stepparentInputGameObject;
     public GameObject nonRootObjectStepparentWarning;
@@ -73,6 +76,10 @@ public class ModelEditorUIElements : MonoBehaviour
         rotZSlider.AddToOnRotationSetEvent(val => { shapeEditor.SetRotation(EnumAxis.Z, rotZSlider.Val); });
 
         stepparentInput.onEndEdit.AddListener(val => { shapeEditor.SetStepParentElement(val); });
+
+        renderPassDropdown.ClearOptions();
+        renderPassDropdown.AddOptions(Enum.GetNames(typeof(EnumChunkRenderPass)).ToList());
+        renderPassDropdown.onValueChanged.AddListener(val => { shapeEditor.SetRenderPass(val - 1); });
     }
 
     public void OnElementSelected(ShapeElementGameObject element)
@@ -136,6 +143,10 @@ public class ModelEditorUIElements : MonoBehaviour
             nonRootObjectStepparentWarning.SetActive(true);
             couldntFindStepParentElementWarning.SetActive(false);
         }
+
+        // + 1 on render pass, as default (0th option) is -1 in data.
+        renderPassDropdown.SetValueWithoutNotify(elem.RenderPass + 1);
+
     }
 
     public void RefreshSelectionValues()

@@ -908,5 +908,55 @@ namespace VSMC
                 return (float)(To[2] - From[2]);
             }
         }
+
+        public float Volume
+        {
+            get
+            {
+                return Width * Height * Depth;
+            }
+        }
+
+        public void ScaleAll(float scale, bool scaleUVs, bool[] prevAutoRes = null)
+        {
+            From = new double[] { From[0] * scale, From[1] * scale, From[2] * scale };
+            To = new double[] { To[0] * scale, To[1] * scale, To[2] * scale };
+            RotationOrigin = new double[] { RotationOrigin[0] * scale, RotationOrigin[1] * scale, RotationOrigin[2] * scale };
+
+            if (scaleUVs)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    ShapeElementFace f = FacesResolved[i];
+                    f.Uv = new float[] { f.Uv[0], f.Uv[1], f.Uv[0] + (f.Uv[2] - f.Uv[0]) * scale, f.Uv[1] + (f.Uv[3] - f.Uv[1]) * scale };
+                }
+            }
+            else
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    if (prevAutoRes != null)
+                    {
+                        FacesResolved[i].autoResolutionForUV = prevAutoRes[i];
+                    }
+                    else
+                    {
+                        FacesResolved[i].autoResolutionForUV = false;
+                    }
+                }
+            }
+        }
+        
+        public float GetFaceBrightness(int faceIndex)
+        {
+            Vector3 facing = BlockFacing.ALLFACES[faceIndex].vector;
+            facing = meshData.storedMatrix * facing;
+
+            float minNormalShade = 0.55f;
+            Vector3 lightPos = Vector3.one;
+            float nb = Mathf.Max(minNormalShade, 0.5f + 0.5f * Vector3.Dot(lightPos, facing));
+
+            return Mathf.Min(1, nb);
+        }
     }
 }

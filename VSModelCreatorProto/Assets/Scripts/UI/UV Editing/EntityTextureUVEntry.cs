@@ -24,7 +24,7 @@ namespace VSMC
             this.rect = GetComponent<RectTransform>();
             this.elem = elem;
             this.faceIndex = faceIndex;
-            entryImage.color = space.GetColorForFace(faceIndex);
+            entryImage.color = space.GetColorForFace(faceIndex, this.elem);
             if (attemptName && ProgramPreferences.UVShowLabels.GetValue())
             {
                 elemName.text = elem.Name;
@@ -50,7 +50,7 @@ namespace VSMC
         public void UpdateElementSpace(EntityTextureUVSpace space, bool attemptName)
         {
             this.space = space;
-            if (space != null) entryImage.color = space.GetColorForFace(faceIndex);
+            if (space != null) entryImage.color = space.GetColorForFace(faceIndex, this.elem);
             if (attemptName && ProgramPreferences.UVShowLabels.GetValue())
             {
                 elemName.text = elem.Name;

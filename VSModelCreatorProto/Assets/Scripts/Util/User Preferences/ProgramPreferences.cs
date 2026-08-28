@@ -29,9 +29,11 @@ public class ProgramPreferences
 
     //Misc
     public static Preference<bool> ShowBackdropsAndAttachmentsPanel = new Preference<bool>("showBackdropsMenu", false);
+    public static Preference<bool> ShowAttachmentPointsPanel = new Preference<bool>("showAttachmentPointsMenu", false);
     public static Preference<bool> EnableUpdateChecking = new Preference<bool>("enableUpdateChecking", false);
     public static Preference<bool> AutoRefreshTextures = new Preference<bool>("autoReloadChangedTextures", true);
     public static Preference<bool> SaveDisabledFaces = new Preference<bool>("saveDisabledFaces", true);
+    public static Preference<bool> OnlyShowAPsForSelectedElement = new Preference<bool>("onlyShowSelectedAPs", false);
 
     //Scene Settings
     public static Preference<bool> EnableLighting = new Preference<bool>("EnableLighting", true);

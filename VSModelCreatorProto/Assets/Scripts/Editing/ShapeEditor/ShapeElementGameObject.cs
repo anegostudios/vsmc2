@@ -153,8 +153,14 @@ namespace VSMC {
         public void RefreshMaterialChoice()
         {
             if (gameObject == null) return;
-            if (element.RenderPass == 3 || SceneSettings.main.modelOpacity <= 0.99f || SceneSettings.main.forceTransparentShader) gameObject.GetComponent<MeshRenderer>().material = TextureManager.main.transparentMaterial;
+            if (UsingTransparentRenderPass() || SceneSettings.main.modelOpacity <= 0.99f || SceneSettings.main.forceTransparentShader) gameObject.GetComponent<MeshRenderer>().material = TextureManager.main.transparentMaterial;
             else gameObject.GetComponent<MeshRenderer>().material = TextureManager.main.modelMaterial;
+        }
+
+        bool UsingTransparentRenderPass()
+        {
+            //Meta, Transparent, Liquid
+            return element.RenderPass == 6 || element.RenderPass == 3 || element.RenderPass == 4;
         }
 
     }

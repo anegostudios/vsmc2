@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,7 +28,7 @@ public class VSMCButton : Button
                 color = Color.black;
                 break;
         }
-        foreach (Graphic g in GetComponentsInChildren<Graphic>(true))
+        foreach (TMP_Text g in GetComponentsInChildren<TMP_Text>(true))
         {
             if (g.gameObject != gameObject)
             {

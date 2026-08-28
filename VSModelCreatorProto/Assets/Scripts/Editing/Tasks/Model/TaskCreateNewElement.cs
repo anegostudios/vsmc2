@@ -32,6 +32,7 @@ namespace VSMC
                 createdElement.SetParent(parent);
             }
 
+            createdElement.ResolveUVForFaces();
             //We will tesselate the object and create its game object, but will move it immediately to the deletion state.
             ShapeTesselator.TesselateShapeElements(new ShapeElement[] { createdElement });
             ShapeTesselator.ResolveMatricesForShapeElementAndChildren(createdElement);

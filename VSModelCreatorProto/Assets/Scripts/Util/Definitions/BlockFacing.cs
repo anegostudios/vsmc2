@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace VSMC
 {
     public class BlockFacing
@@ -24,28 +26,28 @@ namespace VSMC
         /// <summary>
         /// Faces towards negative Z
         /// </summary>
-        public static readonly BlockFacing NORTH = new BlockFacing("north", 1, 0, EnumAxis.Z);
+        public static readonly BlockFacing NORTH = new BlockFacing("north", 1, 0, EnumAxis.Z, Vector3.back);
         /// <summary>
         /// Faces towards positive X
         /// </summary>
-        public static readonly BlockFacing EAST = new BlockFacing("east", 2, 1, EnumAxis.X);
+        public static readonly BlockFacing EAST = new BlockFacing("east", 2, 1, EnumAxis.X, Vector3.right);
         /// <summary>
         /// Faces towards positive Z
         /// </summary>
-        public static readonly BlockFacing SOUTH = new BlockFacing("south", 4, 2, EnumAxis.Z);
+        public static readonly BlockFacing SOUTH = new BlockFacing("south", 4, 2, EnumAxis.Z, Vector3.forward);
         /// <summary>
         /// Faces towards negative X
         /// </summary>
-        public static readonly BlockFacing WEST = new BlockFacing("west", 8, 3, EnumAxis.X);
+        public static readonly BlockFacing WEST = new BlockFacing("west", 8, 3, EnumAxis.X, Vector3.left);
 
         /// <summary>
         /// Faces towards positive Y
         /// </summary>
-        public static readonly BlockFacing UP = new BlockFacing("up", 16, 4, EnumAxis.Y);
+        public static readonly BlockFacing UP = new BlockFacing("up", 16, 4, EnumAxis.Y, Vector3.up);
         /// <summary>
         /// Faces towards negative Y
         /// </summary>
-        public static readonly BlockFacing DOWN = new BlockFacing("down", 32, 5, EnumAxis.Y);
+        public static readonly BlockFacing DOWN = new BlockFacing("down", 32, 5, EnumAxis.Y, Vector3.down);
 
         /// <summary>
         /// All block faces in the order of N, E, S, W, U, D
@@ -57,8 +59,9 @@ namespace VSMC
         public byte flag;
         public string code;
         public EnumAxis axis;
+        public Vector3 vector;
 
-        private BlockFacing(string code, byte flag, int index, EnumAxis axis)
+        private BlockFacing(string code, byte flag, int index, EnumAxis axis, Vector3 vector)
         {
             this.index = index;
             this.meshDataIndex = (byte)(index + 1);
@@ -71,6 +74,7 @@ namespace VSMC
             //this.normald = new Vec3d((double)facingVector.X, (double)facingVector.Y, (double)facingVector.Z);
             //this.plane = plane;
             this.axis = axis;
+            this.vector = vector;
         }
 
         /// <summary>
