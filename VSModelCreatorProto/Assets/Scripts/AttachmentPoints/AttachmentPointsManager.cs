@@ -114,7 +114,6 @@ public class AttachmentPointsManager : MonoBehaviour
         //Remove all APs from shape data first.
         List<ShapeElement> es = new List<ShapeElement>();
         es.AddRange(shape.Elements);
-        allAPs = new List<LoadedAP>();
         while (es.Count > 0)
         {
             ShapeElement e = es[0];
