@@ -8,15 +8,9 @@ namespace VSMC
 {
     /// <summary>
     /// The Unity object that maintains the backdrop elements.
-    /// Backdrop elements don't need to move so they will all be added to the same parent.
     /// </summary>
-    public class BackdropHolder : MonoBehaviour
+    public class BackdropHolder : IShapeHolder
     {
-
-        [Header("Unity References")]
-        public GameObject shapeElementPrefab;
-        public Transform backdropParent;
-
         public Material backdropSolidMaterial;
         public Material backdropTransparentMaterial;
 
@@ -27,7 +21,7 @@ namespace VSMC
         Shape backdrop;
         List<ShapeElementGameObject> allGameObjectsForBackdrop;
 
-        public void OnBackdropShapeLoaded(Shape loadedShape, BackdropOrAttachmentData data)
+        public void OnBackdropShapeLoaded(Shape loadedShape, AdditionalShapeData data)
         {
             backdrop = loadedShape;
             gameObject.name = data.shapeFilepath;
@@ -154,7 +148,7 @@ namespace VSMC
         /// </summary>
         public GameObject CreateShapeElementGameObject(ShapeElement elem, bool createChildren = true)
         {
-            GameObject ch = GameObject.Instantiate(shapeElementPrefab, backdropParent);
+            GameObject ch = GameObject.Instantiate(shapeElementPrefab, noJointParent);
             ch.GetComponent<ShapeElementGameObject>().InitializeElement(elem);
             allGameObjectsForBackdrop.Add(ch.GetComponent<ShapeElementGameObject>());
             if (createChildren && elem.Children != null)
@@ -167,7 +161,54 @@ namespace VSMC
             return ch;
         }
 
-        public void AssignMaterials(BackdropOrAttachmentData data)
+
+        public override void ReparentGameObjectsByJoints()
+        {
+            ShapeTesselator.ResolveAllMatricesForShape(GetShape(), true);
+            foreach (ShapeElement e in GetShape().Elements)
+            {
+                e.gameObject.ReapplyTransformsFromMeshData(true);
+            }
+            List<ShapeElement> elements = new List<ShapeElement>();
+            elements.AddRange(backdrop.Elements);
+            while (elements.Count > 0)
+            {
+                ShapeElement cElem = elements[0];
+                elements.RemoveAt(0);
+                if (cElem.Children != null) elements.AddRange(cElem.Children);
+                elements.AddRange(cElem.CurrentStepChildren);
+
+                //Create joint IDs if needed.
+                while (jointParents.Count <= cElem.JointId + 1)
+                {
+                    GameObject newJoint = new GameObject("Joint " + jointParents.Count);
+                    newJoint.transform.parent = jointParentParent;
+                    jointParents.Add(newJoint.transform);
+                }
+                cElem.gameObject.transform.SetParent(jointParents[cElem.JointId], false);
+            }
+        }
+
+        public override void ReparentGameObjectsToNoJoints()
+        {
+            ShapeTesselator.ResolveAllMatricesForShape(GetShape());
+            foreach (ShapeElement e in GetShape().Elements)
+            {
+                e.gameObject.ReapplyTransformsFromMeshData(true);
+            }
+            List<ShapeElement> elements = new List<ShapeElement>();
+            elements.AddRange(backdrop.Elements);
+            while (elements.Count > 0)
+            {
+                ShapeElement cElem = elements[0];
+                elements.RemoveAt(0);
+                if (cElem.Children != null) elements.AddRange(cElem.Children);
+
+                cElem.gameObject.transform.SetParent(noJointParent, false);
+            }
+        }
+
+        public void AssignMaterials(AdditionalShapeData data)
         {
             Material toUse = data.opacity >= 0.999f ? backdropSolidMaterial : backdropTransparentMaterial;
             backdropTransparentMaterial.SetFloat("_OpacityMultiplier", data.opacity);
@@ -191,7 +232,7 @@ namespace VSMC
                 e.SearchForStepParentInShape(backdrop);
                 if (e.StepParentElement != null)
                 {
-                    ShapeTesselator.ResolveMatricesForShapeElementAndChildren(e);
+                    ShapeTesselator.ResolveLocalMatricesForShapeElementAndChildren(e);
                     e.gameObject.ReapplyTransformsFromMeshData(true);
                 }
             }
@@ -205,11 +246,15 @@ namespace VSMC
                 if (allGameObjectsForBackdrop.Any(x => { return x.element == e.StepParentElement; }))
                 {
                     e.ClearStepParent();
-                    ShapeTesselator.ResolveMatricesForShapeElementAndChildren(e);
+                    ShapeTesselator.ResolveLocalMatricesForShapeElementAndChildren(e);
                     e.gameObject.ReapplyTransformsFromMeshData(true);
                 }
             }
         }
 
+        public override Shape GetShape()
+        {
+            return backdrop;
+        }
     }
 }

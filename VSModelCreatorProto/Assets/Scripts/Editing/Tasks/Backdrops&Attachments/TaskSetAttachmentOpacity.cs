@@ -13,7 +13,7 @@ namespace VSMC
 
         public DateTime taskTime;
 
-        public TaskSetAttachmentOpacity(LoadedAttachment attachment, float oldOpacity, float newOpacity)
+        public TaskSetAttachmentOpacity(LoadedAdditionalShape attachment, float oldOpacity, float newOpacity)
         {
             this.attachmentPath = attachment.data.shapeFilepath;
             this.oldOpacity = oldOpacity;

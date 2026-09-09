@@ -6,6 +6,8 @@ public class LoadedAP
 
     public int shapeElementParentUID;
 
+    private ShapeElement cachedShapeElement;
+
     public string code;
 
     public Vector3 position;
@@ -14,6 +16,7 @@ public class LoadedAP
 
     public LoadedAP(ShapeElement parent)
     {
+        cachedShapeElement = parent;
         shapeElementParentUID = parent.elementUID;
         code = "newAP";
         position = new Vector3();
@@ -22,16 +25,21 @@ public class LoadedAP
 
     public LoadedAP(ShapeElement parent, AttachmentPoint ap)
     {
+        cachedShapeElement = parent;
         shapeElementParentUID = parent.elementUID;
         code = ap.Code;
         position = new Vector3((float)ap.PosX, (float)ap.PosY, (float)ap.PosZ);
         rotation = new Vector3((float)ap.RotationX, (float)ap.RotationY, (float)ap.RotationZ);
     }
-     
+
     public ShapeElement GetElement()
     {
-        return ShapeElementRegistry.main.GetShapeElementByUID(shapeElementParentUID);
-    }
+        if (cachedShapeElement == null || cachedShapeElement.parentShape == ShapeHolder.CurrentLoadedShape) //Only find the element if the AP was loaded into the editing shape.
+        {
+            cachedShapeElement = ShapeElementRegistry.main.GetShapeElementByUID(shapeElementParentUID);
+        }
+        return cachedShapeElement;
+    }    
 
     public AttachmentPoint ConvertToJSONAP()
     {

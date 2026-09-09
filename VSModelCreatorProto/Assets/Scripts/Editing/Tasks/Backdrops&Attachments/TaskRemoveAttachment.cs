@@ -5,10 +5,10 @@ namespace VSMC
     public class TaskRemoveAttachment : IEditTask
     {
 
-        public BackdropOrAttachmentData storedData;
+        public AdditionalShapeData storedData;
         public int foundIndex;
 
-        public TaskRemoveAttachment(LoadedAttachment attachment)
+        public TaskRemoveAttachment(LoadedAdditionalShape attachment)
         {
             storedData = attachment.data;
             foundIndex = AttachmentManager.main.allAttachments.IndexOf(attachment);

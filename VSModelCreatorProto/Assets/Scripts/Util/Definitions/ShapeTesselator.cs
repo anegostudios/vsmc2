@@ -125,9 +125,10 @@ namespace VSMC
         #endregion
 
         /// <summary>
-        /// This will fill in all shape elements mesh data fields.
+        /// This will create the mesh data, but will no longer calculate the shape matrices.
         /// </summary>
         /// <param name="shape"></param>
+        [Obsolete("Shapes should now tesselate root elements independently.")]
         public static void TesselateShape(Shape shape, List<LoadedTexture> customTextures = null, int customMaxTextureSize = -1)
         {
             /*
@@ -158,35 +159,18 @@ namespace VSMC
             TesselateShapeElements(shape.Elements, customTextures, customMaxTextureSize);
             Debug.Log("Calculating mesh data for shape took " + (DateTime.Now - pre).TotalMilliseconds + "ms.");
 
-            pre = System.DateTime.Now;
-            ResolveAllMatricesForShape(shape);
-            //RebuildIfHasStepParent(shape);
-            Debug.Log("Calculating full shape matrices took " + (DateTime.Now - pre).TotalMilliseconds + "ms.");
-
-
         }
 
-        public static void RebuildIfHasStepParent(Shape shape)
-        {
-            foreach (ShapeElement e in shape.Elements)
-            {
-                if (e.StepParentElement != null)
-                {
-                    ResolveMatricesForShapeElementAndChildren(e);
-                }
-            }
-        }
-
-        public static void ResolveMatricesForShapeElementAndChildren(ShapeElement element)
+        public static void ResolveLocalMatricesForShapeElementAndChildren(ShapeElement element)
         {
             stackMatrix.Clear();
             stackMatrix.PushIdentity();
             //Add the parents stored matrix first, if it exists.
-            if (element.GetParentOrStepParent() != null)
+            if (element.ParentElement != null)
             {
-                stackMatrix.Push(element.GetParentOrStepParent().meshData.storedMatrix);
+                stackMatrix.Push(element.ParentElement.meshData.storedMatrix);
             }
-            ResolveMatricesForShapeElements(new ShapeElement[] { element });
+            ResolveLocalMatricesForShapeElements(new ShapeElement[] { element });
         }
 
         public static void RecreateMeshesForShapeElement(ShapeElement element, List<LoadedTexture> customTextures = null, int customMaxTextureSize = -1)
@@ -212,7 +196,10 @@ namespace VSMC
                 elementMeshData.jointID = element.JointId;
 
                 //Now do children.
-                TesselateShapeElements(element.GetChildrenAndStepChildren(), customTextures, customMaxTextureSize);
+                if (element.Children != null)
+                {
+                    TesselateShapeElements(element.Children, customTextures, customMaxTextureSize);
+                }
             }
         }
 
@@ -299,20 +286,25 @@ namespace VSMC
 
         }
 
-        public static void ResolveAllMatricesForShape(Shape shape)
+        public static void ResolveAllLocalMatricesForRootShapeElement(ShapeElement rootElement)
         {
             stackMatrix.Clear();
             stackMatrix.PushIdentity();
 
-            ResolveMatricesForShapeElements(shape.Elements, true);
+
+            if (rootElement.ParentElement != null)
+            {
+                throw new Exception("A non-root element is trying to tesselate itself as a root element.");
+            }
+
+            ResolveLocalMatricesForShapeElements(new ShapeElement[] { rootElement });
         }
 
-        private static void ResolveMatricesForShapeElements(ShapeElement[] elements, bool root = false)
+        private static void ResolveLocalMatricesForShapeElements(ShapeElement[] elements, bool root = false)
         {
             Vector3 rotationOrigin = Vector3.zero;
             foreach (ShapeElement element in elements)
             {
-                if (root && element.StepParentElement != null) continue; //Do not process root elements with step parents yet.
                 stackMatrix.Push();
                 if (element.RotationOrigin == null)
                 {
@@ -348,7 +340,10 @@ namespace VSMC
                 //Clone the matrix for the element.
                 element.meshData.storedMatrix = stackMatrix.Top * Matrix4x4.identity;
 
-                ResolveMatricesForShapeElements(element.GetChildrenAndStepChildren());
+                if (element.Children != null)
+                {
+                    ResolveLocalMatricesForShapeElements(element.Children);
+                }   
 
                 stackMatrix.Pop();
             }

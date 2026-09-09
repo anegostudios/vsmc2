@@ -20,7 +20,7 @@ namespace VSMC
         public static AttachmentManager main;
 
         public GameObject attachmentHolderPrefab;
-        public List<LoadedAttachment> allAttachments;
+        public List<LoadedAdditionalShape> allAttachments;
 
         void Awake()
         {
@@ -31,7 +31,6 @@ namespace VSMC
         {
             ShapeLoader.RegisterForOnShapeLoadEvent(LoadAttachmentsFromShapeData);
             ShapeLoader.RegisterForOnShapeSaveEvent(AddAttachmentDataIntoShape);
-
         }
 
         /// <summary>
@@ -39,7 +38,7 @@ namespace VSMC
         /// </summary>
         void LoadAttachmentsFromShapeData(Shape shape, LoadingContext context)
         {
-            allAttachments = new List<LoadedAttachment>();
+            allAttachments = new List<LoadedAdditionalShape>();
             foreach (Transform t in transform)
             {
                 Destroy(t.gameObject);
@@ -47,9 +46,9 @@ namespace VSMC
 
             if (shape?.editor?.attachments != null)
             {
-                foreach (BackdropOrAttachmentData data in shape.editor.attachments)
+                foreach (AdditionalShapeData data in shape.editor.attachments)
                 {
-                    LoadedAttachment a = CreateAndInitializeAttachmentFromData(data);
+                    LoadedAdditionalShape a = CreateAndInitializeAttachmentFromData(data);
                     a.SetAttachmentEnabled(a.data.enabled);
                 }
             }
@@ -64,14 +63,15 @@ namespace VSMC
                 {
                     //Check if attachment is loaded.
                     string localPath = AssetPathManager.main.GetRelativePathForFile(bdContext.fullPathToShapeLoadedFrom, "shapes").Replace(".json", "");
-                    LoadedAttachment att = GetAttachmentFromPath(localPath);
+                    LoadedAdditionalShape att = GetAttachmentFromPath(localPath);
                     if (att != null)
                     {
                         SetEnabledAttachment(att, true);
                     }
                     else
                     {
-                        SetEnabledAttachment(CreateNewAttachment(localPath), true);                    }
+                        SetEnabledAttachment(CreateNewAttachment(localPath), true);                    
+                    }
                 }
             }
             BackdropAndAttachmentMenuManager.main.RecreateAttachmentsList(allAttachments);
@@ -81,10 +81,10 @@ namespace VSMC
         /// Creates an attachment gameobject from the loaded or created data. 
         /// This will not enable the object.
         /// </summary>
-        public LoadedAttachment CreateAndInitializeAttachmentFromData(BackdropOrAttachmentData data, int specificIndex = -1)
+        public LoadedAdditionalShape CreateAndInitializeAttachmentFromData(AdditionalShapeData data, int specificIndex = -1)
         {
-            LoadedAttachment attachment = new LoadedAttachment(data,
-            Instantiate(attachmentHolderPrefab, transform).GetComponentInChildren<AttachmentHolder>());
+            LoadedAdditionalShape attachment = new LoadedAdditionalShape(data,
+            Instantiate(attachmentHolderPrefab, transform).GetComponentInChildren<AdditionalObjectHolder>());
             if (specificIndex == -1)
             {
                 allAttachments.Add(attachment);
@@ -101,18 +101,18 @@ namespace VSMC
         /// <summary>
         /// Creates an attachment from a shape filepath.
         /// </summary>
-        public LoadedAttachment CreateNewAttachment(string fromPath)
+        public LoadedAdditionalShape CreateNewAttachment(string fromPath)
         {
             if (GetAttachmentFromPath(fromPath) != null)
             {
                 Debug.Log("Cannot create attachment from this shape as it already exists.");
                 return null;
             }
-            BackdropOrAttachmentData data = new BackdropOrAttachmentData(fromPath);
+            AdditionalShapeData data = new AdditionalShapeData(fromPath);
             return CreateAndInitializeAttachmentFromData(data);
         }
 
-        public void RemoveAttachment(LoadedAttachment attachment)
+        public void RemoveAttachment(LoadedAdditionalShape attachment)
         {
             attachment.OnAttachmentDisabled();
             allAttachments.Remove(attachment);
@@ -145,7 +145,7 @@ namespace VSMC
             catch { return; }
         }
 
-        public LoadedAttachment GetAttachmentFromPath(string path)
+        public LoadedAdditionalShape GetAttachmentFromPath(string path)
         {
             return allAttachments.FirstOrDefault(x => x.data.shapeFilepath == path);
         }
@@ -165,7 +165,7 @@ namespace VSMC
             SetEnabledAttachment(GetAttachmentFromPath(attachment), enabled);
         }
 
-        public void SetEnabledAttachment(LoadedAttachment attachment, bool enabled)
+        public void SetEnabledAttachment(LoadedAdditionalShape attachment, bool enabled)
         {
             attachment.data.enabled = enabled;
             if (enabled) attachment.OnAttachmentEnabled();
@@ -175,12 +175,18 @@ namespace VSMC
 
         void AddAttachmentDataIntoShape(Shape shape)
         {
-            List<BackdropOrAttachmentData> attachmentData = new List<BackdropOrAttachmentData>();
-            foreach (LoadedAttachment attachment in allAttachments)
+            List<AdditionalShapeData> attachmentData = new List<AdditionalShapeData>();
+            foreach (LoadedAdditionalShape attachment in allAttachments)
             {
+                attachment.data.ResolveBeforeSerialization(shape, attachment.loadedAdditionalShape);
                 attachmentData.Add(attachment.data);
             }
             shape.editor.attachments = attachmentData.ToArray();
+        }
+
+        public IEnumerable<LoadedAdditionalShape> GetEnabledAttachments()
+        {
+            return allAttachments.Where(x => x.attachmentHolder.gameObject.activeSelf);
         }
 
     }

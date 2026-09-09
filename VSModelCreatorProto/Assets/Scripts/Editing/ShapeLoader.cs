@@ -173,7 +173,7 @@ namespace VSMC {
             Shape newShape = new Shape();
             newShape.Elements = new ShapeElement[0];
 
-            ShapeElement initialElem = new ShapeElement();
+            ShapeElement initialElem = new ShapeElement(newShape);
             newShape.AddRootShapeElement(initialElem);
 
             newShape.Textures = new System.Collections.Generic.Dictionary<string, string>();
@@ -196,11 +196,6 @@ namespace VSMC {
             //Load shape and then enter model mode.
             SaveManager.main.BeforeFileLoad();
             Shape loadedShape = ShapeAccessor.DeserializeShapeFromFile(filePath, JSONStreamingContexts.standard);
-            //Check for stepparents in the root elements.
-            foreach (ShapeElement e in loadedShape.Elements)
-            {
-                e.SearchForStepParentInShape(loadedShape);
-            }
             shapeHolder.OnShapeLoaded(loadedShape);
             hierarchy.StartCreatingElementPrefabs(loadedShape);
             EditModeManager.main.SelectMode(VSEditMode.Model, forceRefresh: true);

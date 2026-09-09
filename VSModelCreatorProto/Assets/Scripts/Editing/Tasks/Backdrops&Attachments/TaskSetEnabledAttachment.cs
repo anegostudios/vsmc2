@@ -13,7 +13,7 @@ namespace VSMC
         public bool newEnabled;
         public bool previouslyEnabled;
 
-        public TaskSetEnabledAttachment(LoadedAttachment attachment, bool newEnabled)
+        public TaskSetEnabledAttachment(LoadedAdditionalShape attachment, bool newEnabled)
         {
             previouslyEnabled = attachment.data.enabled;
             this.newEnabled = newEnabled;

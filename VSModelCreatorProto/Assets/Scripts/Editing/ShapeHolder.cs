@@ -6,17 +6,9 @@ namespace VSMC
     /// <summary>
     /// Stores the currently loaded shape and its gameobject references.
     /// </summary>
-    public class ShapeHolder : MonoBehaviour
+    public class ShapeHolder : IShapeHolder
     {
         public static Shape CurrentLoadedShape;
-
-        [Header("Unity References")]
-        public GameObject shapeElementPrefab;
-        public Transform noJointParent;
-        public List<Transform> jointParents;
-
-        [Tooltip("The parent of the joint parents.")]
-        public Transform jointParentParent;
 
         [Tooltip("Limbo for shape elements.")]
         public Transform deletedElementParent;
@@ -48,25 +40,6 @@ namespace VSMC
             CreateAllShapeElementGameObjects(loadedShape);
         }
 
-        public void RefreshAllStepparents()
-        {
-
-            //Check for stepparents in the root elements.
-            foreach (ShapeElement e in CurrentLoadedShape.Elements)
-            {
-                e.ClearStepParent();
-                e.SearchForStepParentInShape(CurrentLoadedShape);
-            }
-            BackdropManager.main.RefreshCurrentStepparents();
-            
-            //Refresh all the element positions.
-            foreach (ShapeElement e in CurrentLoadedShape.Elements)
-            {
-                ShapeTesselator.ResolveMatricesForShapeElementAndChildren(e);
-                e.gameObject.ReapplyTransformsFromMeshData(true);
-            }
-        }
-
         /// <summary>
         /// Creates all the game objects for an entire shape.
         /// </summary>
@@ -74,7 +47,7 @@ namespace VSMC
         {
             if (tesselateFirst)
             {
-                ShapeTesselator.TesselateShape(shape);
+                ShapeTesselator.TesselateShapeElements(shape.Elements);
             }
 
             foreach (ShapeElement elem in shape.Elements)
@@ -130,7 +103,7 @@ namespace VSMC
             CurrentLoadedShape = null;
         }
 
-        public void ReparentGameObjectsByJoints()
+        public override void ReparentGameObjectsByJoints()
         {
             List<ShapeElement> elements = new List<ShapeElement>();
             elements.AddRange(CurrentLoadedShape.Elements);
@@ -139,7 +112,6 @@ namespace VSMC
                 ShapeElement cElem = elements[0];
                 elements.RemoveAt(0);
                 if (cElem.Children != null) elements.AddRange(cElem.Children);
-                elements.AddRange(cElem.CurrentStepChildren);
                 
                 //Create joint IDs if needed.
                 while (jointParents.Count <= cElem.JointId + 1)
@@ -152,7 +124,7 @@ namespace VSMC
             }
         }
 
-        public void ReparentGameObjectsToNoJoints()
+        public override void ReparentGameObjectsToNoJoints()
         {
             List<ShapeElement> elements = new List<ShapeElement>();
             elements.AddRange(CurrentLoadedShape.Elements);
@@ -184,8 +156,6 @@ namespace VSMC
                     SendElementToDeletionLimbo(child, true);
                 }
             }
-
-
         }
 
         /// <summary>
@@ -204,5 +174,9 @@ namespace VSMC
             }
         }
 
+        public override Shape GetShape()
+        {
+            return CurrentLoadedShape;
+        }
     }
 }

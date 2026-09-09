@@ -29,10 +29,10 @@ public class ShapeEditorSettings
     public bool entityTextureMode = false;
 
     [JsonProperty]
-    public BackdropOrAttachmentData[] backdrops = null;
+    public AdditionalShapeData[] backdrops = null;
 
     [JsonProperty]
-    public BackdropOrAttachmentData[] attachments = null;
+    public AdditionalShapeData[] attachments = null;
 
     [JsonProperty]
     [Obsolete("Kept for backwards compatiblity, but now using 'backdrops' array.")]

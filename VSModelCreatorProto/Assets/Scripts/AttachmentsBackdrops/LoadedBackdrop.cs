@@ -15,12 +15,12 @@ namespace VSMC
         //Load model and then resolve stepparenting of current object.
         //  Check all root elements to see any stepparents.
 
-        public BackdropOrAttachmentData data;
+        public AdditionalShapeData data;
         public Shape loadedBackdropShape;
         public BackdropHolder backdropHolder;
         private string storedFilepath;
 
-        public LoadedBackdrop(BackdropOrAttachmentData data, BackdropHolder createdHolder)
+        public LoadedBackdrop(AdditionalShapeData data, BackdropHolder createdHolder)
         {
             this.data = data;
             this.backdropHolder = createdHolder;

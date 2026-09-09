@@ -8,27 +8,27 @@ namespace VSMC
     /// A loaded attachment, loaded by the <see cref="AttachmentManager"/>.
     /// This holds the attachment data, the loaded shape data and the Unity gameobjects for the shape.
     /// </summary>
-    public class LoadedAttachment
+    public class LoadedAdditionalShape
     {
 
-        public BackdropOrAttachmentData data;
-        public Shape loadedAttachmentShape;
-        public AttachmentHolder attachmentHolder;
+        public AdditionalShapeData data;
+        public Shape loadedAdditionalShape;
+        public AdditionalObjectHolder attachmentHolder;
         private string storedFilepath;
 
-        public LoadedAttachment(BackdropOrAttachmentData data, AttachmentHolder createdHolder)
+        public LoadedAdditionalShape(AdditionalShapeData data, AdditionalObjectHolder createdHolder)
         {
             this.data = data;
             this.attachmentHolder = createdHolder;
-            LoadAttachmentFromShapeFile();
+            LoadAdditionalShapeFromShapeFile();
         }
 
         public void SetBackdropFilePath(string filepath)
         {
-            LoadAttachmentFromShapeFile();
+            LoadAdditionalShapeFromShapeFile();
         }
 
-        public void LoadAttachmentFromShapeFile()
+        public void LoadAdditionalShapeFromShapeFile()
         {
             string path = AssetPathManager.main.GetFullFilePathFromLocal(data.shapeFilepath + ".json", "shapes");
             if (!File.Exists(path))
@@ -36,13 +36,14 @@ namespace VSMC
                 return;
             }
             storedFilepath = path;
-            loadedAttachmentShape = ShapeAccessor.DeserializeShapeFromFile(path, JSONStreamingContexts.backdropOrAttachment);
-            //Check for stepparents in the root elements.
-            foreach (ShapeElement e in loadedAttachmentShape.Elements)
-            {
-                e.SearchForStepParentInShape(loadedAttachmentShape);
-            }
-            attachmentHolder.OnAttachmentShapeLoaded(loadedAttachmentShape, data);
+            loadedAdditionalShape = ShapeAccessor.DeserializeShapeFromFile(path, JSONStreamingContexts.backdropOrAttachment);
+
+            //This is where we want to split the shape into its respective files.
+            loadedAdditionalShape.FilterShapeByRootElement(this.data.rootShapeElementCode);
+            if (loadedAdditionalShape.Elements.Length != 1) //The attachment couldn't be loaded.
+                return;
+
+            attachmentHolder.OnAttachmentShapeLoaded(loadedAdditionalShape, data);
         }
 
         public void SetAttachmentEnabled(bool enabled)

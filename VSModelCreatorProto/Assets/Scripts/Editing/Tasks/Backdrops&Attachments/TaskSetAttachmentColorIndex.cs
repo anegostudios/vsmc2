@@ -10,7 +10,7 @@ namespace VSMC
         public int newColorIndex;
         public int oldColorIndex;
 
-        public TaskSetAttachmentColorIndex(LoadedAttachment attachment, int newColorIndex)
+        public TaskSetAttachmentColorIndex(LoadedAdditionalShape attachment, int newColorIndex)
         {
             this.attachmentPath = attachment.data.shapeFilepath;
             this.newColorIndex = newColorIndex;

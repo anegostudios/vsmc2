@@ -36,6 +36,7 @@ public class AttachmentPointsManager : MonoBehaviour
     public List<LoadedAP> allAPs;
     public APUIEntry[] apEntries;
     public LoadedAP cSelected;
+    public List<LoadedAP> apsForAdditionalObjects;
 
     void Awake()
     {
@@ -44,6 +45,7 @@ public class AttachmentPointsManager : MonoBehaviour
 
     void Start()
     {
+        apsForAdditionalObjects = new List<LoadedAP>();
         apEditParent.SetActive(false);
         onlyShowAPsForSelectedElement.SetIsOnWithoutNotify(ProgramPreferences.OnlyShowAPsForSelectedElement.GetValue());
         EditModeManager.RegisterForOnModeSelect(OnEditModeSelected);
@@ -107,6 +109,31 @@ public class AttachmentPointsManager : MonoBehaviour
             if (e.Children != null) es.AddRange(e.Children);
         }
         RecreateAPList();
+    }
+
+    public void OnAdditionalShapeLoaded(Shape shape)
+    {
+        List<ShapeElement> es = new List<ShapeElement>();
+        es.AddRange(shape.Elements);
+        while (es.Count > 0)
+        {
+            ShapeElement e = es[0];
+            es.RemoveAt(0);
+            if (e.AttachmentPoints != null)
+            {
+                foreach (var ap in e.AttachmentPoints)
+                {
+                    allAPs.Add(new LoadedAP(e, ap));
+                }
+                e.AttachmentPoints = null;
+            }
+            if (e.Children != null) es.AddRange(e.Children);
+        }
+    }
+
+    public void OnAdditionalShapeRemoved(Shape shape)
+    {
+        apsForAdditionalObjects.RemoveAll(x => x.GetElement().parentShape == shape);
     }
 
     public void BeforeShapeSave(Shape shape)

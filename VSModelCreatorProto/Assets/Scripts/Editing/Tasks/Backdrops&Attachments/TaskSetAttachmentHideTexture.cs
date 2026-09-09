@@ -9,7 +9,7 @@ public class TaskSetAttachmentHideTexture : IEditTask
     public bool newHideTexture;
     public bool oldHideTexture;
 
-    public TaskSetAttachmentHideTexture(LoadedAttachment attachment, bool newHideTexture)
+    public TaskSetAttachmentHideTexture(LoadedAdditionalShape attachment, bool newHideTexture)
     {
         this.attachmentPath = attachment.data.shapeFilepath;
         this.newHideTexture = newHideTexture;

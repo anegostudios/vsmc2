@@ -74,20 +74,48 @@ namespace VSMC {
         /// <summary>
         /// Reapplies the transforms from the mesh data's stored matrix.
         /// </summary>
-        public void ReapplyTransformsFromMeshData(bool doChildren = false)
+        public void ReapplyTransformsFromMeshData(bool doChildren = false, bool doOtherDependents = false, bool useDefaultOriginMatrix = true, Matrix4x4? cachedRootOriginMatrix = null)
         {
+            if (!useDefaultOriginMatrix) cachedRootOriginMatrix = Matrix4x4.identity;
+            if (cachedRootOriginMatrix == null)
+            {
+                ShapeElement p = element.ParentElement;
+                while (p != null)
+                {
+                    p = p.ParentElement;
+                }
+                if (p.OriginPoint != null)
+                {
+                    cachedRootOriginMatrix = p.OriginPoint.GetDefaultOriginMatrix();
+                }
+                else
+                {
+                    cachedRootOriginMatrix = Matrix4x4.identity;
+                }
+            }
+
             Matrix4x4 flipZ = Matrix4x4.Scale(new Vector3(1f, 1f, -1f));
-            Matrix4x4 m = flipZ * element.meshData.storedMatrix * flipZ;
+            Matrix4x4 m = flipZ * cachedRootOriginMatrix.Value * element.meshData.storedMatrix * flipZ;
 
             gameObject.transform.localPosition = m.GetPosition();
             gameObject.transform.localRotation = m.rotation;
             gameObject.transform.localScale = m.lossyScale;
 
-            if (doChildren)
+
+            if (doChildren && element.Children != null)
             {
-                foreach (ShapeElement child in element.GetChildrenAndStepChildren())
+                foreach (ShapeElement child in element.Children)
                 {
-                    child.gameObject.ReapplyTransformsFromMeshData(true);
+                    child.gameObject.ReapplyTransformsFromMeshData(true, doOtherDependents, useDefaultOriginMatrix, cachedRootOriginMatrix);
+                }
+            }
+
+            if (doChildren && doOtherDependents && element.DependentRootElements != null)
+            {
+                foreach (ShapeElement dependent in element.DependentRootElements)
+                {
+                    //Dependents will have their own origin matrix.
+                    dependent.gameObject.ReapplyTransformsFromMeshData(true, true, useDefaultOriginMatrix, null);
                 }
             }
         }
@@ -138,16 +166,6 @@ namespace VSMC {
             {
                 Destroy(linesBase.gameObject);
             }
-        }
-
-        public Vector3 RotateFromWorldToLocalPosition(Vector3 worldVector)
-        {
-            return transform.rotation * worldVector;
-        }
-
-        public Vector3 RotateFromLocalToWorldPosition(Vector3 localVector)
-        {
-            return Quaternion.Inverse(transform.rotation) * localVector;
         }
 
         public void RefreshMaterialChoice()

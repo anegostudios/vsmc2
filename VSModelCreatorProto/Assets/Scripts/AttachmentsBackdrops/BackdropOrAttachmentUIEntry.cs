@@ -13,7 +13,7 @@ public class BackdropOrAttachmentUIEntry : MonoBehaviour
 
     //Backdrop-Data
     public LoadedBackdrop storedBackdrop;
-    public LoadedAttachment storedAttachment;
+    public LoadedAdditionalShape storedAttachment;
 
     public void Initialize(LoadedBackdrop bd)
     {
@@ -29,7 +29,7 @@ public class BackdropOrAttachmentUIEntry : MonoBehaviour
         }
     }
 
-    public void Initialize(LoadedAttachment ad)
+    public void Initialize(LoadedAdditionalShape ad)
     {
         this.storedAttachment = ad;
         nameText.text = ad.data.shapeFilepath;

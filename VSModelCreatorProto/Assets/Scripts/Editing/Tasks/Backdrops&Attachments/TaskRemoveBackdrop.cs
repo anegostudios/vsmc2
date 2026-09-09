@@ -5,7 +5,7 @@ namespace VSMC
     public class TaskRemoveBackdrop : IEditTask
     {
 
-        public BackdropOrAttachmentData storedData;
+        public AdditionalShapeData storedData;
         public int foundIndex;
 
         public TaskRemoveBackdrop(LoadedBackdrop backdrop)

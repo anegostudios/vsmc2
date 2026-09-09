@@ -23,7 +23,7 @@ namespace VSMC
              * On 'UndoTask', we remove the UID and remove the parent.
              * This results in us being in the exact same state before 'DoTask', giving us the ability to easily redo.
              */
-            createdElement = new ShapeElement(1);
+            createdElement = new ShapeElement(ShapeHolder.CurrentLoadedShape, 1);
             
 
             createdElement.ResolveFacesAndTextures(TextureManager.main.loadedTextures);
@@ -36,7 +36,7 @@ namespace VSMC
 
             //We will tesselate the object and create its game object, but will move it immediately to the deletion state.
             ShapeTesselator.TesselateShapeElements(new ShapeElement[] { createdElement });
-            ShapeTesselator.ResolveMatricesForShapeElementAndChildren(createdElement);
+            ShapeTesselator.ResolveLocalMatricesForShapeElementAndChildren(createdElement);
             ShapeLoader.main.shapeHolder.CreateShapeElementGameObject(createdElement);
 
             ShapeLoader.main.shapeHolder.SendElementToDeletionLimbo(createdElement);

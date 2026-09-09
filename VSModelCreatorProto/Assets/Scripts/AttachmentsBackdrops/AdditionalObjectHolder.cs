@@ -3,37 +3,33 @@ using UnityEngine;
 
 namespace VSMC
 {
-    public class AttachmentHolder : MonoBehaviour
+    public class AdditionalObjectHolder : IShapeHolder
     {
 
-        [Header("Unity References")]
-        public GameObject shapeElementPrefab;
-        public Transform attachmentParent;
-
-        public Material attachmentSolidMaterial;
-        public Material attachmentTransparentMaterial;
+        public Material solidMaterial;
+        public Material transparentMaterial;
 
         //Textures
-        List<LoadedTexture> attachmentLoadedTextures;
+        List<LoadedTexture> loadedTextures;
         int maxTextureSize;
 
         Shape attachmentShape;
-        List<ShapeElementGameObject> allGameObjectsForAttachment;
+        List<ShapeElementGameObject> allGameObjectsForAdditionalObject;
 
         void Start()
         {
             EditModeManager.RegisterForOnModeSelect(OnEditModeChange);
         }
 
-        public void OnAttachmentShapeLoaded(Shape loadedShape, BackdropOrAttachmentData data)
+        public void OnAttachmentShapeLoaded(Shape loadedShape, AdditionalShapeData data)
         {
             attachmentShape = loadedShape;
             gameObject.name = data.shapeFilepath;
             gameObject.SetActive(data.enabled);
-            attachmentSolidMaterial = new Material(attachmentSolidMaterial);
-            attachmentTransparentMaterial = new Material(attachmentTransparentMaterial);
-            attachmentSolidMaterial.SetFloat("_TexturesEnabled", 1);
-            attachmentTransparentMaterial.SetFloat("_TexturesEnabled", 1);
+            solidMaterial = new Material(solidMaterial);
+            transparentMaterial = new Material(transparentMaterial);
+            solidMaterial.SetFloat("_TexturesEnabled", 1);
+            transparentMaterial.SetFloat("_TexturesEnabled", 1);
             loadedShape.ResolveReferencesAndUIDs(true);
             CreateTextures(loadedShape);
             CreateAllShapeElementGameObjects(loadedShape);
@@ -44,12 +40,12 @@ namespace VSMC
         {
             //Copied from texture manager. 
             int i = 0;
-            attachmentLoadedTextures = new List<LoadedTexture>();
+            loadedTextures = new List<LoadedTexture>();
             foreach (var pair in shape.Textures)
             {
-                attachmentLoadedTextures.Add(new LoadedTexture(pair.Key, pair.Value));
-                attachmentLoadedTextures[i].LoadTextureFromCodeAndPath(shape);
-                attachmentLoadedTextures[i].ResolveTextureSize(shape);
+                loadedTextures.Add(new LoadedTexture(pair.Key, pair.Value));
+                loadedTextures[i].LoadTextureFromCodeAndPath(shape);
+                loadedTextures[i].ResolveTextureSize(shape);
                 i++;
             }
             CreateTextureArrayForAttachment(shape);
@@ -57,7 +53,7 @@ namespace VSMC
             // We resolve all the textures and whatnot for each element.
             foreach (ShapeElement elem in shape.Elements)
             {
-                elem.ResolveFacesAndTextures(attachmentLoadedTextures);
+                elem.ResolveFacesAndTextures(loadedTextures);
             }
         }
 
@@ -66,13 +62,13 @@ namespace VSMC
             //get max tex size.
             maxTextureSize = 16;
             Texture2DArray shapeTextureArray;
-            foreach (var tex in attachmentLoadedTextures)
+            foreach (var tex in loadedTextures)
             {
                 if (tex.loadedTexture != null) maxTextureSize = Mathf.Max(maxTextureSize, tex.loadedTexture.width, tex.loadedTexture.height);
             }
 
             //If we don't have any loaded textures, create an empty white texture.
-            if (attachmentLoadedTextures == null || attachmentLoadedTextures.Count == 0)
+            if (loadedTextures == null || loadedTextures.Count == 0)
             {
                 Color[] colors = new Color[maxTextureSize * maxTextureSize];
                 for (int i = 0; i < colors.Length; i++)
@@ -82,17 +78,17 @@ namespace VSMC
                 shapeTextureArray = new Texture2DArray(maxTextureSize, maxTextureSize, 1, TextureFormat.ARGB32, false);
                 shapeTextureArray.SetPixels(colors, 0);
                 shapeTextureArray.Apply();
-                attachmentSolidMaterial.SetTexture("_AvailableTextures", shapeTextureArray);
-                attachmentTransparentMaterial.SetTexture("_AvailableTextures", shapeTextureArray);
+                solidMaterial.SetTexture("_AvailableTextures", shapeTextureArray);
+                transparentMaterial.SetTexture("_AvailableTextures", shapeTextureArray);
                 return;
             }
 
             //Each texture needs adding to the texture array.
             int tIndex = 0;
-            shapeTextureArray = new Texture2DArray(maxTextureSize, maxTextureSize, attachmentLoadedTextures.Count, TextureFormat.ARGB32, false);
+            shapeTextureArray = new Texture2DArray(maxTextureSize, maxTextureSize, loadedTextures.Count, TextureFormat.ARGB32, false);
             shapeTextureArray.filterMode = FilterMode.Point;
             shapeTextureArray.wrapMode = TextureWrapMode.Clamp;
-            foreach (var tex in attachmentLoadedTextures)
+            foreach (var tex in loadedTextures)
             {
                 // This may seem to be quite odd code.
                 //  The material works by using a Unity texture array - The shader then accesses the textures based on that.
@@ -126,16 +122,16 @@ namespace VSMC
                 tIndex++;
             }
             shapeTextureArray.Apply();
-            attachmentSolidMaterial.SetTexture("_AvailableTextures", shapeTextureArray);
-            attachmentTransparentMaterial.SetTexture("_AvailableTextures", shapeTextureArray);
+            solidMaterial.SetTexture("_AvailableTextures", shapeTextureArray);
+            transparentMaterial.SetTexture("_AvailableTextures", shapeTextureArray);
         }
 
         public void CreateAllShapeElementGameObjects(Shape shape, bool tesselateFirst = true)
         {
-            allGameObjectsForAttachment = new List<ShapeElementGameObject>();
+            allGameObjectsForAdditionalObject = new List<ShapeElementGameObject>();
             if (tesselateFirst)
             {
-                ShapeTesselator.TesselateShape(shape, attachmentLoadedTextures, maxTextureSize);
+                ShapeTesselator.TesselateShape(shape, loadedTextures, maxTextureSize);
             }
 
             foreach (ShapeElement elem in shape.Elements)
@@ -150,9 +146,9 @@ namespace VSMC
         /// </summary>
         public GameObject CreateShapeElementGameObject(ShapeElement elem, bool createChildren = true)
         {
-            GameObject ch = GameObject.Instantiate(shapeElementPrefab, attachmentParent);
+            GameObject ch = GameObject.Instantiate(shapeElementPrefab, noJointParent);
             ch.GetComponent<ShapeElementGameObject>().InitializeElement(elem);
-            allGameObjectsForAttachment.Add(ch.GetComponent<ShapeElementGameObject>());
+            allGameObjectsForAdditionalObject.Add(ch.GetComponent<ShapeElementGameObject>());
             if (createChildren && elem.Children != null)
             {
                 foreach (ShapeElement child in elem.Children)
@@ -164,13 +160,13 @@ namespace VSMC
         }
 
 
-        public void AssignMaterials(BackdropOrAttachmentData data)
+        public void AssignMaterials(AdditionalShapeData data)
         {
-            Material toUse = data.opacity >= 0.999f ? attachmentSolidMaterial : attachmentTransparentMaterial;
-            attachmentTransparentMaterial.SetFloat("_OpacityMultiplier", data.opacity);
+            Material toUse = data.opacity >= 0.999f ? solidMaterial : transparentMaterial;
+            transparentMaterial.SetFloat("_OpacityMultiplier", data.opacity);
             toUse.SetFloat("_ShowTextures", data.hideTextures ? 0 : 1);
             toUse.SetColor("_FlatColorForNoTexture", BackdropManager.main.GetColorFromIndex(data.flatColorIndex));
-            foreach (ShapeElementGameObject se in allGameObjectsForAttachment)
+            foreach (ShapeElementGameObject se in allGameObjectsForAdditionalObject)
             {
                 se.gameObject.GetComponent<MeshRenderer>().sharedMaterial = toUse;
             }
@@ -178,74 +174,67 @@ namespace VSMC
 
         public List<ShapeElementGameObject> GetGameObjects()
         {
-            return allGameObjectsForAttachment;
-        }
-
-        public void SearchForStepparents()
-        {
-            foreach (ShapeElement e in attachmentShape.Elements)
-            {
-                e.SearchForStepParentInShape(ShapeHolder.CurrentLoadedShape);
-                if (e.StepParentElement != null)
-                {
-                    ShapeTesselator.ResolveMatricesForShapeElementAndChildren(e);
-                    e.gameObject.ReapplyTransformsFromMeshData(true);
-                }
-            }
-        }
-
-        public void RemoveStepparents()
-        {
-            foreach (ShapeElement e in attachmentShape.Elements)
-            {
-                if (e.StepParentElement != null)
-                {
-                    e.ClearStepParent();
-                    ShapeTesselator.ResolveMatricesForShapeElementAndChildren(e);
-                    e.gameObject.ReapplyTransformsFromMeshData(true);
-                }
-            }
+            return allGameObjectsForAdditionalObject;
         }
 
         void OnEditModeChange(VSEditMode mode)
         {
-            if (mode == VSEditMode.Animation)
+            if (mode != VSEditMode.Animation)
             {
-                Invoke("ResetJoints", 0.1f);
-            }
-            else
-            {
-                SetJointsRecursive(attachmentShape.Elements, attachmentParent);
+                ReparentGameObjectsToNoJoints();
             }
         }
 
-        void ResetJoints()
+
+        public override void ReparentGameObjectsByJoints()
         {
-            foreach (ShapeElement s in attachmentShape.Elements)
+            ShapeTesselator.ResolveAllMatricesForShape(GetShape(), true);
+            foreach (ShapeElement e in attachmentShape.Elements)
             {
-                if (s.StepParentElement != null)
+                e.gameObject.ReapplyTransformsFromMeshData(true);
+            }
+            List<ShapeElement> elements = new List<ShapeElement>();
+            elements.AddRange(attachmentShape.Elements);
+            while (elements.Count > 0)
+            {
+                ShapeElement cElem = elements[0];
+                elements.RemoveAt(0);
+                if (cElem.Children != null) elements.AddRange(cElem.Children);
+                elements.AddRange(cElem.CurrentStepChildren);
+
+                //Create joint IDs if needed.
+                while (jointParents.Count <= cElem.JointId + 1)
                 {
-                    Transform parentToUse = s.StepParentElement.gameObject.transform.parent; //Use the same joint parent as the parent element.
-                    s.gameObject.transform.SetParent(parentToUse);
-                    if (s.Children != null)
-                    {
-                        SetJointsRecursive(s.Children, parentToUse);
-                    }
+                    GameObject newJoint = new GameObject("Joint " + jointParents.Count);
+                    newJoint.transform.parent = jointParentParent;
+                    jointParents.Add(newJoint.transform);
                 }
+                cElem.gameObject.transform.SetParent(jointParents[cElem.JointId], false);
             }
         }
 
-        void SetJointsRecursive(ShapeElement[] elements, Transform parent)
+        public override void ReparentGameObjectsToNoJoints()
         {
-            foreach (ShapeElement e in elements)
+            ShapeTesselator.ResolveAllMatricesForShape(GetShape());
+            foreach (ShapeElement e in attachmentShape.Elements)
             {
-                e.gameObject.transform.SetParent(parent);
-                if (e.Children != null)
-                {
-                    SetJointsRecursive(e.Children, parent);
-                }
+                e.gameObject.ReapplyTransformsFromMeshData(true);
+            }
+            List<ShapeElement> elements = new List<ShapeElement>();
+            elements.AddRange(attachmentShape.Elements);
+            while (elements.Count > 0)
+            {
+                ShapeElement cElem = elements[0];
+                elements.RemoveAt(0);
+                if (cElem.Children != null) elements.AddRange(cElem.Children);
+
+                cElem.gameObject.transform.SetParent(noJointParent, false);
             }
         }
 
+        public override Shape GetShape()
+        {
+            return attachmentShape;
+        }
     }
 }

@@ -92,7 +92,7 @@ public class ShapeAccessor
         JsonSerializerSettings settings = new JsonSerializerSettings();
         settings.Context = new StreamingContext(StreamingContextStates.File, streamingContext);
 
-        //If this is the main path, lets find the local asset path.
+        //If this is the main file being loaded, then lets call all the on loaded stuff.
         if (streamingContext == JSONStreamingContexts.standard)
         {
             AssetPathManager.main.OnShapeLoaded(filePath);

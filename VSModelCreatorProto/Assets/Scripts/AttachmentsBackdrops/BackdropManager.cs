@@ -62,7 +62,7 @@ namespace VSMC
 
             if (shape?.editor?.backdrops != null)
             {
-                foreach (BackdropOrAttachmentData data in shape.editor.backdrops)
+                foreach (AdditionalShapeData data in shape.editor.backdrops)
                 {
                     CreateAndInitializeBackdropFromData(data);
                 }
@@ -121,7 +121,7 @@ namespace VSMC
         /// Creates a backdrop gameobject from the loaded or created data. 
         /// This will not enable the object.
         /// </summary>
-        public LoadedBackdrop CreateAndInitializeBackdropFromData(BackdropOrAttachmentData data, int specificIndex = -1)
+        public LoadedBackdrop CreateAndInitializeBackdropFromData(AdditionalShapeData data, int specificIndex = -1)
         {
             Debug.LogWarning("Creating new prefab for backdrop.");
             LoadedBackdrop backdrop = new LoadedBackdrop(data,
@@ -150,7 +150,7 @@ namespace VSMC
                 Debug.Log("Cannot create backdrop from this shape as it already exists.");
                 return null;
             }
-            BackdropOrAttachmentData data = new BackdropOrAttachmentData(fromPath);
+            AdditionalShapeData data = new AdditionalShapeData(fromPath);
             return CreateAndInitializeBackdropFromData(data);
         }
 
@@ -270,9 +270,10 @@ namespace VSMC
 
         void AddBackdropDataIntoShape(Shape shape)
         {
-            List<BackdropOrAttachmentData> backdropData = new List<BackdropOrAttachmentData>();
+            List<AdditionalShapeData> backdropData = new List<AdditionalShapeData>();
             foreach (LoadedBackdrop backdrop in allBackdrops)
             {
+                backdrop.data.ResolveBeforeSerialization(shape, backdrop.loadedBackdropShape);
                 backdropData.Add(backdrop.data);
             }
             shape.editor.backdrops = backdropData.ToArray();

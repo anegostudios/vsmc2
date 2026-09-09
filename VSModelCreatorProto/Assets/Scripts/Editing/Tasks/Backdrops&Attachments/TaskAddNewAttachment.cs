@@ -13,7 +13,7 @@ namespace VSMC
 
         public override void DoTask()
         {
-            LoadedAttachment att = AttachmentManager.main.CreateNewAttachment(localPathToAttachmentShape);
+            LoadedAdditionalShape att = AttachmentManager.main.CreateNewAttachment(localPathToAttachmentShape);
             AttachmentManager.main.SetEnabledAttachment(att, true);
             BackdropAndAttachmentMenuManager.main.SelectAttachment(att);
         }

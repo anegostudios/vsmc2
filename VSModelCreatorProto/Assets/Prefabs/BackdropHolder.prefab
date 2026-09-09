@@ -108,7 +108,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shapeElementPrefab: {fileID: 3733229771933715071, guid: 3e7f6f0d8a4b72518b3050e5aca677c0, type: 3}
-  backdropParent: {fileID: 3412041496022566344}
+  noJointParent: {fileID: 3412041496022566344}
+  jointParents: []
+  jointParentParent: {fileID: 5167477594902422341}
   backdropSolidMaterial: {fileID: 2100000, guid: af5b4e3389b14f34aab6396791083e5d, type: 2}
   backdropTransparentMaterial: {fileID: 2100000, guid: 421414bbb6ba2c949990083a7a281374, type: 2}
 --- !u!1 &8204089224579384113

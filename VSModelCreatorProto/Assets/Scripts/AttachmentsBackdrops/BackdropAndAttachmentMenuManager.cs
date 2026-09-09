@@ -83,9 +83,9 @@ namespace VSMC
             }
         }
 
-        public void RecreateAttachmentsList(List<LoadedAttachment> allAttachments)
+        public void RecreateAttachmentsList(List<LoadedAdditionalShape> allAttachments)
         {
-            LoadedAttachment storedSelected = null;
+            LoadedAdditionalShape storedSelected = null;
             if (cSelected != null && cSelected.storedAttachment != null)
             {
                 storedSelected = cSelected.storedAttachment;
@@ -96,7 +96,7 @@ namespace VSMC
                 Destroy(t.gameObject);
             }
 
-            foreach (LoadedAttachment ad in allAttachments)
+            foreach (LoadedAdditionalShape ad in allAttachments)
             {
                 BackdropOrAttachmentUIEntry entry = Instantiate(attachmentsListEntryPrefab, attachmentsListParent).GetComponent<BackdropOrAttachmentUIEntry>();
                 entry.Initialize(ad);
@@ -120,7 +120,7 @@ namespace VSMC
             
         }
 
-        public void SelectAttachment(LoadedAttachment attachment)
+        public void SelectAttachment(LoadedAdditionalShape attachment)
         {
             foreach (Transform t in attachmentsListParent)
             {
