@@ -29,6 +29,7 @@ namespace VSMC
         public Sprite ShownSprite;
 
         //Runtime
+        public List<ShapeElement> allShapeElems = new List<ShapeElement>();
         Dictionary<int, GameObject> uiElementsByUID = new Dictionary<int, GameObject>();
         List<Image> elementDragAndDropHolders = new List<Image>();
         ElementHierarchyItemPrefab currentlyDragging;
@@ -43,7 +44,25 @@ namespace VSMC
         void Start()
         {
             UndoManager.RegisterForAnyActionDoneOrUndone(OnAnyAction);
+            ObjectSelector.main.RegisterForObjectSelectedEvent(OnObjectSelected);
             isSearching = false;
+        }
+
+        void OnObjectSelected(GameObject g)
+        {
+            ShapeElement elem = g.GetComponent<ShapeElementGameObject>().element;
+            //Expand up to this object in
+            // ShapeElement p = elem.ParentElement;
+            // while (p != null)
+            // {
+            //     //uiElementsByUID[p.elementUID].minMaxButton.sprite = elem.minimizeFromThisObject ? hierarchyManager.ExpandChildrenSprite : hierarchyManager.CollapseChildrenSprite;
+            //     p.minimizeFromThisObject = false;
+            //     if (p.ParentElement == null)
+            //     {
+                    
+            //     }
+            //     p = p.ParentElement;
+            // }
         }
 
         void Update()
@@ -85,6 +104,7 @@ namespace VSMC
                 Destroy(t.gameObject);
             }
             uiElementsByUID.Clear();
+            allShapeElems.Clear();
             elementDragAndDropHolders.Clear();
             cDragValue = -1;
             
@@ -97,6 +117,7 @@ namespace VSMC
                 elem.RecalculateHiddenStatus();
             }
             elementDragAndDropHolders.Add(Instantiate(elementDragAndDropHolderPrefab, hierarchyParent).GetComponent<Image>());
+            MultiShapeManager.main.UI.RecreateHierarchy();
         }
 
         public void OnSearchUpdated(string s)
@@ -126,6 +147,7 @@ namespace VSMC
             elementDragAndDropHolders.Add(elemUI.GetComponent<ElementHierarchyItemPrefab>().dragAndDropImageInside);
             elementDragAndDropHolders.Add(elemUI.GetComponent<ElementHierarchyItemPrefab>().dragAndDropImageBelow);
             uiElementsByUID.Add(parent.elementUID, elemUI);
+            allShapeElems.Add(parent);
             if (parent?.Children != null)
             {
                 foreach (ShapeElement child in parent.Children)
@@ -150,7 +172,7 @@ namespace VSMC
 
         public ElementHierarchyItemPrefab GetElementHierarchyItem(ShapeElement element)
         {
-            if (!uiElementsByUID.ContainsKey(element.elementUID))
+            if (!uiElementsByUID.ContainsKey(element.elementUID) || uiElementsByUID[element.elementUID] == null)
             {
                 Debug.LogError("Trying to access element hierarchy UI element when one does not exist.");
                 return null;
@@ -267,6 +289,18 @@ namespace VSMC
                 toCheck.RemoveAt(0);
             }
             return true;
+        }
+
+        public ShapeElement GetValidElementFromIndex(int index)
+        {
+            while (index < allShapeElems.Count)
+            {
+                ShapeElement e = allShapeElems[index];
+                if (e != null && GetElementHierarchyItem(e) != null) return e;
+                index++;
+            }
+            return null;
+            
         }
 
 

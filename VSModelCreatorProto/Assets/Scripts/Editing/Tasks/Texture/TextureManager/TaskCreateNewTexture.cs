@@ -1,3 +1,7 @@
+using System.IO;
+using System.Linq;
+using Unity.Collections;
+
 namespace VSMC
 {
     /// <summary>
@@ -6,27 +10,26 @@ namespace VSMC
     public class TaskCreateNewTexture : IEditTask
     {
         string newTextureCode;
+        string path;
 
-        public TaskCreateNewTexture()
+        public TaskCreateNewTexture(string path = "")
         {
+            this.path = path;
             string uniqueTexCode = "texture";
-            int tryIndex = 0;
-            bool validName = false;
-            while (!validName)
+            if (path != "")
             {
-                tryIndex++;
-                validName = true;
-                foreach (LoadedTexture tex in TextureManager.main.loadedTextures)
-                {
-                    if (tex.code == uniqueTexCode + tryIndex) validName = false;
-                }
+                uniqueTexCode = Path.GetFileNameWithoutExtension(path);
             }
-            newTextureCode = uniqueTexCode + tryIndex;
+            while (TextureManager.main.loadedTextures.Any(x => x.code == uniqueTexCode))
+            {
+                uniqueTexCode = ShapeElement.IncrementName(uniqueTexCode);
+            }
+            newTextureCode = uniqueTexCode;
         }
 
         public override void DoTask()
         {
-            LoadedTexture newTex = new LoadedTexture(newTextureCode, "");
+            LoadedTexture newTex = new LoadedTexture(newTextureCode, path);
             newTex.LoadTextureFromCodeAndPath(ShapeHolder.CurrentLoadedShape);
             newTex.ResolveTextureSize(ShapeHolder.CurrentLoadedShape);
             TextureManager.main.loadedTextures.Add(newTex);

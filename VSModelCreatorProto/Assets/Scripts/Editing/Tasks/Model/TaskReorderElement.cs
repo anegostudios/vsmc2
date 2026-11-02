@@ -53,6 +53,10 @@ public class TaskReorderElement : TaskReparentElement
         {
             eToMove.ParentElement.Children = eToMove.ParentElement.Children.Remove(eToMove).InsertAt(eToMove, siblingIndexAfter);
         }
+
+        //Refresh the model order.
+        MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
+
         ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
     }
 
@@ -69,6 +73,10 @@ public class TaskReorderElement : TaskReparentElement
         {
             eToMove.ParentElement.Children = eToMove.ParentElement.Children.Remove(eToMove).InsertAt(eToMove, siblingIndexBefore);
         }
+
+        //Refresh the model order.
+        MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
+        
         ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
     }
 

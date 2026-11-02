@@ -99,6 +99,17 @@ namespace VSMC
             return false;
         }
 
+        void Update()
+        {
+            //Changing shift-state will cause the raycast to invalidate.
+            if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)
+            || Input.GetKeyUp(KeyCode.LeftShift) || Input.GetKeyUp(KeyCode.LeftShift))
+            {
+                storedRaycastHitCount = 0;
+                storedMouseClickPosForObjectScrolling = Vector2.zero;    
+            }  
+        }
+
         public override bool OnSceneViewMouseUp(PointerEventData data)
         {
             if (data.button != 0) return false;
@@ -106,7 +117,7 @@ namespace VSMC
             {
                 DeselectAll();
                 //Also deselect attachments at this point, if we have any selected.
-                BackdropAndAttachmentMenuManager.main.DeselectCurrentBackdropOrAttachment();
+                //BackdropAndAttachmentMenuManager.main.DeselectCurrentBackdropOrAttachment();
                 return true;
             }
             //bool groupObjects = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftControl);
@@ -117,8 +128,11 @@ namespace VSMC
                 scrollingObjectCounter = 0;
                 return true;
             }
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            bool doFaceSelect = (EditModeManager.main.cEditMode == VSEditMode.Texture) ^ (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift));
+            if (doFaceSelect)
             {
+                int cSelFace = texEditorUIElements.GetFaceIndexIfOneSelected();
+                GameObject cSel = ObjectSelector.main.GetCurrentlySelected();
                 SelectObject(storedRaycastHits[scrollingObjectCounter].collider.gameObject, false, false);
                 if (EditModeManager.main.cEditMode == VSEditMode.Texture)
                 {
@@ -134,6 +148,11 @@ namespace VSMC
                     else if (normal.z > 0.5f) faceFound = (int)FaceEnum.North;
                     if (faceFound != -1)
                     {
+                        if (storedRaycastHits[scrollingObjectCounter].collider.gameObject == cSel && cSelFace == faceFound)
+                        {
+                            ObjectSelector.main.DeselectAll();
+                            return true;
+                        }
                         texEditorUIElements.SetOneFaceEnabled(faceFound);
                     }
                 }

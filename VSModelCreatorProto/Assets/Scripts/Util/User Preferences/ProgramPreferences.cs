@@ -34,12 +34,16 @@ public class ProgramPreferences
     public static Preference<bool> AutoRefreshTextures = new Preference<bool>("autoReloadChangedTextures", true);
     public static Preference<bool> SaveDisabledFaces = new Preference<bool>("saveDisabledFaces", true);
     public static Preference<bool> OnlyShowAPsForSelectedElement = new Preference<bool>("onlyShowSelectedAPs", false);
+    public static Preference<bool> UseHighPrecisionMode = new Preference<bool>("highPrecisionMode", false);
+    public static Preference<bool> RoundRotationValuesOnSliders = new Preference<bool>("roundRotationsOnSliders", false);
 
     //Scene Settings
     public static Preference<bool> EnableLighting = new Preference<bool>("EnableLighting", true);
     public static Preference<int> ShadowMode = new Preference<int>("shadowMode", 2);
     public static Preference<bool> EnableTextures = new Preference<bool>("EnableTextures", true);
     public static Preference<bool> EnableSSAO = new Preference<bool>("EnableSSAO", false);
+    public static Preference<bool> EnableLightBG = new Preference<bool>("EnableLightBG", false);
+    public static Preference<bool> EnableCameraPivotObject = new Preference<bool>("EnableCameraPivotObject", true);
 
 
     //Linux file path for desktop settings.

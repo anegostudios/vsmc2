@@ -7,9 +7,11 @@ public class CameraPivotRenderer : MonoBehaviour
     public Material linesMaterial;
     public Color[] axisColors;
     public float lineLength = 0.1f;
+    public bool doRendering = true;
 
     void OnRenderObject()
     {
+        if (!doRendering) return;
         //It appears we can't use Camera.current as it always returns null, but we _can_ use the current render texture!
         if (Camera.main.targetTexture.width != RenderTexture.active.width || Camera.main.targetTexture.height != RenderTexture.active.height)
         {

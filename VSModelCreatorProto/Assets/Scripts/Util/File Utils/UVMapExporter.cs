@@ -46,6 +46,8 @@ public static void CalculateAndExportUVMap()
             }
         }
 
+        bool wereAnyOOB = false;
+
         foreach (ShapeElement e in ShapeElementRegistry.main.GetAllShapeElements())
         {
             for (int i = 0; i < 6; i++)
@@ -67,12 +69,27 @@ public static void CalculateAndExportUVMap()
                     cs[ci] = c;
                 }
 
+                if (uvex > uvTex.width)
+                {
+                    wereAnyOOB = true;
+                    uvex = uvTex.width;
+                }
+                if (uvey > uvTex.height)
+                {
+                    wereAnyOOB = true;
+                    uvey = uvTex.height;
+                }
                 uvTex.SetPixels(uvsx, uvsy, uvex - uvsx, uvey - uvsy, cs);
             }
         }
 
         uvTex.Apply();
         File.WriteAllBytes(path, uvTex.EncodeToPNG());
+        if (wereAnyOOB)
+        {
+            InfoLogger.main.LogText("UV Map was exported, but some elements were out of bounds.");
+            return;
+        }
         InfoLogger.main.LogText("Successfully exported UV map.");
     }
 

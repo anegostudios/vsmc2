@@ -271,6 +271,14 @@ namespace VSMC {
             }
         }
 
+        public void ZeroAllOutOfBoundUVs()
+        {
+            TaskSetOutOfBoundsUVsToZero zeroUVsTask = new TaskSetOutOfBoundsUVsToZero();
+            zeroUVsTask.DoTask();
+            UndoManager.main.CommitTask(zeroUVsTask);
+            InfoLogger.main.LogText("Found and zeroed " + zeroUVsTask.outOfBoundUvsCount + " out of bounds faces.");
+        }
+
         public void ExportUVMap()
         {
             UVMapExporter.CalculateAndExportUVMap();

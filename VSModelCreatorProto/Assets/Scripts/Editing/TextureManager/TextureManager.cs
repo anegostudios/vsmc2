@@ -121,7 +121,9 @@ namespace VSMC
             shape.TextureSizes = new Dictionary<string, int[]>();
             foreach (LoadedTexture texture in loadedTextures)
             {
-                shape.Textures.Add(texture.code, texture.path);
+                //We need to replace backslashes with forward slashes.
+                string path = texture.path.Replace(@"\\", "/").Replace(@"\","/").Replace("//", "/");
+                shape.Textures.Add(texture.code, path);
                 shape.TextureSizes.Add(texture.code, new int[] { texture.storedWidth, texture.storedHeight });
             }
         }

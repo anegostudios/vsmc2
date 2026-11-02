@@ -17,12 +17,13 @@ namespace VSMC
         [Header("Unity References")]
         public GameObject selectableTexturePrefab;
         public Transform selectableTexturesHolder;
-        public GameObject selectedTextureProperties;
         public TMP_InputField textureCode;
         public TMP_InputField texturePath;
         public TMP_Text textureFoundAtLabel;
         public TMP_InputField textureWidth;
         public TMP_InputField textureHeight;
+        public Selectable[] selectedTextureSelectables;
+
 
         [NonSerialized]
         public GameObject[] textureImages;
@@ -69,7 +70,7 @@ namespace VSMC
             }
 
             gameObject.SetActive(true);
-            selectedTextureProperties.SetActive(false);
+            EnableOrDisableSelectables(false);
 
             if (cSelectedTextureIndex >= 0 && cSelectedTextureIndex < textureImages.Length)
             {
@@ -82,7 +83,7 @@ namespace VSMC
         {
             if (!gameObject.activeSelf) return;
             //We use the tex object name to store its index, this is fine.
-            selectedTextureProperties.SetActive(true);
+            EnableOrDisableSelectables(true);
 
             int selID = int.Parse(texObj.name);
             LoadedTexture tex = TextureManager.main.loadedTextures[selID];
@@ -145,8 +146,21 @@ namespace VSMC
         public void SelectTexturePath()
         {
             if (cSelectedTextureIndex == -1) return;
+
+            string p = OpenFileDialogForTextureSelect();
+            if (p == "") return;
+            texturePath.text = p;
+            ApplyTexturePath();
+        }
+
+        public string OpenFileDialogForTextureSelect()
+        {
+            string prefDir = "";
+            if (cSelectedTextureIndex != -1)
+            {
+                prefDir = TextureManager.main.loadedTextures[cSelectedTextureIndex].storedFilepath;
+            }
             
-            string prefDir = TextureManager.main.loadedTextures[cSelectedTextureIndex].storedFilepath;
             if (prefDir == "" || prefDir == null)
             {
                 prefDir = AssetPathManager.main.GetFirstPreferredAssetPath();
@@ -156,17 +170,18 @@ namespace VSMC
                 prefDir = Path.GetDirectoryName(prefDir);
             }
             string[] selFile = SFB.StandaloneFileBrowser.OpenFilePanel("Select texture...", (string)prefDir.Clone(), "png", false);
-            if (selFile == null || selFile.Length == 0 || selFile[0].Trim().Length == 0) return;
+            if (selFile == null || selFile.Length == 0 || selFile[0].Trim().Length == 0) return "";
 
             string p = selFile[0];
             p = AssetPathManager.main.GetRelativePathForFile(p, "textures");
-            texturePath.text = p.Replace(".png", "");
-            ApplyTexturePath();
+            return p.Replace(".png", "");
         }
 
         public void AddNewTexture()
         {
-            TaskCreateNewTexture newTexTask = new TaskCreateNewTexture();
+            string s = OpenFileDialogForTextureSelect();
+            if (s == "") return;
+            TaskCreateNewTexture newTexTask = new TaskCreateNewTexture(s);
             newTexTask.DoTask();
             UndoManager.main.CommitTask(newTexTask);
         }
@@ -200,7 +215,15 @@ namespace VSMC
         public void DeselectTexture()
         {
             cSelectedTextureIndex = -1;
-            selectedTextureProperties.SetActive(false);
+            EnableOrDisableSelectables(false);
+        }
+
+        public void EnableOrDisableSelectables(bool interactable)
+        {
+            foreach (Selectable s in selectedTextureSelectables)
+            {
+                s.interactable = interactable;
+            }
         }
 
         public void RefreshIfOpen()

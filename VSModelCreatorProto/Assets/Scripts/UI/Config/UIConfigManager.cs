@@ -9,6 +9,10 @@ public class UIConfigManager : MonoBehaviour
     [Header("Unity References")]
     public Transform uiMainCanvas;
 
+    [Header("Config Settings - Graphics")]
+    public Sprite HierarchyExpandChildrenSprite;
+    public Sprite HierarchyMinimizeChildrenSprite;
+
     [Header("Config Settings - Text")]
     public TMP_FontAsset defaultFont;
     public int defaultTextSize;
@@ -32,10 +36,26 @@ public class UIConfigManager : MonoBehaviour
     public Color xAxisColor;
     public Color yAxisColor;
     public Color zAxisColor;
+    public Color HierarchyElementInvalidSelectedColor;
+    public Color HierarchyElementSelectedColor;
+    public Color HierarchyElementNotSelectedColor;
+    public Color HierarchyElementInvalidSelectedFontColor;
+    public Color HierarchyElementSelectedFontColor;
+    public Color HierarchyElementNotSelectedFontColor;
+    public Material HierarchyElementSelectedFontMaterial;
+    public Material HierarchyElementNotSelectedFontMaterial;
+
+    [Header("Other")]
+    public GameObject roundRotationValuesToggleIcon;
 
     void Awake()
     {
         main = this;    
+    }
+
+    void Start()
+    {
+        roundRotationValuesToggleIcon.SetActive(ProgramPreferences.RoundRotationValuesOnSliders.GetValue());
     }
 
     public void TriggerAllUIConfigEvents()
@@ -45,5 +65,13 @@ public class UIConfigManager : MonoBehaviour
             config.RefreshUIFromConfig(this);
         }
     }
+
+
+    public void ToggleRoundRotationValuesOnSliders()
+    {
+        ProgramPreferences.RoundRotationValuesOnSliders.SetValue(!ProgramPreferences.RoundRotationValuesOnSliders.GetValue());
+        roundRotationValuesToggleIcon.SetActive(ProgramPreferences.RoundRotationValuesOnSliders.GetValue());
+    }
+
 
 }

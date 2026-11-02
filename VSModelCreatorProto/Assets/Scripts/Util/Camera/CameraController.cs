@@ -49,6 +49,9 @@ namespace VSMC
         public float uiControlledSpeedMultiplier = 1f;
         public float shiftControlledSpeedMultiplier = 5f;
 
+        public bool followEyesAP = false;
+        LoadedAP eyes = null;
+
         public ModelEditor editor;
         InputAction mousePosAction;
 
@@ -68,8 +71,18 @@ namespace VSMC
         // Update is called once per frame
         void Update()
         {
+            
+        }
+
+        void LateUpdate()
+        {
             DoMouseUpdates();
             DoKeyboardUpdates();
+            if (followEyesAP)
+            {
+                FollowEyesAP();
+                return;
+            }
             gameObject.transform.localPosition = cameraAnchorPos;
             gameObject.transform.localEulerAngles = new Vector3(rotX, rotY, 0);
 
@@ -79,6 +92,69 @@ namespace VSMC
             {
                 pivotChild.SetActive(CurrentCameraMode == CameraMode.Orbital && distFromAnchor > 0.1f); //disable pivot at close distance
                 pivotChild.transform.rotation = Quaternion.identity;
+            }
+        }
+
+        void FollowEyesAP()
+        {
+            if (eyes == null || eyes.code != "Eyes" || eyes.GetElement() == null)
+            {
+                eyes = AttachmentPointsManager.main.GetLoadedAPFromCode("Eyes");
+            }
+
+            rotX = Mathf.Clamp(rotX, -30, 30);
+            //Ripped from the AttachmentPointOriginPoint calculations.
+            if (EditModeManager.main.cEditMode != VSEditMode.Animation)
+            {
+                ShapeElement step = eyes.GetElement();
+                Matrix4x4 originMat = Matrix4x4.identity;
+                Vector3 apTranslation = Vector3.zero;
+                Vector3 apRotation = Vector3.zero;
+                bool show = step.gameObject != null;
+                if (show)
+                {
+                    originMat = (step.GetRootElement().OriginPoint == null ? Matrix4x4.identity : step.GetRootElement().OriginPoint.GetDefaultOriginMatrix())
+                    * step.meshData.storedMatrix; //Make a copy...
+                    apTranslation = eyes.position;
+                    apRotation = eyes.rotation;
+                }
+
+                originMat *= Matrix4x4.Translate((apTranslation / 16));
+                originMat *= Matrix4x4.Rotate(Quaternion.AngleAxis(apRotation.x, Vector3.right));
+                originMat *= Matrix4x4.Rotate(Quaternion.AngleAxis(apRotation.y + 180, Vector3.up));
+                originMat *= Matrix4x4.Rotate(Quaternion.AngleAxis(apRotation.z, Vector3.forward));
+
+                originMat *= Matrix4x4.Rotate(Quaternion.AngleAxis(rotX, Vector3.right));
+                Matrix4x4 flipZ = Matrix4x4.Scale(new Vector3(1f, 1f, -1f));
+                Matrix4x4 m = flipZ * originMat * flipZ;
+                cameraChild.transform.position = m.GetPosition() + new Vector3(0, 0, 1);
+                cameraChild.transform.rotation = m.rotation;
+            }   
+            else
+            {
+                ShapeElement step = eyes.GetElement();
+                Matrix4x4 originMat = Matrix4x4.identity;
+                Vector3 apTranslation = Vector3.zero;
+                Vector3 apRotation = Vector3.zero;
+                bool show = step.gameObject != null;
+                if (show)
+                {
+                    originMat = (step.GetRootElement().OriginPoint == null ? Matrix4x4.identity : step.GetRootElement().OriginPoint.GetAnimationOriginMatrix())
+                    * (AnimationEditorManager.main.GetAnimationShapeControllerFromRootShapeElement(step.GetRootElement())
+                    .animator.Matrices[step.JointId] * step.meshData.storedMatrix);
+                    apTranslation = eyes.position;
+                    apRotation = eyes.rotation;
+                }
+                originMat *= Matrix4x4.Translate((apTranslation / 16f));
+                originMat *= Matrix4x4.Rotate(Quaternion.AngleAxis(apRotation.x, Vector3.right));
+                originMat *= Matrix4x4.Rotate(Quaternion.AngleAxis(apRotation.y + 180, Vector3.up));
+                originMat *= Matrix4x4.Rotate(Quaternion.AngleAxis(apRotation.z, Vector3.forward));
+                originMat *= Matrix4x4.Rotate(Quaternion.AngleAxis(rotX, Vector3.right));
+
+                Matrix4x4 flipZ = Matrix4x4.Scale(new Vector3(1f, 1f, -1f));
+                Matrix4x4 m = flipZ * originMat * flipZ;
+                cameraChild.transform.position = m.GetPosition() + new Vector3(0, 0, 1);
+                cameraChild.transform.rotation = m.rotation;
             }
         }
 
@@ -159,12 +235,13 @@ namespace VSMC
 
         public void DoKeyboardUpdates()
         {
-            float scrollValue = Input.GetAxis("keyboardZoom");
+            if (EventSystem.current.currentSelectedGameObject != null && EventSystem.current.currentSelectedGameObject.GetComponentInParent<TMP_InputField>()) return; //No keyboard if in an input!
+            float scrollValue = Input.GetAxis("keyboardZoom") + Input.GetAxis("AltKeyboardZoom");
             if (CurrentCameraMode == CameraMode.Orbital)
             {
                 distFromAnchor -= scrollValue * zoomSpeed * keyboardZoomModifier * GetTotalSpeedMultiplier();
                 distFromAnchor = Mathf.Clamp(distFromAnchor, minMaxDistance.x, minMaxDistance.y);
-                if (Input.GetKeyDown(KeyCode.F) && (EventSystem.current.currentSelectedGameObject?.GetComponent<TMP_InputField>() == null))
+                if (Input.GetKeyDown(KeyCode.F))
                 {
                     FocusOnSelected();
                 }

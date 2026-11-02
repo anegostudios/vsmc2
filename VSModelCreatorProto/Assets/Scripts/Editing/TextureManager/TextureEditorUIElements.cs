@@ -1,6 +1,10 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq.Expressions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,9 +25,12 @@ namespace VSMC
         public GameObject[] faceButtons;
         public Color unselectedFaceButtonColor;
         public Color selectedFaceButtonColor;
+        public Color selectedFaceOnObjectLinesColor;
+        public Color nonSelectedFaceOnObjectLinesColor;
         public GameObject allFacesButton;
         public GameObject entireObjectGroupThatRequiresFaceSelection;
         public TMP_Dropdown textureSelectionDropdown;
+        public Button textureCopyButton;
         //UV input fields.
         public TMP_InputField uvX1;
         public TMP_InputField uvY1;
@@ -163,6 +170,21 @@ namespace VSMC
                 faceButtons[i].GetComponent<Image>().color = cSelectedFaces[i] ? selectedFaceButtonColor : unselectedFaceButtonColor;
             }
 
+            if (ObjectSelector.main.IsAnySelected())
+            {
+                GameObject elObj = ObjectSelector.main.GetCurrentlySelected();
+                for (int i = 0; i < 6; i++)
+                {
+                    VSMCLineRenderer lines = elObj.transform.GetChild(i).GetComponent<VSMCLineRenderer>();
+                    lines.lineColor = cSelectedFaces[i] ? selectedFaceOnObjectLinesColor : nonSelectedFaceOnObjectLinesColor;
+                    lines.priority = cSelectedFaces[i] ? 5 : 0;
+                    if (cSelectedFaces[i])
+                    {
+                        Debug.Log("Selecting face " + i);
+                    }
+                }
+            }
+
             UVLayoutManager.main.OnSelectedFacesChanged(cSelectedFaces);
             if (!isAnyFaceSelected)
             {
@@ -170,6 +192,9 @@ namespace VSMC
                 return;
             }
             entireObjectGroupThatRequiresFaceSelection.SetActive(true);
+
+            
+
             RefreshDetailsForSelectedFaces();
         }
 
@@ -215,10 +240,12 @@ namespace VSMC
             if (faceTextures.Count > 1)
             {
                 textureSelectionDropdown.GetComponentInChildren<TMP_Text>().text = "Mixed";
+                textureCopyButton.interactable = false;
             }
             else
             {
                 textureSelectionDropdown.GetComponentInChildren<TMP_Text>().text = faceTextures[0];
+                textureCopyButton.interactable = selFaces[0].textureIndex >= 0; //Texture may be missing or none. 
             }
 
             //UV Stuff.
@@ -406,9 +433,77 @@ namespace VSMC
             return faces;
         }
 
+        public int GetFaceIndexIfOneSelected()
+        {
+            int fi = -1;
+            for (int i = 0; i < 6; i++)
+            {
+                if (cSelectedFaces[i])
+                {
+                    if (fi != -1) return -1;
+                    fi = i;
+                }
+            }
+            return fi;
+        }
+
         private ShapeElementFace GetFaceFromIndex(int selIndex)
         {
             return cSelected.FacesResolved[selIndex];
+        }
+
+        public void CopyTextureButtonClicked()
+        {
+            var faces = GetSelectedFaces();
+            if (faces.Count <= 0 || faces[0].textureIndex < 0) return;
+            JObject json = new JObject();
+            json.Add("texture", "#"+faces[0].ResolvedTexture);
+            GUIUtility.systemCopyBuffer = JsonConvert.SerializeObject(json);
+            InfoLogger.main.LogText("Copied texture property to system clipboard.");
+        }
+
+        public void PasteTextureButtonClicked()
+        {
+            if (cSelected == null) return;
+            try
+            {
+                JObject clipboard = JObject.Parse(GUIUtility.systemCopyBuffer);
+                if (clipboard.Count == 1 && clipboard.ContainsKey("texture"))
+                {
+                    string texCode = clipboard["texture"].ToString().TrimStart('#');
+                    if (Input.GetKey(KeyCode.LeftShift))
+                    {
+                        if (Input.GetKey(KeyCode.LeftControl))
+                        {
+                            //Shift + Ctrl click. Paste for all faces and children.
+                            TaskBatchSetTexture batchSetTask = new TaskBatchSetTexture(texCode, cSelected, true);
+                            batchSetTask.DoTask();
+                            UndoManager.main.CommitTask(batchSetTask);
+                            InfoLogger.main.LogText("Pasted texture for all faces in selected element and children.");
+                            return;
+                        }
+                        //Shift click. Paste for all faces.
+                        TaskBatchSetTexture batchSetEOnlyTask = new TaskBatchSetTexture(texCode, cSelected, false);
+                        batchSetEOnlyTask.DoTask();
+                        UndoManager.main.CommitTask(batchSetEOnlyTask);
+                        InfoLogger.main.LogText("Pasted texture for all faces in selected element.");
+                        return;
+                    }
+                    //No modifier. Paste for only selected faces.
+                    var faces = GetSelectedFaces();
+                    TaskSetFaceTexture setTextureTask = new TaskSetFaceTexture(cSelected, cSelectedFaces, texCode);
+                    setTextureTask.DoTask();
+                    UndoManager.main.CommitTask(setTextureTask);
+                    InfoLogger.main.LogText("Pasted texture for selected faces.");
+                    return;
+                }
+            }
+            catch
+            {
+                //Invalid JSON in clipboard.
+                InfoLogger.main.LogText("Clipboard does not contain a correctly formed texture property.");
+                return;
+            }
         }
     }
 }

@@ -14,11 +14,13 @@ public class TaskDeleteAttachmentPoint : IEditTask
     public override void DoTask()
     {
         AttachmentPointsManager.main.RemoveAP(ap);
+        AttachmentPointsManager.main.OnAnyAPPropertyChanged();
     }
 
     public override void UndoTask()
     {
         AttachmentPointsManager.main.AddNewAP(ap);
+        AttachmentPointsManager.main.OnAnyAPPropertyChanged();
     }
 
     public override VSEditMode GetRequiredEditMode()

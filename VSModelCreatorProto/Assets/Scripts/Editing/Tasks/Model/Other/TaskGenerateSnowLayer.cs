@@ -32,7 +32,7 @@ public class TaskGenerateSnowLayer : IEditTask
         parentUIDToSnowElement = new Dictionary<int, ShapeElement>();
         foreach (ShapeElement e1 in addSnowTo)
         {
-            ShapeElement createdElement = new ShapeElement();
+            ShapeElement createdElement = new ShapeElement(ShapeHolder.CurrentLoadedShape);
             createdElement.ResolveFacesAndTextures(TextureManager.main.loadedTextures);
             ShapeElementRegistry.main.UnregisterShapeElement(createdElement);
             createdElement.SetParent(e1);
@@ -53,7 +53,7 @@ public class TaskGenerateSnowLayer : IEditTask
 
             //We will tesselate the object and create its game object, but will move it immediately to the deletion state.
             ShapeTesselator.TesselateShapeElements(new ShapeElement[] { createdElement });
-            ShapeTesselator.ResolveMatricesForShapeElementAndChildren(createdElement);
+            ShapeTesselator.ResolveLocalMatricesForShapeElementAndChildren(createdElement);
             createdElement.ResolveUVForFaces();
             ShapeLoader.main.shapeHolder.CreateShapeElementGameObject(createdElement);
             ShapeLoader.main.shapeHolder.SendElementToDeletionLimbo(createdElement);

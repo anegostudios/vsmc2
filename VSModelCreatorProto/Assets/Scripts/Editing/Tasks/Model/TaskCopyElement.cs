@@ -51,6 +51,9 @@ namespace VSMC
             //We recreate the entire element list for easy usage.
             ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
 
+            //Not sure if we need to, but lets also refresh the model order.
+            MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
+
             //Finally, select the object to make it noticable.
             ObjectSelector.main.SelectObject(createdElement.gameObject.gameObject, false, false);
         }
@@ -70,6 +73,9 @@ namespace VSMC
             }
             //We recreate the entire element list for easy usage.
             ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
+            
+            //Not sure if we need to, but lets also refresh the model order.
+            MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
         }
 
         public override bool MergeTasksIfPossible(IEditTask nextTask)

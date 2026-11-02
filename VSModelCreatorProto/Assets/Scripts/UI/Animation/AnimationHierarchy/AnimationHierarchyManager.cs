@@ -1,54 +1,107 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace VSMC
 {
-    public class AnimationHierarchyManager : MonoBehaviour
+    public class AnimationHierarchyManager : GenericHierarchyManager
     {
 
-        public static AnimationHierarchyManager AnimationHierarchy;
-
-        public GameObject animEntryPrefab;
-        public Transform hierarchyParent;
-
-        Dictionary<string, GameObject> uiElementsByAnimCode = new Dictionary<string, GameObject>();
-
-        private void Awake()
+        void Start()
         {
-            AnimationHierarchy = this;
+            AnimationSelector.main.RegisterForOnAnimationSelected(OnAnimationSelected);
+            AnimationSelector.main.RegisterForOnAnimationDeselected(OnAnimationDeselected);
         }
 
-        public void StartCreatingAnimationEntries(Shape s)
+        public void OnAnimationSelected(Animation anim, bool manualClick)
         {
+            GetUIEntryFromAnimationCode(anim.Code)?.OnEntrySelected(!manualClick);
+        }
+        
+        public void OnAnimationDeselected(Animation anim)
+        {
+            GetUIEntryFromAnimationCode(anim.Code)?.OnEntryDeselected();
+        }
+
+        public override void StartCreatingEntries()
+        {
+            string cSelCode = null;
+            if (cSelected != null) cSelCode = (cSelected.storedData as Animation).Code;
+
+            //Remove existing elements.
             foreach (Transform t in hierarchyParent)
             {
                 Destroy(t.gameObject);
             }
-            uiElementsByAnimCode.Clear();
+            cSelected = null;
+            isSearching = false;
+            currentItems = new List<GenericHierarchyItemEntry>();
 
-            foreach (Animation anim in s.Animations)
+            SortedDictionary<string, List<Animation>> categoriesToAnimations = new SortedDictionary<string, List<Animation>>();
+            List<Animation> noCategoryAnimations = new List<Animation>();
+
+            foreach (Animation anim in ShapeHolder.CurrentLoadedShape.Animations)
             {
-                CreateAnimEntry(anim);
+                if (anim.CategoryInEditor != null && anim.CategoryInEditor != "")
+                {
+                    if (!categoriesToAnimations.ContainsKey(anim.CategoryInEditor))
+                    {
+                        categoriesToAnimations.Add(anim.CategoryInEditor, new List<Animation>());
+                    }
+                    categoriesToAnimations[anim.CategoryInEditor].Add(anim);
+                }
+                else
+                {
+                    noCategoryAnimations.Add(anim);
+                }
+            }
+
+            foreach (var kvp in categoriesToAnimations)
+            {
+                GameObject categoryUI = GameObject.Instantiate(elementPrefab, hierarchyParent);
+                GenericHierarchyItemEntry catEntry = categoryUI.GetComponent<GenericHierarchyItemEntry>();
+                catEntry.Initialize(kvp.Key, null, 0, true, null, this);
+                catEntry.replaceSelectionWithCollapse = true;
+                catEntry.removeOnSearch = true;
+                currentItems.Add(catEntry);
+                foreach (Animation a in kvp.Value)
+                {
+                    CreateAnimEntry(a, catEntry);
+                }
+            }
+            foreach (Animation a in noCategoryAnimations)
+            {
+                CreateAnimEntry(a);
+            }
+
+            //Highlight prev if it exists. No need to reselect as that is handled by AnimationSelector.
+            if (cSelCode != null)
+            {
+                GenericHierarchyItemEntry entry = GetUIEntryFromAnimationCode(cSelCode);
+                if (entry != null)
+                {
+                    entry.OnEntrySelected(false);
+                }
             }
         }
 
-        private void CreateAnimEntry(Animation anim)
+        public override void OnAnySelected(GenericHierarchyItemEntry item)
         {
-            GameObject animUI = GameObject.Instantiate(animEntryPrefab, hierarchyParent);
-            animUI.GetComponent<AnimationEntryPrefab>().InitializePrefab(anim.Name, anim.Code, hierarchyParent.GetComponentInParent<ScrollRect>(true));
-            uiElementsByAnimCode.Add(anim.Code, animUI);
+            AnimationSelector.main.Select(item.storedData as Animation, true);
         }
 
-
-        public AnimationEntryPrefab GetAnimationHierarchyItem(Animation anim)
+        public GenericHierarchyItemEntry GetUIEntryFromAnimationCode(string animCode)
         {
-            if (!uiElementsByAnimCode.ContainsKey(anim.Code))
-            {
-                Debug.LogError("Trying to access animation hierarchy UI element when one does not exist.");
-                return null;
-            }
-            return uiElementsByAnimCode[anim.Code].GetComponent<AnimationEntryPrefab>();
+            return currentItems.FirstOrDefault(x => x.storedData != null && (x.storedData as Animation).Code == animCode);
+        }
+
+        private void CreateAnimEntry(Animation anim, GenericHierarchyItemEntry category = null)
+        {
+            GameObject animUI = GameObject.Instantiate(elementPrefab, hierarchyParent);
+            GenericHierarchyItemEntry entry = animUI.GetComponent<GenericHierarchyItemEntry>();
+            entry.Initialize(anim.Name, anim, category == null ? 0 : 1, false, category, this);
+            currentItems.Add(entry);
         }
     }
 }

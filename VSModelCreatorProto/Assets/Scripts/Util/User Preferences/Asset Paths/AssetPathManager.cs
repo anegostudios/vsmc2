@@ -99,10 +99,8 @@ namespace VSMC
             if (Path.IsPathRooted(localPath)) return localPath;
             if (useLocalAssetPathFirst && locallyFoundAssetPath != "")
             {
-                Debug.Log("Intermittent Step: " + locallyFoundAssetPath);
                 foreach (string dirs in GetDefaultSearchOrder(Directory.GetDirectories(locallyFoundAssetPath, folderNameToSearchIn, SearchOption.AllDirectories)))
                 {
-                    Debug.Log(dirs);
                     if (File.Exists(Path.Combine(dirs, localPath)))
                     {
                         Debug.Log("Accessing file from " + Path.Combine(dirs, localPath));
@@ -114,7 +112,6 @@ namespace VSMC
             {
                 foreach (string dirs in GetDefaultSearchOrder(Directory.GetDirectories(basePath, folderNameToSearchIn, SearchOption.AllDirectories)))
                 {
-                    Debug.Log(dirs);
                     if (File.Exists(Path.Combine(dirs, localPath)))
                     {
                         Debug.Log("Accessing file from " + Path.Combine(dirs, localPath));
@@ -126,7 +123,6 @@ namespace VSMC
             {
                 foreach (string dirs in GetDefaultSearchOrder(Directory.GetDirectories(locallyFoundAssetPath, folderNameToSearchIn, SearchOption.AllDirectories)))
                 {
-                    Debug.Log(dirs);
                     if (File.Exists(Path.Combine(dirs, localPath)))
                     {
                         Debug.Log("Accessing file from " + Path.Combine(dirs, localPath));

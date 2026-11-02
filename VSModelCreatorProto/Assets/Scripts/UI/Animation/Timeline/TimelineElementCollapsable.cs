@@ -49,6 +49,11 @@ public class TimelineElementCollapsable : MonoBehaviour
                 return;
             }
         }
+        if (ObjectSelector.main.IsAnySelected() && ObjectSelector.main.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element.Name == nameText.text)
+        {
+            elemNameImage.color = selColor;
+        }
+
         OnElementExpanded();
     }
 

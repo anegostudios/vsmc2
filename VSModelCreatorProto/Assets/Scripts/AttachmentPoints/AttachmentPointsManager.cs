@@ -36,6 +36,8 @@ public class AttachmentPointsManager : MonoBehaviour
     public List<LoadedAP> allAPs;
     public APUIEntry[] apEntries;
     public LoadedAP cSelected;
+    public List<LoadedAP> apsForAdditionalObjects;
+    Shape loadedAPsForShape = null;
 
     void Awake()
     {
@@ -89,6 +91,9 @@ public class AttachmentPointsManager : MonoBehaviour
 
     public void OnShapeLoaded(Shape shape, LoadingContext context)
     {
+        if (shape == loadedAPsForShape) return;
+        loadedAPsForShape = shape;
+        apsForAdditionalObjects = new List<LoadedAP>();
         List<ShapeElement> es = new List<ShapeElement>();
         es.AddRange(shape.Elements);
         allAPs = new List<LoadedAP>();
@@ -107,6 +112,45 @@ public class AttachmentPointsManager : MonoBehaviour
             if (e.Children != null) es.AddRange(e.Children);
         }
         RecreateAPList();
+    }
+
+    public void EnsureAPsAreLoaded()
+    {
+        OnShapeLoaded(ShapeHolder.CurrentLoadedShape, null);
+    }
+
+    public void OnAdditionalShapeLoaded(Shape shape)
+    {
+        List<ShapeElement> es = new List<ShapeElement>();
+        es.AddRange(shape.Elements);
+        while (es.Count > 0)
+        {
+            ShapeElement e = es[0];
+            es.RemoveAt(0);
+            if (e.AttachmentPoints != null)
+            {
+                foreach (var ap in e.AttachmentPoints)
+                {
+                    LoadedAP lap = new LoadedAP(e, ap);
+                    Debug.Log("Added AP " + ap.Code + " in shape " + shape.shapeLoadedFromPath);
+                    apsForAdditionalObjects.Add(lap);
+                }
+            }
+            if (e.Children != null) es.AddRange(e.Children);
+        }
+    }
+
+    public void OnAdditionalShapeRemoved(Shape shape)
+    {
+        apsForAdditionalObjects.RemoveAll(x => x.GetElement().parentShape == shape);
+    }
+
+    public List<LoadedAP> GetAllAttachmentPointsIncludingOtherShapes()
+    {
+        List<LoadedAP> aps = new List<LoadedAP>();
+        aps.AddRange(allAPs);
+        aps.AddRange(apsForAdditionalObjects);
+        return aps;
     }
 
     public void BeforeShapeSave(Shape shape)
@@ -176,6 +220,11 @@ public class AttachmentPointsManager : MonoBehaviour
         Vector3 p = new Vector3(cSelected.position.x, cSelected.position.y, -cSelected.position.z); //flip Z
         apHolder.transform.Translate(p / 16f);
         apHolder.transform.rotation = rot.rotation;
+    }
+
+    public void OnAnyAPPropertyChanged()
+    {
+        MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
     }
 
     public void ReselectCurrentAP()
@@ -323,7 +372,7 @@ public class AttachmentPointsManager : MonoBehaviour
         ProgramPreferences.ShowAttachmentPointsPanel.SetValue(cOpen);
         if (cOpen)
         {
-            BackdropAndAttachmentMenuManager.main.OnOpenedAPPanel();
+            MultiShapeManager.main.UI.OnOpenedAPPanel();
             OpenPanel();
         }
         else
@@ -363,7 +412,6 @@ public class AttachmentPointsManager : MonoBehaviour
         if (mode != VSEditMode.Model) return;
         if (ProgramPreferences.ShowAttachmentPointsPanel.GetValue())
         {
-            Debug.Log("Opening AP Panel.");
             OpenPanel();
         }
     }

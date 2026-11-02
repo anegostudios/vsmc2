@@ -19,12 +19,14 @@ public class TaskSetAttachmentPointPosition : IEditTask
     {
         AttachmentPointsManager.main.GetLoadedAPFromCode(apCode).position = newPos;
         AttachmentPointsManager.main.UpdateAPValues();
+        AttachmentPointsManager.main.OnAnyAPPropertyChanged();
     }
 
     public override void UndoTask()
     {
         AttachmentPointsManager.main.GetLoadedAPFromCode(apCode).position = oldPos;
         AttachmentPointsManager.main.UpdateAPValues();
+        AttachmentPointsManager.main.OnAnyAPPropertyChanged();
     }
 
     public override VSEditMode GetRequiredEditMode()

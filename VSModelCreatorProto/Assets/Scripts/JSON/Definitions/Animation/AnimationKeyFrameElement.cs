@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
+using UnityEngine;
 
-    
+
 namespace VSMC
 {
     [JsonObject(MemberSerialization.OptIn)]
@@ -89,6 +90,26 @@ namespace VSMC
             OriginX *= size;
             OriginY *= size;
             OriginZ *= size;
+        }
+
+        public void RoundValuesAndReduceDecimals()
+        {
+            double p = ProgramPreferences.UseHighPrecisionMode.GetValue() ? 1000000 : 1000;
+            if (OffsetX.HasValue) OffsetX = Mathf.RoundToInt((float)(OffsetX.Value * p)) / p;
+            if (OffsetY.HasValue) OffsetY = Mathf.RoundToInt((float)(OffsetY.Value * p)) / p;
+            if (OffsetZ.HasValue) OffsetZ = Mathf.RoundToInt((float)(OffsetZ.Value * p)) / p;
+
+            if (StretchX.HasValue) StretchX = Mathf.RoundToInt((float)(StretchX.Value * p)) / p;
+            if (StretchY.HasValue) StretchY = Mathf.RoundToInt((float)(StretchY.Value * p)) / p;
+            if (StretchZ.HasValue) StretchZ = Mathf.RoundToInt((float)(StretchZ.Value * p)) / p;
+
+            if (RotationX.HasValue) RotationX = Mathf.RoundToInt((float)(RotationX.Value * p)) / p;
+            if (RotationY.HasValue) RotationY = Mathf.RoundToInt((float)(RotationY.Value * p)) / p;
+            if (RotationZ.HasValue) RotationZ = Mathf.RoundToInt((float)(RotationZ.Value * p)) / p;
+
+            if (OriginX.HasValue) OriginX = Mathf.RoundToInt((float)(OriginX.Value * p)) / p;
+            if (OriginY.HasValue) OriginY = Mathf.RoundToInt((float)(OriginY.Value * p)) / p;
+            if (OriginZ.HasValue) OriginZ = Mathf.RoundToInt((float)(OriginZ.Value * p)) / p;
         }
 
     }

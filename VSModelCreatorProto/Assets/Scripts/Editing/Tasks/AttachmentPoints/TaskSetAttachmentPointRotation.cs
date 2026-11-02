@@ -19,12 +19,14 @@ public class TaskSetAttachmentPointRotation : IEditTask
     {
         AttachmentPointsManager.main.GetLoadedAPFromCode(apCode).rotation = newRot;
         AttachmentPointsManager.main.UpdateAPValues();
+        AttachmentPointsManager.main.OnAnyAPPropertyChanged();
     }
 
     public override void UndoTask()
     {
         AttachmentPointsManager.main.GetLoadedAPFromCode(apCode).rotation = oldRot;
         AttachmentPointsManager.main.UpdateAPValues();
+        AttachmentPointsManager.main.OnAnyAPPropertyChanged();
     }
 
     public override VSEditMode GetRequiredEditMode()

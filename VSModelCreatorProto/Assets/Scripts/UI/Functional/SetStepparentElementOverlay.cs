@@ -9,57 +9,82 @@ namespace VSMC
     {
 
         public ModelEditor modelEditor;
-
-        public GameObject noBackdropSelectedWarning;
-
-        public GameObject elementPrefab;
-
         public TMP_Text headingText;
-        public Transform hierarchyParent;
-        StepParentElementOverlayUIEntry cSelected;
+        public GameObject noOtherRootObjectsWarning;
+        public GameObject attachmentOrderWarning;
         public Button applyButton;
-        public Button setNoParentButton;
         public int selectedUID;
+        public TMP_Dropdown rootElementInShapeDropdownList;
+        public SelectStepparentHierarchyManager elemHierarchy;
+        public ShapeElement[] rootElemsOnOpen;
+
 
         public void OpenOverlay(ShapeElement selElem)
         {
             headingText.text = "Set Step-parent of element " + selElem.Name;
-            cSelected = null;
             applyButton.interactable = false;
             selectedUID = selElem.elementUID;
-            foreach (Transform t in hierarchyParent)
-            {
-                Destroy(t.gameObject);
-            }
 
-            if (BackdropManager.main.cActiveBackdrop == null)
+            rootElementInShapeDropdownList.ClearOptions();
+            rootElemsOnOpen = MultiShapeManager.main.GetAllRootShapeElements(false).ToArray();
+            List<string> options = new List<string>();
+            foreach (ShapeElement e in rootElemsOnOpen)
             {
-                noBackdropSelectedWarning.SetActive(true);
+                if (e == selElem) continue;
+                options.Add(e.Name + " in " + e.parentShape.shapeLoadedFromPath);
+            }
+            rootElemsOnOpen = rootElemsOnOpen.Remove(selElem);
+            rootElementInShapeDropdownList.AddOptions(options);
+
+            attachmentOrderWarning.SetActive(false);
+            if (options.Count == 0)
+            {
+                noOtherRootObjectsWarning.SetActive(true);
                 gameObject.SetActive(true);
+                elemHierarchy.gameObject.SetActive(false);
                 return;
             }
 
-            noBackdropSelectedWarning.SetActive(false);
-            foreach (ShapeElementGameObject e in BackdropManager.main.cActiveBackdrop.backdropHolder.GetGameObjects())
-            {
-                Instantiate(elementPrefab, hierarchyParent).GetComponent<StepParentElementOverlayUIEntry>().
-                Initialize(e.element, e.element.CountParents(), this);
-            }
+            elemHierarchy.gameObject.SetActive(true);
+            noOtherRootObjectsWarning.SetActive(false);
+            rootElementInShapeDropdownList.SetValueWithoutNotify(0);
+        
 
+            elemHierarchy.StartCreatingEntries();
             gameObject.SetActive(true);
         }
 
-        public void OnElementClicked(StepParentElementOverlayUIEntry entry)
+
+        public void OnSelectedRootElementForElemHierarchyChanged()
         {
-            if (cSelected != null) cSelected.GetComponent<Image>().color = Color.clear;
-            cSelected = entry;
-            entry.GetComponent<Image>().color = new Color(1, 0.75f, 0);
-            applyButton.interactable = true;
+            elemHierarchy.StartCreatingEntries();
+        }
+
+        public ShapeElement GetCurrentlySelectedRootElementForElemHierarchy()
+        {
+            return rootElemsOnOpen[rootElementInShapeDropdownList.value];
+        }
+
+        public bool CheckValidityOfSelectedAttachment(ShapeElement otherSelected)
+        {
+            ShapeElement toChange = ShapeElementRegistry.main.GetShapeElementByUID(selectedUID);
+            ShapeElement t = ShapeElementRegistry.main.GetShapeElementByName(otherSelected.Name);
+            bool valid = t == null || t.GetRootElement() != toChange;
+            valid = valid && MultiShapeManager.main.CanRootElementBeAttachedToOther(toChange, otherSelected);
+            if (t != null)
+            {
+                valid = valid && MultiShapeManager.main.CanRootElementBeAttachedToOther(toChange, t);
+            }
+            applyButton.interactable = valid;
+            attachmentOrderWarning.SetActive(!valid);
+            return valid;
         }
 
         public void ApplyChanges()
         {
-            modelEditor.SetStepParentElement(selectedUID, cSelected.GetComponent<StepParentElementOverlayUIEntry>().elementName.text);
+            GenericHierarchyItemEntry sel = elemHierarchy.GetSelected();
+            if (sel == null) return;
+            modelEditor.SetStepParentElement(selectedUID, (sel.storedData as ShapeElement).Name);
             gameObject.SetActive(false);
         }
 

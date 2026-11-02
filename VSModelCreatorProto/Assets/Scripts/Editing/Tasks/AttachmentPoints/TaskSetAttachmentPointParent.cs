@@ -19,12 +19,14 @@ public class TaskSetAttachmentPointParent : IEditTask
     {
         AttachmentPointsManager.main.GetLoadedAPFromCode(apCode).shapeElementParentUID = newParentUID;
         AttachmentPointsManager.main.RecreateAPList();
+        AttachmentPointsManager.main.OnAnyAPPropertyChanged();
     }
 
     public override void UndoTask()
     {
         AttachmentPointsManager.main.GetLoadedAPFromCode(apCode).shapeElementParentUID = oldParentUID;
         AttachmentPointsManager.main.RecreateAPList();
+        AttachmentPointsManager.main.OnAnyAPPropertyChanged();
     }
 
     public override VSEditMode GetRequiredEditMode()

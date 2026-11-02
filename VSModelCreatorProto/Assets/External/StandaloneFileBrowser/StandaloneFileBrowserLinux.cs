@@ -34,6 +34,7 @@ namespace SFB {
         public StandaloneFileBrowserLinux()
         {
             DialogInit();
+            Debug.LogWarning("Linux dialog init done.");
         }
 
         public string[] OpenFilePanel(string title, string directory, ExtensionFilter[] extensions, bool multiselect) {

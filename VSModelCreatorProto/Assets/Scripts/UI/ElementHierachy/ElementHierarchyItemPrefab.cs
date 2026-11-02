@@ -118,6 +118,12 @@ public class ElementHierarchyItemPrefab : MonoBehaviour
         }
     }
 
+    public void ResolveVisibilityIcon()
+    {
+        ShapeElement elem = ShapeElementRegistry.main.GetShapeElementByUID(elementUID);
+        hideShowButton.sprite = elem.renderInEditor ? hierarchyManager.ShownSprite : hierarchyManager.HiddenSprite;
+    }
+
     public void OnDragStart(BaseEventData data)
     {
         if ((data as PointerEventData).button != PointerEventData.InputButton.Left) return;

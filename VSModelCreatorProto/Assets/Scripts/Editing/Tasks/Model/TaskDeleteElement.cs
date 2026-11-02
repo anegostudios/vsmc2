@@ -98,6 +98,9 @@ namespace VSMC
             {
                 ShapeHolder.CurrentLoadedShape.RemoveRootShapeElement(elemToDelete);
             }
+
+            //Refresh the model order.
+            MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
         }
 
         public override void UndoTask()
@@ -139,6 +142,9 @@ namespace VSMC
             //For now, recreate the whole element hierarchy.
             // This may need to be changed if the hierarchy list needs to retain a consistent order.
             ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
+            
+            //Refresh the model order.
+            MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
         }
 
         public override bool MergeTasksIfPossible(IEditTask nextTask)

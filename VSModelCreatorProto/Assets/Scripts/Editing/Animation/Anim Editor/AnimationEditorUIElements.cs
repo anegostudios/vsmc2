@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 using TMPro;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +16,8 @@ namespace VSMC
     public class AnimationEditorUIElements : MonoBehaviour
     {
         public AnimationEditorManager animEditor;
+        [Header("Hierarchy")]
+        public AnimationHierarchyManager animationHierarchy;
 
         [Header("Animation Details - Animation Setup")]
         public GameObject animationSetupObjectsHolder;
@@ -20,10 +26,16 @@ namespace VSMC
         public Button copyAnimation;
         public TMP_InputField animName;
         public TMP_InputField animCode;
+        public TMP_InputField animCategory;
         public TMP_Dropdown onAnimStopped;
         public TMP_Dropdown onAnimEnded;
         public TMP_InputField animDurationInFrames;
         public GameObject onAnimDurationChangeConfirmationOverlay;
+
+        [Header("Animation Details - Additional Shapes")]
+        public GameObject additionalObjectAnimationSelectorPrefab;
+        public Transform additionalObjectsAnimationSelectorParent;
+        public List<AnimationAdditionalShapeAnimationSelector> createdAdditionalObjectAnimationSelectors;
 
         [Header("Animation Details - Frame Progressor")]
         public TMP_Text currentFrameLabel;
@@ -31,6 +43,7 @@ namespace VSMC
         public TMP_Text playPauseButtonText;
         public Button nextFrameButton;
         public Button prevFrameButton;
+        public Toggle forceLoopToggle;
 
         [Header("Animation Details - Playback Speed")]
         public Slider playbackSpeedSlider;
@@ -58,6 +71,8 @@ namespace VSMC
 
         public Selectable[] interactablesIfPositionKeyframe;
         public Selectable[] interactablesIfRotationKeyframe;
+        public GameObject noElementSelectedWarning;
+        public GameObject noAnimationSelectedWarning;
 
         //Temp Data
         TaskSetAnimationDuration setAnimDurationTaskAwaitingConfirmation;
@@ -67,8 +82,10 @@ namespace VSMC
             //Anim Setup UI events.
             newAnimation.onClick.AddListener(OnNewAnimationClick);
             deleteAnimation.onClick.AddListener(OnAnimationDeleteClick);
+            copyAnimation.onClick.AddListener(OnAnimationCopyClick);
             animName.onEndEdit.AddListener(x => { OnAnimationNameSubmit(x); });
             animCode.onEndEdit.AddListener(x => { OnAnimationCodeSubmit(x); });
+            animCategory.onEndEdit.AddListener(x => { OnAnimationCategorySubmit(x); });
             onAnimStopped.onValueChanged.AddListener(x => { OnAnimationStopSelected(x); });
             onAnimEnded.onValueChanged.AddListener(x => { OnAnimationEndSelected(x); });
             animDurationInFrames.onEndEdit.AddListener(x => { OnAnimationFrameQuantitySubmit(x); });
@@ -113,6 +130,26 @@ namespace VSMC
         }
 
         #region Selection Events
+        
+        public void OnAnimationModeSelected()
+        {
+            foreach (Transform t in additionalObjectsAnimationSelectorParent)
+            {
+                Destroy(t.gameObject);
+            }
+            createdAdditionalObjectAnimationSelectors = new List<AnimationAdditionalShapeAnimationSelector>();
+            foreach (ShapeElement root in MultiShapeManager.main.GetAllRootShapeElements(false))
+            {
+                LoadedAdditionalShape las = MultiShapeManager.main.GetLoadedAdditionalShapeFromRootElementCode(root.GetElementCodeInShape());
+                if (las != null && las.data.useUniqueAnimations)
+                {
+                    GameObject ins = Instantiate(additionalObjectAnimationSelectorPrefab, additionalObjectsAnimationSelectorParent);
+                    ins.GetComponent<AnimationAdditionalShapeAnimationSelector>().Initialize(las, root.GetElementCodeInShape());
+                    createdAdditionalObjectAnimationSelectors.Add(ins.GetComponent<AnimationAdditionalShapeAnimationSelector>());
+                }
+            }
+        }
+        
         /// <summary>
         /// This should be called whenever a new animation is selected, or when the current animation setup data is changed..
         /// </summary>
@@ -121,17 +158,38 @@ namespace VSMC
             Animation cSel = GetCurrentAnimation();
             if (cSel == null)
             {
+                timelineManager.gameObject.SetActive(false);
                 animationSetupObjectsHolder.SetActive(false);
+                foreach (var i in createdAdditionalObjectAnimationSelectors)
+                {
+                    i.DisableDropdown();
+                }
+                timelineCurrentFrameMarker.anchoredPosition = new Vector2(timelinePixelsInitialOffset, 0);
+                currentFrameLabel.text = "0/0    0:00/0:00";
+                playPauseButtonText.text = "Play";
+                selectedObjectDetailsHolder.SetActive(false);
+                noAnimationSelectedWarning.SetActive(true);
+                noElementSelectedWarning.SetActive(false);
                 return;
             }
+            noAnimationSelectedWarning.SetActive(false);
+            timelineManager.gameObject.SetActive(true);
             animationSetupObjectsHolder.SetActive(true);
 
             //Anim Setup Details
             animName.SetTextWithoutNotify(cSel.Name);
             animCode.SetTextWithoutNotify(cSel.Code);
+            animCategory.SetTextWithoutNotify(cSel.CategoryInEditor);
             onAnimStopped.SetValueWithoutNotify((int)cSel.OnActivityStopped);
             onAnimEnded.SetValueWithoutNotify((int)cSel.OnAnimationEnd);
             animDurationInFrames.SetTextWithoutNotify(cSel.QuantityFrames.ToString());
+
+            foreach (var i in createdAdditionalObjectAnimationSelectors)
+            {
+                i.ResolveDropdown(cSel);
+            }
+
+
             SetTimelineBounds(GetFrameDurationOfCurrentAnimation());
             RefreshUIForChangeInKeyframes();
         }
@@ -152,6 +210,16 @@ namespace VSMC
         public void RefreshUIForFrameElementSelection(int cFrame)
         {
             //Simply refresh anything in the right-hand-side menu, as well as the frame timeline position.
+            if (GetCurrentAnimation() == null)
+            {
+                timelineCurrentFrameMarker.anchoredPosition = new Vector2(timelinePixelsInitialOffset, 0);
+                currentFrameLabel.text = "0/0    0:00/0:00";
+                playPauseButtonText.text = "Play";
+                selectedObjectDetailsHolder.SetActive(false);
+                noAnimationSelectedWarning.SetActive(true);
+                noElementSelectedWarning.SetActive(false);
+                return;
+            }
 
             //Timeline...
             timelineCurrentFrameMarker.anchoredPosition = new Vector2(timelinePixelsInitialOffset + (timelinePixelsPerFrame * cFrame), 0);
@@ -162,9 +230,11 @@ namespace VSMC
             {
                 //If nothing is selected, then hide the selected element menu.
                 selectedObjectDetailsHolder.SetActive(false);
+                noElementSelectedWarning.SetActive(true);
                 return;
             }
             selectedObjectDetailsHolder.SetActive(true);
+            noElementSelectedWarning.SetActive(false);
             selectedElementName.SetTextWithoutNotify(GetCurrentSelectedShapeElement().Name);
             AnimationKeyFrameElement kfe = GetCurrentSelectedKeyframeElement();
             if (kfe != null)
@@ -244,7 +314,10 @@ namespace VSMC
         
         private void OnAnimationCopyClick()
         {
-            
+            if (GetCurrentAnimation() == null) return;
+            TaskCopyAnimation copyTask = new TaskCopyAnimation(GetCurrentAnimation());
+            copyTask.DoTask();
+            UndoManager.main.CommitTask(copyTask);
         }
 
         private void OnAnimationNameSubmit(string newName)
@@ -280,6 +353,14 @@ namespace VSMC
             TaskSetAnimationCode changeCodeTask = new TaskSetAnimationCode(GetCurrentAnimation(), newCode);
             changeCodeTask.DoTask();
             UndoManager.main.CommitTask(changeCodeTask);
+        }
+
+        private void OnAnimationCategorySubmit(string newCategory)
+        {
+            if (GetCurrentAnimation() == null) return;
+            TaskSetAnimationCategory setCategoryTask = new TaskSetAnimationCategory(GetCurrentAnimation(), newCategory);
+            setCategoryTask.DoTask();
+            UndoManager.main.CommitTask(setCategoryTask);
         }
 
         private void OnAnimationStopSelected(int newStop)
@@ -327,6 +408,16 @@ namespace VSMC
                 UndoManager.main.CommitTask(setAnimDurationTaskAwaitingConfirmation);
             }
             onAnimDurationChangeConfirmationOverlay.SetActive(false);
+        }
+
+        public void OnPlayAlongsideDropdownSelected(LoadedAdditionalShape otherShape, string playAlongsideCode)
+        {
+            if (GetCurrentAnimation() == null) return;
+            TaskSetPlayAlongsideAnimation playAlongsideTask = new TaskSetPlayAlongsideAnimation(
+                GetCurrentAnimation(), playAlongsideCode, otherShape.loadedAdditionalShape.Elements[0].GetElementCodeInShape());
+            playAlongsideTask.DoTask();
+            UndoManager.main.CommitTask(playAlongsideTask);
+
         }
 
         #endregion
@@ -524,7 +615,7 @@ namespace VSMC
                 //rotationKeyframeY.SetToRotationValue((float)kfe.RotationY.Value);
             }
         }
-        
+
         private void OnRotationZSubmit(float val)
         {
             AnimationKeyFrameElement kfe = GetCurrentSelectedKeyframeElement();
@@ -540,6 +631,69 @@ namespace VSMC
             {
                 //rotationKeyframeZ.SetToRotationValue((float)kfe.RotationZ.Value);
             }
+        }
+
+        #endregion
+
+        #region UI Events - JSON Buttons
+
+        public void OnCopyAllFrameDataToJSON()
+        {
+            if (GetCurrentAnimation() == null) return;
+            Animation toCopy = GetCurrentAnimation();
+            string data = JsonConvert.SerializeObject(toCopy, Formatting.Indented, ShapeAccessor.MainSettings);
+            GUIUtility.systemCopyBuffer = data;
+            InfoLogger.main.LogText("Copied all frame data to clipboard.");
+        }
+
+        public void OnPasteAllFrameDataFromJSON()
+        {
+            if (GetCurrentAnimation() == null) return;
+            Animation copyInto = GetCurrentAnimation();
+            TaskPasteAllAnimationData t = new TaskPasteAllAnimationData(copyInto, GUIUtility.systemCopyBuffer);
+            t.DoTask();
+            UndoManager.main.CommitTask(t);
+        }
+
+        public void OnCopySingleFrameDataToJSON()
+        {
+            if (GetCurrentAnimation() == null) return;
+            if (GetCurrentSelectedKeyframe() == null)
+            {
+                InfoLogger.main.LogText("You need to select a keyframe that has data in it.");
+                return;
+            }
+            AnimationKeyFrame kf = GetCurrentSelectedKeyframe();
+            string data = JsonConvert.SerializeObject(kf, Formatting.Indented, ShapeAccessor.MainSettings);
+            GUIUtility.systemCopyBuffer = data;
+            InfoLogger.main.LogText("Copied currently selected frame data to clipboard.");
+        }
+
+        public void OnPasteSingleFrameDataFromJSON()
+        {
+            if (GetCurrentAnimation() == null) return;
+            Animation copyInto = GetCurrentAnimation();
+            TaskPasteSingleKeyframeData t = new TaskPasteSingleKeyframeData(copyInto, GetCurrentFrame(), GUIUtility.systemCopyBuffer);
+            t.DoTask();
+            UndoManager.main.CommitTask(t);
+        }
+
+        public void OnCopySingleElementTransformDataToJSON()
+        {
+            if (GetCurrentAnimation() == null || GetCurrentSelectedKeyframeElement() == null) return;
+            AnimationKeyFrameElement kfe = GetCurrentSelectedKeyframeElement();
+            string data = JsonConvert.SerializeObject(kfe, Formatting.Indented, ShapeAccessor.MainSettings);
+            GUIUtility.systemCopyBuffer = data;
+            InfoLogger.main.LogText("Copied element transformation data to clipboard.");
+        }
+
+        public void OnPasteSingleElementTransformDataFromJSON(int option)
+        {
+            if (GetCurrentAnimation() == null) return;
+            AnimationKeyFrameElement kfe = GetCurrentAnimation().GetOrCreateKeyFrame(GetCurrentFrame()).GetOrCreateKeyFrameElement(GetCurrentSelectedShapeElement().Name);
+            TaskPasteKeyframeElementData t = new TaskPasteKeyframeElementData(kfe, GUIUtility.systemCopyBuffer, option);
+            t.DoTask();
+            UndoManager.main.CommitTask(t);
         }
 
         #endregion

@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Collections;
 using UnityEngine;
+using System.Drawing;
+using System.IO;
 
 namespace VSMC
 {
@@ -16,30 +19,15 @@ namespace VSMC
         public static AnimationEditorManager main;
 
         [Header("Unity References")]
-        public ShapeHolder shapeHolder;
+        //public ShapeHolder shapeHolder;
         public AnimationEditorUIElements UI;
-        public 
+        public bool isInAnimatorMode = false;
 
-        bool isInAnimatorMode = false;
+        AnimationRootShapeElementController[] editingAnimationShapesForRootObjects;
+        AnimationRootShapeElementController[] attachmentAnimationShapes;
 
-        /// <summary>
-        /// Every animation by code.
-        /// </summary>
-        Dictionary<string, AnimationMetaData> allAnimations;
+        public AnimationRootShapeElementController[] animationShapeControllersInOrder;
 
-        /// <summary>
-        /// Creates a dictionary containing the currently selected animation's metadata.
-        /// </summary>
-        Dictionary<string, AnimationMetaData> activeAnimations
-        {
-            get
-            {
-                if (cSelectedAnimation == null) return new Dictionary<string, AnimationMetaData>();
-                return new Dictionary<string, AnimationMetaData>(allAnimations.Where(x => x.Key == cSelectedAnimation.Code)); 
-            }
-        }
-
-        ClientAnimator animator;
         bool shouldPlayAnimations = false;
 
         public int cFrame;
@@ -48,7 +36,7 @@ namespace VSMC
 
         void Awake()
         {
-            main = this;  
+            main = this;
         }
 
         private void Start()
@@ -59,6 +47,7 @@ namespace VSMC
             AnimationSelector.main.RegisterForOnAnimationDeselected(OnAnimationDeselected);
             ObjectSelector.main.RegisterForObjectSelectedEvent(OnObjectSelected);
             ObjectSelector.main.RegisterForObjectDeselectedEvent(OnObjectDeselected);
+            ShapeLoader.RegisterForOnShapeSaveEvent(BeforeShapeSave);
         }
 
         void OnEditModeSelect(VSEditMode select)
@@ -66,127 +55,110 @@ namespace VSMC
             if (select != VSEditMode.Animation) return;
             cSelectedAnimation = null;
             cFrame = 0;
+
+            //Load shape animators.
+            List<AnimationRootShapeElementController> controllers = new List<AnimationRootShapeElementController>();
+            editingAnimationShapesForRootObjects = new AnimationRootShapeElementController[ShapeHolder.CurrentLoadedShape.Elements.Length];
+            for (int i = 0; i < editingAnimationShapesForRootObjects.Length; i++)
+            {
+                editingAnimationShapesForRootObjects[i] = new AnimationRootShapeElementController(ShapeLoader.main.shapeHolder, ShapeHolder.CurrentLoadedShape.Elements[i]);
+            }
+            controllers.AddRange(editingAnimationShapesForRootObjects);
+            foreach (var add in MultiShapeManager.main.registeredAdditionalShapes)
+            {
+                controllers.Add(new AnimationRootShapeElementController(add.attachmentHolder, add.loadedAdditionalShape.Elements[0]));
+            }
+            
+            //Get the tesselation order of animation and reset the element transformations. This won't change.
+            MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects(true);
+            List<ShapeElement> tessOrder = MultiShapeManager.main.storedTessellationOrder;
+            List<AnimationRootShapeElementController> animationShapeControllersInOrder = new List<AnimationRootShapeElementController>();
+
+            for (int i = 0; i < tessOrder.Count; i++)
+            {
+                foreach (var cont in controllers)
+                {
+                    if (cont.rootElement == tessOrder[i])
+                    {
+                        animationShapeControllersInOrder.Add(cont);
+                        break;
+                    }
+                }
+            }
+            this.animationShapeControllersInOrder = animationShapeControllersInOrder.ToArray();
+
+            UI.OnAnimationModeSelected();
+
             OnAnimationDataChanged();
 
-            for (int i = 0; i < animator.MaxJointId; i++)
+            foreach (var cont in animationShapeControllersInOrder)
             {
-                Transform joint = shapeHolder.jointParents[i];
-
-                //Flip animation matrices too.
-                Matrix4x4 flipZ = Matrix4x4.Scale(new Vector3(1f, 1f, -1f));
-                Matrix4x4 m = flipZ * animator.Matrices[i] * flipZ;
-
-                joint.localPosition = m.GetPosition();
-                joint.localRotation = m.rotation;
-                joint.localScale = m.lossyScale;
+                cont.SetAllJointsToAnimatorMatrices();
             }
-
             isInAnimatorMode = true;
         }
 
         void OnEditModeDeselect(VSEditMode deselect)
         {
             if (deselect != VSEditMode.Animation) return;
-            
-            //All joints need zero-ing.
-            for (int i = 0; i < shapeHolder.jointParents.Count; i++)
-            {
-                Transform joint = shapeHolder.jointParents[i];
-                joint.localPosition = Vector3.zero;
-                joint.localRotation = Quaternion.identity;
-                joint.localScale = Vector3.one;
-            }
 
+            //All joints need zero-ing.
+            foreach (var cont in animationShapeControllersInOrder)
+            {
+                cont.ZeroAllJoints();
+            }
             isInAnimatorMode = false;
         }
 
         private void Update()
-        { 
-            if (animator == null || !isInAnimatorMode || !shouldPlayAnimations) return;
+        {
+            if (animationShapeControllersInOrder == null || !isInAnimatorMode || !shouldPlayAnimations) return;
             ProgressAnimation(Mathf.Min(Time.deltaTime, 1 / 30f) * playbackSpeed); //Clamp to a max of 1 anim frame per application frame.
         }
 
         private void OnObjectSelected(GameObject selected)
         {
-            if (animator == null || !isInAnimatorMode || cSelectedAnimation == null) return;
+            if (animationShapeControllersInOrder == null || !isInAnimatorMode || cSelectedAnimation == null) return;
             UI.RefreshUIForFrameElementSelection(cFrame);
         }
-        
+
         private void OnObjectDeselected(GameObject deselected)
         {
-            if (animator == null || !isInAnimatorMode || cSelectedAnimation == null) return;
+            if (animationShapeControllersInOrder == null || !isInAnimatorMode || cSelectedAnimation == null) return;
             UI.RefreshUIForFrameElementSelection(cFrame);
         }
 
         public void ProgressAnimation(float dt, bool stackOverflowFailsafe = false)
         {
-            if (animator == null || animator.anims == null) return;
-
-            if (cSelectedAnimation == null)
+            bool didEditingPass = true;
+            foreach (var a in animationShapeControllersInOrder)
             {
-                for (int i = 0; i < animator.MaxJointId; i++)
+                bool t = a.ProgressAnimation(dt);
+                if (a.shapeHolder == ShapeLoader.main.shapeHolder)
                 {
-                    Transform joint = shapeHolder.jointParents[i];
-
-                    //Flip animation matrices too.
-                    Matrix4x4 flipZ = Matrix4x4.Scale(new Vector3(1f, 1f, -1f));
-                    Matrix4x4 m = flipZ * Matrix4x4.identity * flipZ;
-
-                    joint.localPosition = m.GetPosition();
-                    joint.localRotation = m.rotation;
-                    joint.localScale = m.lossyScale;
+                    if (!t) didEditingPass = false;
                 }
-                return;
             }
 
-            RunningAnimation anim = animator.GetAnimationState(cSelectedAnimation.Code);
-            if (cSelectedAnimation.KeyFrames.Length == 0) 
-            {
-                for (int i = 0; i < animator.MaxJointId; i++)
-                {
-                    Transform joint = shapeHolder.jointParents[i];
-
-                    //Flip animation matrices too.
-                    Matrix4x4 flipZ = Matrix4x4.Scale(new Vector3(1f, 1f, -1f));
-                    Matrix4x4 m = flipZ * Matrix4x4.identity * flipZ;
-
-                    joint.localPosition = m.GetPosition();
-                    joint.localRotation = m.rotation;
-                    joint.localScale = m.lossyScale;
-                }
-
-                cFrame = (int)anim.CurrentFrame;
-                UI.RefreshUIForFrameElementSelection(cFrame);
-                return;
-            }
-
-            animator.OnFrame(activeAnimations, dt);
-
-            //If the current animation has stopped, force the playback to stop too.
-            if (!anim.Active || !anim.Running)
+            if (!didEditingPass)
             {
                 shouldPlayAnimations = false;
                 if (!stackOverflowFailsafe)
                 {
                     ProgressAnimation(1, true);
                     SetAnimationFrame(0);
+                }   
+                if (UI.forceLoopToggle.isOn)
+                {
+                    PlaySelectedAnimation();
                 }
             }
 
-            cFrame = (int)anim.CurrentFrame;
-            UI.RefreshUIForFrameElementSelection(cFrame);
-
-            for (int i = 0; i < animator.MaxJointId; i++)
+            if (cSelectedAnimation != null)
             {
-                Transform joint = shapeHolder.jointParents[i];
-
-                //Flip animation matrices too.
-                Matrix4x4 flipZ = Matrix4x4.Scale(new Vector3(1f, 1f, -1f));
-                Matrix4x4 m = flipZ * animator.Matrices[i] * flipZ;
-
-                joint.localPosition = m.GetPosition();
-                joint.localRotation = m.rotation;
-                 joint.localScale = m.lossyScale;
+                var anim = editingAnimationShapesForRootObjects[0].animator.GetAnimationState(cSelectedAnimation.Code);
+                cFrame = (int)anim.CurrentFrame;
+                UI.RefreshUIForFrameElementSelection(cFrame);
             }
         }
 
@@ -195,42 +167,41 @@ namespace VSMC
         /// </summary>
         public void SetAnimationFrame(int frame, bool forceRefresh = false)
         {
-            if (animator == null || animator.anims == null || cSelectedAnimation == null) return;
-            RunningAnimation anim = animator.GetAnimationState(cSelectedAnimation.Code);
-
-            //No need to update anything if the current frame is the same.
-            if (anim.CurrentFrame == frame && !forceRefresh) return;
-            
-            anim.CurrentFrame = frame;
-            anim.Iterations = 0;
+            foreach (var a in animationShapeControllersInOrder)
+            {
+                a.SetFrame(frame, forceRefresh);
+            }
             ProgressAnimation(0, true);
         }
 
         public void ResetCurrentAnimationFrame()
         {
-            if (animator == null || animator.anims == null || cSelectedAnimation == null) return;
+            if (animationShapeControllersInOrder == null || cSelectedAnimation == null) return;
 
-            RunningAnimation anim = animator.GetAnimationState(cSelectedAnimation.Code);
-            anim.Iterations = 0;
-            anim.CurrentFrame = (int)anim.CurrentFrame;
-
+            foreach (var cont in animationShapeControllersInOrder)
+            {
+                cont.ResetCurrentAnimationFrame();
+            }
             ProgressAnimation(0);
-        }
+        }   
 
-        void OnAnimationSelected(Animation animation)
+        void OnAnimationSelected(Animation animation, bool manualClick)
         {
-            animator.ResetAllAnimationsForVSMC();
+            foreach (AnimationRootShapeElementController t in animationShapeControllersInOrder)
+            {
+                t.SetSelectedAnimation(animation.Code);
+            } 
             cSelectedAnimation = animation;
-            ProgressAnimation(1);
-            SetAnimationFrame(0, true);
             UI.RefreshUIForChangeInAnimation();
         }
 
         void OnAnimationDeselected(Animation animation)
         {
+            foreach (AnimationRootShapeElementController t in animationShapeControllersInOrder)
+            {
+                t.DeselectAnimation();
+            }
             cSelectedAnimation = null;
-            ProgressAnimation(1);
-            SetAnimationFrame(0, true);
         }
 
         /// <summary>
@@ -247,7 +218,7 @@ namespace VSMC
         /// </summary>
         public void PauseSelectedAnimation()
         {
-            if (animator == null || animator.anims == null || cSelectedAnimation == null) return;
+            if (animationShapeControllersInOrder == null || cSelectedAnimation == null) return;
             shouldPlayAnimations = false;
 
             SetAnimationFrame(cFrame);
@@ -259,13 +230,16 @@ namespace VSMC
         /// </summary>
         public void PlaySelectedAnimation()
         {
-            if (animator == null || animator.anims == null || cSelectedAnimation == null) return;
+            if (animationShapeControllersInOrder == null || cSelectedAnimation == null) return;
             shouldPlayAnimations = true;
 
             //For some reason, the iteration of a new animation starts at -1 instead of 0, making one-time animations run twice.
             //We need to fix that.
-            RunningAnimation anim = animator.GetAnimationState(cSelectedAnimation.Code);
-            if (anim.Iterations != 0) anim.Iterations = 0;
+            foreach (AnimationRootShapeElementController t in animationShapeControllersInOrder)
+            {
+                RunningAnimation anim = t.animator.GetAnimationState(cSelectedAnimation.Code);
+                if (anim != null && anim.Iterations != 0) anim.Iterations = 0;
+            }
             UI.SetIsPlayingButtonText();
         }
 
@@ -277,38 +251,25 @@ namespace VSMC
         public void RecreateAnimationJointsAndSetup(bool recreateAnimHierarchy)
         {
             PauseSelectedAnimation();
-            Shape shape = ShapeHolder.CurrentLoadedShape;
-            System.DateTime t1 = System.DateTime.Now;
-            shape.InitForAnimations("root");
-            shapeHolder.ReparentGameObjectsByJoints();
-            
-            if (shape.Animations == null)
+            List<AnimationRootShapeElementController> tempDone = new List<AnimationRootShapeElementController>();
+
+            for (int i = 0; i < editingAnimationShapesForRootObjects.Length; i++)
             {
-                shape.Animations = new Animation[0];
-            }
-            animator = ClientAnimator.Create(shape.Animations, shape.Elements, shape.JointsById);
-
-            //Create animation lists
-            allAnimations = new Dictionary<string, AnimationMetaData>();
-            int animID = 0;
-
-
-            foreach (var anim in shape.Animations)
-            {
-                AnimationMetaData meta = new AnimationMetaData(anim.Name, anim.Code);
-                anim.PrevNextKeyFrameByFrame = null;
-                allAnimations.Add(anim.Code, meta);
-                animID++;
+                tempDone.Add(editingAnimationShapesForRootObjects[i]);
+                editingAnimationShapesForRootObjects[i].RecreateAnimationJointsAndSetup(true, i != 0);
             }
 
-            if (recreateAnimHierarchy) 
+            for (int i = 0; i < animationShapeControllersInOrder.Length; i++)
             {
-                AnimationHierarchyManager.AnimationHierarchy.StartCreatingAnimationEntries(shape); 
+                if (!tempDone.Contains(animationShapeControllersInOrder[i]))
+                {
+                    animationShapeControllersInOrder[i].RecreateAnimationJointsAndSetup(true, false);
+                }
             }
 
-            Debug.Log("Calculating " + shape.Animations.Length + " animations took " + (System.DateTime.Now - t1).TotalMilliseconds + "ms.");
+            if (recreateAnimHierarchy) UI.animationHierarchy.StartCreatingEntries();
         }
-        
+
         /// <summary>
         /// Should be called whenever any frame is changed. This'll recreate the matrices for a whole animation.
         /// </summary>
@@ -328,9 +289,16 @@ namespace VSMC
         {
             RecreateAnimationJointsAndSetup(true);
             AnimationSelector.main.ReselectCurrent();
-            animator.ResetAllAnimationsForVSMC();
+
+            foreach (var controller in animationShapeControllersInOrder)
+            {
+                controller.ResetAllAnimations();
+            }
             UI.RefreshUIForChangeInAnimation();
-            ObjectSelector.main.ReselectCurrent();
+            if (ObjectSelector.main.IsAnySelected())
+            {
+                UI.RefreshUIForFrameElementSelection(cFrame);
+            }
         }
 
         /// <summary>
@@ -346,7 +314,10 @@ namespace VSMC
             SetAnimationFrame(frame);
             RecalculateAnimationMatrices(AnimationSelector.main.GetCurrentlySelected());
             UI.RefreshUIForChangeInKeyframes();
-            ObjectSelector.main.ReselectCurrent();
+            if (ObjectSelector.main.IsAnySelected())
+            {
+                UI.RefreshUIForFrameElementSelection(cFrame); 
+            }
         }
 
         /// <summary>
@@ -359,10 +330,22 @@ namespace VSMC
             if (!AnimationSelector.main.IsAnySelected()) return;
             RecalculateAnimationMatrices(AnimationSelector.main.GetCurrentlySelected());
             UI.RefreshUIForFrameElementSelection(cFrame);
-            
+
         }
 
+        public AnimationRootShapeElementController GetAnimationShapeControllerFromRootShapeElement(ShapeElement rootElement)
+        {
+            return animationShapeControllersInOrder.FirstOrDefault(x => x.rootElement == rootElement);
+        }
 
+        public void BeforeShapeSave(Shape shape)
+        {
+            //Remove any empty keyframes.
+            foreach (Animation a in shape.Animations)
+            {
+                a.RemoveAnyEmptyKeyFrames();
+            }
+        }
 
     }
 }

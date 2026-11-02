@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using Unity.Collections;
+using UnityEditor;
 using UnityEngine;
 
 namespace VSMC
@@ -55,19 +57,30 @@ namespace VSMC
         [JsonProperty]
         public Animation[] Animations = new Animation[0];
 
-        
+        [NonSerialized()]
+        public string shapeLoadedFromPath;
+
+        [NonSerialized()]
         //Joints stuff.
         public Dictionary<int, AnimationJoint> JointsById = new Dictionary<int, AnimationJoint>();
 
         [NonSerialized()]
         public bool isBackdropOrAttachmentShape = false;
 
+
+        /// <param name="context"></param>
+        [OnDeserialized()]
+
+        public void OnShapeDeserialized(StreamingContext context)
+        {
+            ResolveFacesAndTextures(context);
+            MarkAllChildrenAsThisShape();
+        }
+
         /// <summary>
         /// A rather niave method to load in textures.
         /// Needs a very large update.
         /// </summary>
-        /// <param name="context"></param>
-        [OnDeserialized()]
         public void ResolveFacesAndTextures(StreamingContext context)
         {
             JSONStreamingContexts con = (JSONStreamingContexts)(context.Context);
@@ -84,6 +97,21 @@ namespace VSMC
                 }
             }
         }
+
+        public void MarkAllChildrenAsThisShape()
+        {
+            List<ShapeElement> elems = new List<ShapeElement>();
+            elems.AddRange(Elements);
+            while (elems.Count > 0)
+            {
+                ShapeElement e = elems[0];
+                elems.RemoveAt(0);
+                e.parentShape = this;
+                if (e.Children != null) elems.AddRange(e.Children);
+            }
+        }
+
+
 
 
         public Dictionary<string, ShapeElement> CollectAndResolveReferencesForAnimation(string shapeNameForLogging)
@@ -117,7 +145,7 @@ namespace VSMC
                 }
             }
 
-            
+
             return elementsByName;
         }
 
@@ -278,14 +306,16 @@ namespace VSMC
                 }
             }
 
-            //Set step child joints to the same as their step parents.
+            //Set step child joints to the same as their step parents, but only ones from the same shape.
+            /*
             foreach (ShapeElement e in Elements)
             {
-                if (e.StepParentElement != null)
+                if (e.StepParentElement != null && e.StepParentElement.parentShape == e.parentShape)
                 {
                     e.SetJointIdRecursive(e.StepParentElement.JointId);
                 }
             }
+            */
         }
 
         /// <summary>
@@ -361,14 +391,14 @@ namespace VSMC
                 else
                 {
                     Debug.LogErrorFormat("Shape {0} has a key frame element for which the referencing shape element {1} cannot be found.", shapeName, val.Key);
-                    val.Value.ForElement = new ShapeElement();
+                    val.Value.ForElement = new ShapeElement(ShapeHolder.CurrentLoadedShape);
                 }
             }
         }
 
         public void ResolveForBeforeSerialization()
         {
-            editor.editorVersion = "VSMC2v" + Application.version;
+            editor.editorVersion = ShapeLoader.ApplicationVersion;
             foreach (ShapeElement elem in Elements)
             {
                 elem.ResolveBeforeSerialization();
@@ -478,6 +508,95 @@ namespace VSMC
             }
 
             return importData;
+        }
+
+        /// <summary>
+        /// Separates shape data into multiple shapes, each a copy but with only one root element.
+        /// Used for attachments - Should be executed immediately after loading the shape file.
+        /// </summary>
+        public Shape[] SplitShapeByRootElements()
+        {
+            Shape[] splitShapes = new Shape[Elements.Length];
+            for (int i = 0; i < splitShapes.Length; i++)
+            {
+                Shape s = new Shape();
+                s.editor = editor;
+                s.Elements = new ShapeElement[] { Elements[i] };
+                s.TextureHeight = TextureHeight;
+                s.TextureWidth = TextureWidth;
+                s.Textures = Textures;
+                s.TextureSizes = TextureSizes;
+                s.Animations = Animations; //We may have to delete unused animations here...
+                splitShapes[i] = s;
+            }
+            return splitShapes;
+        }
+
+        /// <summary>
+        /// Removes all other root shapes from this element. This may actually be a better way of handling multiple shapes.
+        /// Should be executed immediately after loading the shape file.
+        /// </summary>
+        /// <param name="code"></param>
+        public void FilterShapeByRootElement(string code)
+        {
+            ShapeElement root = Elements.FirstOrDefault(x => x.Name == code);
+            if (root == null)
+            {
+                Debug.LogError("Cannot find element with code " + code + " during root filtering. The shape will keep all elements.");
+                return;
+            }
+
+            //Need to remove animations.
+            List<string> foundShapeElements = new List<string>();
+            List<ShapeElement> t = new List<ShapeElement>();
+            t.Add(root);
+            while (t.Count > 0)
+            {
+                ShapeElement el = t[0];
+                t.RemoveAt(0);
+                foundShapeElements.Add(el.Name);
+                if (el.Children != null) t.AddRange(el.Children);
+            }
+
+            int removedKFEs = 0;
+            foreach (Animation a in Animations)
+            {
+                foreach (AnimationKeyFrame kf in a.KeyFrames)
+                {
+                    List<string> remove = new List<string>();
+                    foreach (var kvp in kf.Elements)
+                    {
+                        if (!foundShapeElements.Contains(kvp.Key, StringComparer.OrdinalIgnoreCase))
+                        {
+                            remove.Add(kvp.Key);
+                        }
+                    }
+                    foreach (string s in remove)
+                    {
+                        kf.Elements.Remove(s);
+                        removedKFEs++;
+                    }
+                }
+            }
+            Debug.Log("Removed " + removedKFEs + " animation KFEs.");
+            Elements = new ShapeElement[] { root };
+        }
+
+        /// <summary>
+        /// A different approach to loading attachment files.
+        /// This will create a 'root' shape element, and add all root elements as children of that.
+        /// If a shape is designed to be loaded as one single object, this will be more effective.
+        /// Should be executed immediately after loading the shape file.
+        /// </summary>
+        public void GroupShapeIntoSingleRootElement(string rootElemCode)
+        {
+            ShapeElement rootElem = new ShapeElement() { parentShape = this, Name = rootElemCode, Children = Elements };
+            foreach (ShapeElement e in Elements)
+            {
+                e.ParentElement = rootElem;
+                e.StepParentName = null;
+            Elements = new ShapeElement[] { rootElem };
+            }
         }
     }
 }

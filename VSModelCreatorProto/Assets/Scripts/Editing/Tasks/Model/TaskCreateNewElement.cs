@@ -23,7 +23,7 @@ namespace VSMC
              * On 'UndoTask', we remove the UID and remove the parent.
              * This results in us being in the exact same state before 'DoTask', giving us the ability to easily redo.
              */
-            createdElement = new ShapeElement();
+            createdElement = new ShapeElement(ShapeHolder.CurrentLoadedShape);
             createdElement.ResolveFacesAndTextures(TextureManager.main.loadedTextures);
             ShapeElementRegistry.main.UnregisterShapeElement(createdElement);
             if (parent != null)
@@ -35,7 +35,7 @@ namespace VSMC
             createdElement.ResolveUVForFaces();
             //We will tesselate the object and create its game object, but will move it immediately to the deletion state.
             ShapeTesselator.TesselateShapeElements(new ShapeElement[] { createdElement });
-            ShapeTesselator.ResolveMatricesForShapeElementAndChildren(createdElement);
+            ShapeTesselator.ResolveLocalMatricesForShapeElementAndChildren(createdElement);
             ShapeLoader.main.shapeHolder.CreateShapeElementGameObject(createdElement);
 
             ShapeLoader.main.shapeHolder.SendElementToDeletionLimbo(createdElement);
@@ -66,6 +66,9 @@ namespace VSMC
             //We recreate the entire element list for easy usage.
             ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
 
+            //Refresh the model order.
+            MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
+
             //Finally, select the object to make it noticable.
             ObjectSelector.main.SelectObject(createdElement.gameObject.gameObject, false, false);
         }
@@ -83,6 +86,10 @@ namespace VSMC
             {
                 ShapeHolder.CurrentLoadedShape.RemoveRootShapeElement(createdElement);
             }
+
+            //Refresh the model order.
+            MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
+
             //We recreate the entire element list for easy usage.
             ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);    
         }

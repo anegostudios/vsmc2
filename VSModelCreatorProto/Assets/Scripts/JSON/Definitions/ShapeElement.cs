@@ -165,10 +165,15 @@ namespace VSMC
         public int elementUID = -1;
 
         /// <summary>
+        /// The shape that this element is a part of.
+        /// </summary>
+        public Shape parentShape;
+
+        /// <summary>
         /// The stored mesh data for this element.
         /// </summary>
         public MeshData meshData;
-        
+
         public Matrix4x4 ParentMatrix
         {
             get
@@ -196,12 +201,24 @@ namespace VSMC
         /// <summary>
         /// The found stepparent element, to use for transform data.
         /// </summary>
-        public ShapeElement StepParentElement;
+        //public ShapeElement StepParentElement;
+
+        /// <summary>
+        /// The currently selected or found origin point for this element, if it is a root element.
+        /// This replaces the StepParentElement system in favour of attaching to stepparents, APs, and adding origin transformations.
+        /// </summary>
+        public IOriginPoint OriginPoint = new TransformOnlyOriginPoint();
+
+        /// <summary>
+        /// A list of root elements that are dependent on the transformation of this element.
+        /// In other words, the transform of these need to be udpated when the transform of this element is updated.
+        /// </summary>
+        public List<ShapeElement> DependentRootElements = new List<ShapeElement>();
 
         /// <summary>
         /// A list of step children that have been found.
         /// </summary>
-        public List<ShapeElement> CurrentStepChildren = new List<ShapeElement>();
+        //public List<ShapeElement> CurrentStepChildren = new List<ShapeElement>();
 
         /// <summary>
         /// The id of the joint attached to the parent element.
@@ -224,56 +241,58 @@ namespace VSMC
 
         [JsonConstructor]
         public ShapeElement(bool noparams = true)
-        {}
+        { }
 
         /// <summary>
         /// Create a completely new element. This will register it with a UID, but you will need to use SetParent to set an appropriate parent.
         /// </summary>
-        public ShapeElement()
+        public ShapeElement(Shape shape, string startName = "Cube")
         {
+            parentShape = shape;
             From = new double[] { 0, 0, 0 };
             To = new double[] { 1, 1, 1 };
-            Name = "Cube";
-            int nameCheckCount = 1;
+            Name = startName;
             while (ShapeElementRegistry.main.GetShapeElementByName(Name) != null)
             {
-                Name = "Cube (" + ++nameCheckCount + ")";
+                Name = IncrementName(Name);
             }
             ResolveReferencesAndUIDs();
             Faces = new Dictionary<string, ShapeElementFace>();
-            string texCode = "texture";
+            string texCode = null;
             if (ShapeHolder.CurrentLoadedShape?.Textures?.Count > 0)
             {
                 texCode = ShapeHolder.CurrentLoadedShape.Textures.First().Key;
             }
+            if (texCode == null) texCode = "null";
             for (int i = 0; i < 6; i++)
             {
                 Faces.Add(FaceNames[i], new ShapeElementFace()
                 {
                     Enabled = true,
                     Uv = new float[] { 0, 0, 1, 1 },
-                    Texture = "#" + texCode
+                    Texture = texCode == null ? null : "#" + texCode 
                 });
             }
         }
-        
-        public ShapeElement(int enabledFaceCount)
+
+        public ShapeElement(Shape shape, int enabledFaceCount, string startName = "Cube")
         {
+            parentShape = shape;
             From = new double[] { 0, 0, 0 };
             To = new double[] { 1, 1, 1 };
-            Name = "Cube";
-            int nameCheckCount = 1;
+            Name = startName;
             while (ShapeElementRegistry.main.GetShapeElementByName(Name) != null)
             {
-                Name = "Cube (" + ++nameCheckCount + ")";
+                Name = IncrementName(Name);
             }
             ResolveReferencesAndUIDs();
             Faces = new Dictionary<string, ShapeElementFace>();
-            string texCode = "texture";
+            string texCode = null;
             if (ShapeHolder.CurrentLoadedShape?.Textures?.Count > 0)
             {
                 texCode = ShapeHolder.CurrentLoadedShape.Textures.First().Key;
             }
+            if (texCode == null) texCode = "null";
             for (int i = 0; i < 6; i++)
             {
                 Faces.Add(FaceNames[i], new ShapeElementFace()
@@ -305,44 +324,6 @@ namespace VSMC
         }
 
         /// <summary>
-        /// This wil search for the step parent in the attached shape.
-        /// The shape can be itself.
-        /// </summary>
-        public void SearchForStepParentInShape(Shape shapeToSearch)
-        {
-            //Also only add a new stepparent if there isnt already a stepparent.
-            if (StepParentName != null && StepParentName.Length > 0 && StepParentElement == null)
-            {
-                StepParentElement = shapeToSearch.GetElementByName(StepParentName);
-                if (StepParentElement == null) return;
-                StepParentElement.CurrentStepChildren.Add(this);
-            }
-        }
-
-        public void ClearStepParent()
-        {
-            if (StepParentElement != null)
-            {
-                StepParentElement.CurrentStepChildren.Remove(this);
-                StepParentElement = null;
-            }
-        }
-
-        public ShapeElement GetParentOrStepParent()
-        {
-            if (StepParentElement != null) return StepParentElement;
-            return ParentElement;
-        }
-
-        public ShapeElement[] GetChildrenAndStepChildren()
-        {
-            List<ShapeElement> ch = new List<ShapeElement>();
-            if (Children != null) ch.AddRange(Children);
-            ch.AddRange(CurrentStepChildren);
-            return ch.ToArray();
-        }
-
-        /// <summary>
         /// Removes this object's parents, and removes it from its parent array.
         /// </summary>
         public void RemoveParent()
@@ -359,8 +340,9 @@ namespace VSMC
         {
             //Retesselate the shapes, and then reapply the transforms for the object.
             if (gameObject == null) return;
-            ShapeTesselator.ResolveMatricesForShapeElementAndChildren(this);
-            gameObject.ReapplyTransformsFromMeshData(true);
+            RoundElementValuesAndReduceDecimals();
+            ShapeTesselator.ResolveLocalMatricesForShapeElementAndChildren(this);
+            gameObject.ReapplyTransformsFromMeshData(true, true);
         }
 
         /// <summary>
@@ -370,6 +352,7 @@ namespace VSMC
         {
             //Retesselate the shapes, and then reapply the meshes.
             if (gameObject == null) return;
+            RoundElementValuesAndReduceDecimals();
             ShapeTesselator.RecreateMeshesForShapeElement(this);
             gameObject.RegenerateMeshFromMeshData();
         }
@@ -380,10 +363,8 @@ namespace VSMC
         public void RecreateObjectMeshAndTransforms()
         {
             if (gameObject == null) return;
-            ShapeTesselator.RecreateMeshesForShapeElement(this);
-            ShapeTesselator.ResolveMatricesForShapeElementAndChildren(this);
-            gameObject.RegenerateMeshFromMeshData();
-            gameObject.ReapplyTransformsFromMeshData(true);
+            RecreateObjectMesh();
+            RecreateTransforms();
         }
         #endregion
 
@@ -394,14 +375,24 @@ namespace VSMC
         public List<ShapeElement> GetParentPath()
         {
             List<ShapeElement> path = new List<ShapeElement>();
-            ShapeElement parentElem = this.GetParentOrStepParent();
+            ShapeElement parentElem = this.ParentElement; //We don't want to use step parents here.
             while (parentElem != null)
             {
                 path.Add(parentElem);
-                parentElem = parentElem.GetParentOrStepParent();
+                parentElem = parentElem.ParentElement;
             }
             path.Reverse();
             return path;
+        }
+
+        public ShapeElement GetRootElement()
+        {
+            ShapeElement e = this;
+            while (e.ParentElement != null)
+            {
+                e = e.ParentElement;
+            }
+            return e;
         }
 
         public List<string> GetNamesOfThisAndAllChildren()
@@ -444,6 +435,7 @@ namespace VSMC
 
         /// <summary>
         /// Should this object be hidden in the editor? Will return yes if this or any parents are set to hide.
+        /// Will also be used to determine if this shape element should function as an attachment.
         /// </summary>
         /// <returns></returns>
         public bool ShouldHideFromView()
@@ -463,7 +455,7 @@ namespace VSMC
             return ParentElement.ShouldMinimizeInUI();
         }
 
-        public void RecalculateHiddenStatus()
+        public void RecalculateHiddenStatus(bool notifyOthers = true)
         {
             //There is a more efficient way of doing this by caching the stored hidden status, but this is more robust and easier to code.
             //After testing - It's actually pretty quick.
@@ -479,8 +471,12 @@ namespace VSMC
             {
                 foreach (ShapeElement child in Children)
                 {
-                    child.RecalculateHiddenStatus();
+                    child.RecalculateHiddenStatus(false);
                 }
+            }
+            if (notifyOthers)
+            {
+                MultiShapeManager.main.OnElementVisibilityRecalculated(this);
             }
         }
 
@@ -584,7 +580,7 @@ namespace VSMC
             // R = rotate, S = scale, T = translate
             // Version 0: R * S * T
             // Version 1: T * S * R
-            
+
             //Force anim version of 0.
 
 
@@ -651,7 +647,7 @@ namespace VSMC
                     Children[i].CacheInverseTransformMatrixRecursive();
                 }
             }
-        } 
+        }
 
 
         /// <summary>
@@ -667,7 +663,6 @@ namespace VSMC
                 {
                     ShapeElementFace f = val.Value;
                     f.ResolveTexture(textures);
-                    if (!f.Enabled) continue;
                     BlockFacing facing = BlockFacing.FromFirstLetter(val.Key);
                     FacesResolved[facing.index] = f;
                 }
@@ -680,8 +675,13 @@ namespace VSMC
                 {
                     FacesResolved[i] = new ShapeElementFace();
                     FacesResolved[i].Enabled = false;
+                    FacesResolved[i].autoResolutionForUV = true;
+                    FacesResolved[i].snapUV = true;
                 }
-                FacesResolved[i].AutomaticallyDisableAutoUVOrSnapping(GetFaceDimension(i));
+                else
+                {
+                    FacesResolved[i].AutomaticallyDisableAutoUVOrSnapping(GetFaceDimension(i));
+                }
             }
 
             if (Children != null)
@@ -749,7 +749,7 @@ namespace VSMC
         {
             mat *= Matrix4x4.Translate(new Vector3((float)RotationOrigin[0], (float)RotationOrigin[1], (float)RotationOrigin[2]));
             if (RotationX != 0.0)
-            {   
+            {
                 mat *= Matrix4x4.Rotate(Quaternion.AngleAxis((float)RotationX, Vector3.right));
             }
             if (RotationY != 0.0)
@@ -765,7 +765,7 @@ namespace VSMC
             return mat;
         }
 
-        
+
 
         /// <summary>
         /// A specific function to rotate a vector only by this objects rotation values.
@@ -785,9 +785,9 @@ namespace VSMC
         /// </summary>
         public Vector3 RotateFromWorldToLocalBasedOnParentRotation(Vector3 world)
         {
-            if (GetParentOrStepParent() != null)
+            if (ParentElement != null)
             {
-                return GetParentOrStepParent().meshData.storedMatrix.inverse.rotation * world;
+                return ParentMatrix.inverse.rotation * world;
             }
             return world;
         }
@@ -804,11 +804,6 @@ namespace VSMC
             string json = JsonConvert.SerializeObject(this);
             ShapeElement elem = JsonConvert.DeserializeObject<ShapeElement>(json);
             elem.ParentElement = this.ParentElement;
-            elem.StepParentElement = this.StepParentElement;
-            if (StepParentElement != null)
-            {
-                StepParentElement.CurrentStepChildren.Add(elem);
-            }
             elem.ResolveReferencesAndUIDs();
             List<ShapeElement> allElem = new List<ShapeElement>() { elem };
             while (allElem.Count > 0)
@@ -828,7 +823,7 @@ namespace VSMC
             }
             elem.ResolveFacesAndTextures(TextureManager.main.loadedTextures);
             ShapeTesselator.TesselateShapeElements(new ShapeElement[] { elem });
-            ShapeTesselator.ResolveMatricesForShapeElementAndChildren(elem);
+            ShapeTesselator.ResolveLocalMatricesForShapeElementAndChildren(elem);
             ShapeLoader.main.shapeHolder.CreateShapeElementGameObject(elem);
             ShapeLoader.main.shapeHolder.SendElementToDeletionLimbo(elem, true);
 
@@ -852,6 +847,7 @@ namespace VSMC
 
         public void ResolveUVForFaces()
         {
+            RoundUVValuesAndReduceDecimals();
             if (autoUnwrap && ShapeHolder.CurrentLoadedShape.editor.entityTextureMode)
             {
                 UVUnwrapper.DoAutoUV(this);
@@ -884,7 +880,7 @@ namespace VSMC
             }
             return new Vector2(0, 0);
         }
-        
+
         public float Width
         {
             get
@@ -946,7 +942,7 @@ namespace VSMC
                 }
             }
         }
-        
+
         public float GetFaceBrightness(int faceIndex)
         {
             Vector3 facing = BlockFacing.ALLFACES[faceIndex].vector;
@@ -958,5 +954,52 @@ namespace VSMC
 
             return Mathf.Min(1, nb);
         }
+
+        public ElementCodeInShape GetElementCodeInShape()
+        {
+            return new ElementCodeInShape()
+            {
+                shapePath = parentShape.shapeLoadedFromPath,
+                element = Name
+            };
+        }
+
+        public string GetOriginString()
+        {
+            if (OriginPoint == null || OriginPoint is TransformOnlyOriginPoint) return "";
+            if (OriginPoint is StepparentOriginPoint spOrig)
+            {
+                return spOrig.elemCode.element + " in " + spOrig.elemCode.shapePath;
+            }
+            if (OriginPoint is AttachmentPointOriginPoint apOrig)
+            {
+                return "(AP) " + apOrig.apCode + " in " + apOrig.rootElemCode.shapePath;
+            }
+            return "";
+        }
+
+        public void RoundElementValuesAndReduceDecimals()
+        {
+            //precision level - Either 3 or 6 decimal points.
+            double p = ProgramPreferences.UseHighPrecisionMode.GetValue() ? 1000000 : 1000;
+            From = new double[] { Mathf.RoundToInt((float)(From[0] * p)) / p, Mathf.RoundToInt((float)(From[1] * p)) / p, Mathf.RoundToInt((float)(From[2] * p)) / p };
+            To = new double[] { Mathf.RoundToInt((float)(To[0] * p)) / p, Mathf.RoundToInt((float)(To[1] * p)) / p, Mathf.RoundToInt((float)(To[2] * p)) / p };
+            RotationOrigin = new double[] { Mathf.RoundToInt((float)(RotationOrigin[0] * p)) / p, Mathf.RoundToInt((float)(RotationOrigin[1] * p)) / p, Mathf.RoundToInt((float)(RotationOrigin[2] * p)) / p };
+            RotationX = Mathf.RoundToInt((float)(RotationX * p)) / p;
+            RotationY = Mathf.RoundToInt((float)(RotationY * p)) / p;
+            RotationZ = Mathf.RoundToInt((float)(RotationZ * p)) / p;
+        }
+
+        public void RoundUVValuesAndReduceDecimals()
+        {
+            //precision level - Either 3 or 6 decimal points.
+            double p = ProgramPreferences.UseHighPrecisionMode.GetValue() ? 1000000 : 1000;
+            this.entityTextureUV = new double[] { Mathf.RoundToInt((float)(entityTextureUV[0] * p)) / p, Mathf.RoundToInt((float)(entityTextureUV[1] * p)) / p };
+            for (int i = 0; i < 6; i++)
+            {
+                FacesResolved[i].RoundUVValuesAndReduceDecimals();
+            }
+        }
+
     }
 }

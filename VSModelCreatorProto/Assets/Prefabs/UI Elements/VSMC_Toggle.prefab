@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8348074228610284338}
   - component: {fileID: 5134414406666989933}
   - component: {fileID: 3925320981201524340}
+  - component: {fileID: 6507310008156389592}
   m_Layer: 5
   m_Name: VSMC_Toggle
   m_TagString: Untagged
@@ -107,6 +108,18 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &6507310008156389592
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1281160175328025228}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 312ec54c4b0f433ee9596b9a10d748af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4305738237410075450
 GameObject:
   m_ObjectHideFlags: 0

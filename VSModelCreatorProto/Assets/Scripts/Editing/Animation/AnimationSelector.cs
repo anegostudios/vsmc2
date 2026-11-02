@@ -10,7 +10,7 @@ namespace VSMC
     {
         public static AnimationSelector main;
         
-        UnityEvent<Animation> OnAnimationSelected;
+        UnityEvent<Animation, bool> OnAnimationSelected;
         UnityEvent<Animation> OnAnimationDeselected;
         Animation cSelected;
 
@@ -18,7 +18,7 @@ namespace VSMC
         {
             main = this;
             cSelected = null;
-            OnAnimationSelected = new UnityEvent<Animation>();
+            OnAnimationSelected = new UnityEvent<Animation, bool>();
             OnAnimationDeselected = new UnityEvent<Animation>();
         }
 
@@ -37,12 +37,7 @@ namespace VSMC
             return cSelected;
         }
 
-        public void SelectFromUIElement(AnimationEntryPrefab animEntry)
-        {
-            Select(ShapeHolder.CurrentLoadedShape.Animations.First(x => { return x.Code == animEntry.animCode; }));
-        }
-
-        public void Select(Animation animation)
+        public void Select(Animation animation, bool wasFromClick = false)
         {
             if (EditModeManager.main.cEditMode != VSEditMode.Animation)
             {
@@ -52,7 +47,7 @@ namespace VSMC
             if (IsAnySelected()) DeselectCurrent();
 
             cSelected = animation;
-            OnAnimationSelected.Invoke(animation);
+            OnAnimationSelected.Invoke(animation, wasFromClick);
         }
 
         public void DeselectCurrent()
@@ -63,7 +58,7 @@ namespace VSMC
             OnAnimationDeselected.Invoke(deselected);
         }
 
-        public void RegisterForOnAnimationSelected(UnityAction<Animation> toCall)
+        public void RegisterForOnAnimationSelected(UnityAction<Animation, bool> toCall)
         {
             OnAnimationSelected.AddListener(toCall);
         }
