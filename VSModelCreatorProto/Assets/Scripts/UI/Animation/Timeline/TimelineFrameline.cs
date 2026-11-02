@@ -50,7 +50,7 @@ public class TimelineFrameline : MonoBehaviour
 
     private void Start()
     {
-        SetPropertiesOfFrameline(120);
+        //SetPropertiesOfFrameline(120);
     }
 
     public void PointerDown(BaseEventData data)

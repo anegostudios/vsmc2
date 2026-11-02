@@ -17,6 +17,7 @@ namespace VSMC {
     public class ShapeLoader : MonoBehaviour
     {
         public static ShapeLoader main;
+        public static string ApplicationVersion;
 
         [Header("Unity References")]
         public ShapeHolder shapeHolder;
@@ -26,6 +27,7 @@ namespace VSMC {
         public TMP_Text currentlyLoaded;
 
         public GameObject saveDisabledFacesToggleIcon;
+        public GameObject useHighPrecisionToggleIcon;
 
         string storedSaveLocation;
 
@@ -41,7 +43,8 @@ namespace VSMC {
         DateTime autosaveStartTime;
 
         private void Awake()
-        {
+        {   
+            ApplicationVersion = Application.productName + "v" + Application.version;
             main = this;
             onShapeLoadedEvent = new UnityEvent<Shape, LoadingContext>();
             beforeShapeSaveEvent = new UnityEvent<Shape>();
@@ -52,6 +55,7 @@ namespace VSMC {
         {
             UndoManager.RegisterForAnyActionDoneOrUndone(OnAnyActionDone);
             saveDisabledFacesToggleIcon.SetActive(ProgramPreferences.SaveDisabledFaces.GetValue());
+            useHighPrecisionToggleIcon.SetActive(ProgramPreferences.SaveDisabledFaces.GetValue());
         }
 
         void Update()
@@ -111,9 +115,11 @@ namespace VSMC {
                 File.WriteAllText(autosavePath, serializedShape);
                 SaveManager.main.OnModelSave(autosavePath, true);
             }
-            catch
+            catch (Exception e)
             {
-                autosaveSuccessCode = 2;
+                Debug.Log("Autosave failed due to exception.");
+                Debug.LogException(e);
+                autosaveSuccessCode = 3;
                 return;
             }
 
@@ -177,15 +183,13 @@ namespace VSMC {
             newShape.AddRootShapeElement(initialElem);
 
             newShape.Textures = new System.Collections.Generic.Dictionary<string, string>();
-            newShape.Textures.Add("texture", "");
-
             newShape.ResolveFacesAndTextures(new StreamingContext(StreamingContextStates.File, JSONStreamingContexts.standard));
 
 
             shapeHolder.OnShapeLoaded(newShape, true);
+            onShapeLoadedEvent.Invoke(newShape, null);
             hierarchy.StartCreatingElementPrefabs(newShape);
             EditModeManager.main.SelectMode(VSEditMode.Model, forceRefresh: true);
-            onShapeLoadedEvent.Invoke(newShape, null);
             InfoLogger.main.LogText("New shape created.");
         }
 
@@ -197,10 +201,23 @@ namespace VSMC {
             SaveManager.main.BeforeFileLoad();
             Shape loadedShape = ShapeAccessor.DeserializeShapeFromFile(filePath, JSONStreamingContexts.standard);
             shapeHolder.OnShapeLoaded(loadedShape);
+            onShapeLoadedEvent.Invoke(loadedShape, context);
             hierarchy.StartCreatingElementPrefabs(loadedShape);
             EditModeManager.main.SelectMode(VSEditMode.Model, forceRefresh: true);
-            onShapeLoadedEvent.Invoke(loadedShape, context);
             InfoLogger.main.LogText("Loaded shape successfully.");
+        }
+
+        public void ReloadShape()
+        {
+            if (storedSaveLocationForFile == "" || storedSaveLocationForFile == null)
+            {
+                return;
+            }
+            VSEditMode editMode = EditModeManager.main.cEditMode;
+            LoadShape(storedSaveLocationForFile);
+            EditModeManager.main.SelectMode(editMode, forceRefresh: true);
+            InfoLogger.main.LogText("Reloaded shape.");
+
         }
 
         public void ImportShape(string filePath)
@@ -240,7 +257,6 @@ namespace VSMC {
             InfoLogger.main.LogText("Successfully saved shape.");
         }
 
-
         public void SaveShapeWithFileSelect()
         {
             if (ShapeHolder.CurrentLoadedShape == null)
@@ -248,13 +264,14 @@ namespace VSMC {
                 Debug.Log("Trying to save nothing...");
                 return;
             }
-            string p = "shape.json";
+            string name = "shape.json";
+            string path = AssetPathManager.main.GetFirstPreferredAssetPath();
             if (!(storedSaveLocationForFile == "" || storedSaveLocationForFile == null))
             {
-                p = Path.GetFileName(storedSaveLocationForFile);
+                name = Path.GetFileName(storedSaveLocationForFile);
+                path = Path.GetDirectoryName(storedSaveLocationForFile);
             }
-            
-            string saveTo = StandaloneFileBrowser.SaveFilePanel("Save file path", Path.GetDirectoryName(storedSaveLocationForFile), p, "json");
+            string saveTo = StandaloneFileBrowser.SaveFilePanel("Save file path", path, name, "json");
             if (saveTo == null || saveTo.Length < 1)
             {
                 return;
@@ -282,9 +299,11 @@ namespace VSMC {
         {
             if (storedSaveLocation == null || storedSaveLocation == "")
             {
+                GameWindowTitleSetterWindows.SetWindowText(null);
                 currentlyLoaded.text = "";
                 return;
             }
+            GameWindowTitleSetterWindows.SetWindowText(AssetPathManager.main.GetRelativePathForFile(storedSaveLocation, "shapes"));
             currentlyLoaded.text = "Editing " + Path.GetFileName(storedSaveLocation);
         }
 
@@ -294,5 +313,11 @@ namespace VSMC {
             saveDisabledFacesToggleIcon.SetActive(ProgramPreferences.SaveDisabledFaces.GetValue());
         }
 
+        public void ToggleHighPrecisionMode()
+        {
+            ProgramPreferences.UseHighPrecisionMode.SetValue(!ProgramPreferences.UseHighPrecisionMode.GetValue());
+            useHighPrecisionToggleIcon.SetActive(ProgramPreferences.UseHighPrecisionMode.GetValue());
+        }
+        
     }
 }

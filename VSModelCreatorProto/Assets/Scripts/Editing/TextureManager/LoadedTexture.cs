@@ -33,10 +33,10 @@ namespace VSMC
             path = texturePath;
         }
 
-        public LoadedTextureError LoadTextureFromCodeAndPath(Shape forShape)
+        public LoadedTextureError LoadTextureFromCodeAndPath(Shape forShape, bool refresh = false)
         {
             //Probably a good idea to unload an already loaded texture if it exists.
-            if (loadedTexture != null)
+            if (loadedTexture != null && !refresh)
             {
                 GameObject.Destroy(loadedTexture);
                 loadedTexture = null;
@@ -52,8 +52,11 @@ namespace VSMC
             storedFilepath = fullPath;
             if (!File.Exists(fullPath)) //Failed to load, just load a plain white texture.
             {
-                loadedTexture = new Texture2D(32, 32);
-                ResolveTextureSize(forShape);
+                if (!refresh)
+                {
+                    loadedTexture = new Texture2D(32, 32);
+                    ResolveTextureSize(forShape);
+                }
                 return LoadedTextureError.InvalidFilePath;
             }
 
@@ -62,16 +65,26 @@ namespace VSMC
             {
                 Texture2D load = new Texture2D(0, 0);
                 load.LoadImage(File.ReadAllBytes(fullPath));
+
+                if (refresh && loadedTexture != null)
+                {
+                    GameObject.Destroy(loadedTexture);
+                    loadedTexture = null;
+                }
+
                 loadedTexture = load;
                 loadedTexture.filterMode = FilterMode.Point;
                 lastWriteTimeForFile = File.GetLastWriteTime(fullPath);
             }
             catch (System.Exception e)
             {
-                Debug.Log("Failed to load image " + code);
-                Debug.LogException(e);
-                loadedTexture = new Texture2D(32, 32);
-                ResolveTextureSize(forShape);
+                Debug.LogError("Failed to load image " + code);
+                if (!refresh)
+                {
+                    loadedTexture = new Texture2D(32, 32);
+                    ResolveTextureSize(forShape);
+                    Debug.LogException(e);
+                }
                 return LoadedTextureError.CouldntLoad;
             }
             ResolveTextureSize(forShape);
@@ -121,8 +134,8 @@ namespace VSMC
             {
                 if (lastWriteTimeForFile != File.GetLastWriteTime(storedFilepath))
                 {
-                    LoadTextureFromCodeAndPath(forShape);
                     Debug.Log("Updating texture at " + storedFilepath + " due to changes.");
+                    LoadTextureFromCodeAndPath(forShape, true);
                     return true;
                 }
             }

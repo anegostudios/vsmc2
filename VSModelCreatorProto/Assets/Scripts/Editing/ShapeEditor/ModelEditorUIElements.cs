@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -48,6 +49,7 @@ public class ModelEditorUIElements : MonoBehaviour
     public GameObject stepparentInputGameObject;
     public GameObject nonRootObjectStepparentWarning;
     public GameObject couldntFindStepParentElementWarning;
+    public GameObject createNewOriginElementWarningOverlay;
 
     private void Start()
     {
@@ -59,21 +61,34 @@ public class ModelEditorUIElements : MonoBehaviour
         localOrGlobalOption.AddListenerOnValueChanged(SetLocalOrGlobalMode);
         elemName.onEndEdit.AddListener(val => { elemName.SetTextWithoutNotify(shapeEditor.RenameElement(val)); });
 
-        sizeX.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.X, float.Parse(val)); });
-        sizeY.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.Y, float.Parse(val)); });
-        sizeZ.onEndEdit.AddListener(val => { shapeEditor.SetSize(EnumAxis.Z, float.Parse(val)); });
+        sizeX.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetSize(EnumAxis.X, fVal); } });
+        sizeY.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetSize(EnumAxis.Y, fVal); } });
+        sizeZ.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetSize(EnumAxis.Z, fVal); } });
+        sizeX.onEndEdit.AddListener(val => { FinalizeInputTask(); });
+        sizeY.onEndEdit.AddListener(val => { FinalizeInputTask(); });
+        sizeZ.onEndEdit.AddListener(val => { FinalizeInputTask(); });
 
-        posX.onEndEdit.AddListener(val => { shapeEditor.SetPosition(EnumAxis.X, float.Parse(val)); });
-        posY.onEndEdit.AddListener(val => { shapeEditor.SetPosition(EnumAxis.Y, float.Parse(val)); });
-        posZ.onEndEdit.AddListener(val => { shapeEditor.SetPosition(EnumAxis.Z, float.Parse(val)); });
+        posX.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetPosition(EnumAxis.X, fVal); } });
+        posY.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetPosition(EnumAxis.Y, fVal); } });
+        posZ.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetPosition(EnumAxis.Z, fVal); } });
+        posX.onEndEdit.AddListener(val => { FinalizeInputTask(); });
+        posY.onEndEdit.AddListener(val => { FinalizeInputTask(); });
+        posZ.onEndEdit.AddListener(val => { FinalizeInputTask(); });
 
-        originX.onEndEdit.AddListener(val => { shapeEditor.SetRotationOrigin(EnumAxis.X, float.Parse(val)); });
-        originY.onEndEdit.AddListener(val => { shapeEditor.SetRotationOrigin(EnumAxis.Y, float.Parse(val)); });
-        originZ.onEndEdit.AddListener(val => { shapeEditor.SetRotationOrigin(EnumAxis.Z, float.Parse(val)); });
 
-        rotXSlider.AddToOnRotationSetEvent(val => { shapeEditor.SetRotation(EnumAxis.X, rotXSlider.Val); });
-        rotYSlider.AddToOnRotationSetEvent(val => { shapeEditor.SetRotation(EnumAxis.Y, rotYSlider.Val); });
-        rotZSlider.AddToOnRotationSetEvent(val => { shapeEditor.SetRotation(EnumAxis.Z, rotZSlider.Val); });
+        originX.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetRotationOrigin(EnumAxis.X, fVal); } });
+        originY.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetRotationOrigin(EnumAxis.Y, fVal); } });
+        originZ.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetRotationOrigin(EnumAxis.Z, fVal); } });
+        originX.onEndEdit.AddListener(val => { FinalizeInputTask(); });
+        originY.onEndEdit.AddListener(val => { FinalizeInputTask(); });
+        originZ.onEndEdit.AddListener(val => { FinalizeInputTask(); });
+
+        rotXSlider.AddToOnRotationSetEvent(val => { shapeEditor.SetRotation(EnumAxis.X, val); });
+        rotYSlider.AddToOnRotationSetEvent(val => { shapeEditor.SetRotation(EnumAxis.Y, val); });
+        rotZSlider.AddToOnRotationSetEvent(val => { shapeEditor.SetRotation(EnumAxis.Z, val); });
+        rotXSlider.AddToOnRotationFinalizedEvent(val => FinalizeInputTask());
+        rotYSlider.AddToOnRotationFinalizedEvent(val => FinalizeInputTask());
+        rotZSlider.AddToOnRotationFinalizedEvent(val => FinalizeInputTask());
 
         stepparentInput.onEndEdit.AddListener(val => { shapeEditor.SetStepParentElement(val); });
 
@@ -135,7 +150,7 @@ public class ModelEditorUIElements : MonoBehaviour
         {
             stepparentInputGameObject.SetActive(true);
             nonRootObjectStepparentWarning.SetActive(false);
-            couldntFindStepParentElementWarning.SetActive(elem.StepParentName != "" && elem.StepParentName != null && elem.StepParentElement == null);
+            couldntFindStepParentElementWarning.SetActive(elem.StepParentName != "" && elem.StepParentName != null && elem.OriginPoint == null);
         }
         else
         {
@@ -153,6 +168,12 @@ public class ModelEditorUIElements : MonoBehaviour
     {
         if (!ObjectSelector.main.IsAnySelected()) return;
         OnElementSelected(ObjectSelector.main.GetCurrentlySelected().GetComponent<ShapeElementGameObject>());
+    }
+
+    public void FinalizeInputTask()
+    {
+        UndoManager.main.MergeTopTasks();
+        RefreshSelectionValues();
     }
 
     public void RefreshSelectables()
@@ -178,6 +199,21 @@ public class ModelEditorUIElements : MonoBehaviour
     {
         gizmoController.SetGlobalLocalTranslation(val == 1);
         //RefreshSelectionValues();
+    }
+
+    public void OnCreateNewOriginElementButtonClicked()
+    {
+        //Check for any step parents or attached objects.
+        foreach (ShapeElement e in ShapeHolder.CurrentLoadedShape.Elements)
+        {
+            if (!string.IsNullOrEmpty(e.StepParentName) || e.OriginPoint is not TransformOnlyOriginPoint ||
+            (e.OriginPoint as TransformOnlyOriginPoint).HasAnyEdits())
+            {
+                createNewOriginElementWarningOverlay.SetActive(true);
+                return;
+            }
+        }
+        shapeEditor.CreateNewOriginElement();
     }
 
 }

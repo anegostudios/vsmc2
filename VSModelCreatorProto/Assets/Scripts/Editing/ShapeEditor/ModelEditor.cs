@@ -45,6 +45,11 @@ namespace VSMC
         public void OnAnyAction()
         {
             if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
+            if (EventSystem.current.currentSelectedGameObject != null && EventSystem.current.currentSelectedGameObject.GetComponentInChildren<TMP_InputField>() != null)
+            {
+                //Don't refresh the UI if we are still interacting with it.
+                return;
+            }
             uiElements.RefreshSelectionValues();
         }
 
@@ -72,10 +77,22 @@ namespace VSMC
         public void SetSize(EnumAxis axis, float value)
         {
             if (!objectSelector.IsAnySelected()) return;
+            bool negative = value < 0;
+            if (negative)
+            {
+                value = 0;
+            }
             ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
-            TaskSetElementSize ssTask = new TaskSetElementSize(cElem, axis, value);
-            ssTask.DoTask();
-            UndoManager.main.CommitTask(ssTask);
+            if (cElem.To[(int)axis] - cElem.From[(int)axis] != value) //If the size is already the same, don't set it.
+            {
+                TaskSetElementSize ssTask = new TaskSetElementSize(cElem, axis, value);
+                ssTask.DoTask();
+                UndoManager.main.CommitTask(ssTask);
+            }
+            if (negative)
+            {
+                uiElements.RefreshSelectionValues(); 
+            }
         }
 
         public void SetPosition(EnumAxis axis, float value)
@@ -136,7 +153,7 @@ namespace VSMC
         {
             if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
             ShapeElement cElem = null;
-            if (objectSelector.IsAnySelected())
+            if (objectSelector.IsAnySelected() && !Input.GetKey(KeyCode.LeftShift))
             {
                 cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
             }
@@ -150,7 +167,7 @@ namespace VSMC
         {
             if (EditModeManager.main.cEditMode != VSEditMode.Model) return;
             ShapeElement cElem = null;
-            if (objectSelector.IsAnySelected())
+            if (objectSelector.IsAnySelected() && !Input.GetKey(KeyCode.LeftShift))
             {
                 cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
             }
@@ -164,10 +181,18 @@ namespace VSMC
         {
             if (!objectSelector.IsAnySelected()) return;
             ShapeElement cElem = objectSelector.GetCurrentlySelected().GetComponent<ShapeElementGameObject>().element;
-                
+
+            //Move onto the next object after deletion.
+            int selIndex = elementHierarchyManager.allShapeElems.IndexOf(cElem);
+
             TaskDeleteElement deTask = new TaskDeleteElement(cElem);
             deTask.DoTask();
             UndoManager.main.CommitTask(deTask);
+
+            if (selIndex < ShapeHolder.CurrentLoadedShape.Elements.Length)
+            {
+                ObjectSelector.main.SelectObject(elementHierarchyManager.GetValidElementFromIndex(selIndex).gameObject.gameObject, false, false);
+            }
         }
 
         /// <summary>
@@ -307,6 +332,13 @@ namespace VSMC
             TaskResizeElement resizeAllTask = new TaskResizeElement(null, true, resizeAmount, scaleUVsToggle.isOn);
             resizeAllTask.DoTask();
             UndoManager.main.CommitTask(resizeAllTask);
+        }
+
+        public void CreateNewOriginElement()
+        {
+            TaskCreateNewOriginElement createOriginTask = new TaskCreateNewOriginElement();
+            createOriginTask.DoTask();
+            UndoManager.main.CommitTask(createOriginTask);
         }
     }
 }

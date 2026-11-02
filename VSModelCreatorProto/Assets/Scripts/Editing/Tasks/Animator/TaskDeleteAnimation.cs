@@ -19,9 +19,9 @@ namespace VSMC
 
         public override void DoTask()
         {
+            AnimationSelector.main.DeselectCurrent();
             ShapeHolder.CurrentLoadedShape.Animations =
             ShapeHolder.CurrentLoadedShape.Animations.RemoveAt(removalIndex);
-            AnimationSelector.main.DeselectCurrent();
             AnimationEditorManager.main.OnAnimationDataChanged();
         }
 

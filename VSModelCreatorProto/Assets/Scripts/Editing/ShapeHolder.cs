@@ -52,22 +52,12 @@ namespace VSMC
 
             foreach (ShapeElement elem in shape.Elements)
             {
+                ShapeTesselator.ResolveAllLocalMatricesForRootShapeElement(elem);
                 CreateShapeElementGameObject(elem);
             }
 
-            if (shape.isBackdropOrAttachmentShape) RemovePropertiesOnBackdrops(shape.Elements);
-
         }
         
-        public void RemovePropertiesOnBackdrops(ShapeElement[] elements)
-        {
-            foreach (ShapeElement elem in elements)
-            {
-                elem.gameObject.GetComponent<Collider>().enabled = false;
-                elem.gameObject.GetComponent<MeshRenderer>().material = customMaterial;
-                if (elem.Children != null) RemovePropertiesOnBackdrops(elem.Children);
-            }
-        }
 
         /// <summary>
         /// Creates a gameobject for a specific element (and its children, optional).
@@ -93,11 +83,14 @@ namespace VSMC
             {
                 Destroy(child.gameObject);
             }
-            foreach (Transform joint in jointParents)
+            foreach (List<Transform> joints in jointParentsForRootElements.Values)
             {
-                foreach (Transform child in joint.transform)
+                foreach (Transform joint in joints)
                 {
-                    Destroy(child.gameObject);
+                    foreach (Transform child in joint.transform)
+                    {
+                        Destroy(child.gameObject);
+                    }
                 }
             }
             CurrentLoadedShape = null;
@@ -105,22 +98,32 @@ namespace VSMC
 
         public override void ReparentGameObjectsByJoints()
         {
+            jointParentsForRootElements = new Dictionary<ShapeElement, List<Transform>>();
+            foreach (ShapeElement e in GetShape().Elements)
+            {
+                ReparentRootGameObjectsByJoints(e);
+            }
+        }
+
+        public void ReparentRootGameObjectsByJoints(ShapeElement root)
+        {
             List<ShapeElement> elements = new List<ShapeElement>();
-            elements.AddRange(CurrentLoadedShape.Elements);
+            elements.Add(root);
+            jointParentsForRootElements.Add(root, new List<Transform>());
             while (elements.Count > 0)
             {
                 ShapeElement cElem = elements[0];
                 elements.RemoveAt(0);
                 if (cElem.Children != null) elements.AddRange(cElem.Children);
-                
+
                 //Create joint IDs if needed.
-                while (jointParents.Count <= cElem.JointId + 1)
+                while (jointParentsForRootElements[root].Count <= cElem.JointId + 1)
                 {
-                    GameObject newJoint = new GameObject("Joint " + jointParents.Count);
+                    GameObject newJoint = new GameObject("Joint " + jointParentsForRootElements[root].Count);
                     newJoint.transform.parent = jointParentParent;
-                    jointParents.Add(newJoint.transform);
+                    jointParentsForRootElements[root].Add(newJoint.transform);
                 }
-                cElem.gameObject.transform.SetParent(jointParents[cElem.JointId], false);
+                cElem.gameObject.transform.SetParent(jointParentsForRootElements[root][cElem.JointId], false);
             }
         }
 

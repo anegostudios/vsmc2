@@ -44,22 +44,21 @@ namespace VSMC
     public class Animation
     {
 
-        [JsonProperty(Order = -2)]
+        [JsonProperty(Order = -3)]
         public string Name;
 
-        [JsonProperty(Order = -1)]
+        [JsonProperty(Order = -2)]
         public string Code;
 
-        [JsonProperty("quantityframes")]
-        public int QuantityFrames;
-        
-        /*
         /// <summary>
         /// A group name that helps seperate animations in the editor.
         /// </summary>
-        [JsonProperty]
-        public string GroupInEditor;
-        */
+        [JsonProperty(Order = -1)]
+        public string CategoryInEditor;
+
+        [JsonProperty("quantityframes")]
+        public int QuantityFrames;
+       
 
         [JsonProperty]
         public int Version;
@@ -70,11 +69,11 @@ namespace VSMC
         [JsonProperty("keyframes", Order = int.MaxValue)]
         public AnimationKeyFrame[] KeyFrames;
 
-        [JsonProperty]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
         [JsonConverter(typeof(StringEnumConverter))]
         public EnumEntityActivityStoppedHandling OnActivityStopped = EnumEntityActivityStoppedHandling.Rewind;
-
-        [JsonProperty]
+        
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
         [JsonConverter(typeof(StringEnumConverter))]
         public EnumEntityAnimationEndHandling OnAnimationEnd = EnumEntityAnimationEndHandling.Repeat;
 
@@ -126,6 +125,15 @@ namespace VSMC
             {
                 Debug.LogWarning("Attempting animation with no keyframes.");
                 //throw new Exception("Animation '" + Code + "' has no keyframes, this will cause other errors every time it is ticked");
+            }
+
+            //Round the animation values here.
+            foreach (AnimationKeyFrame kf in KeyFrames)
+            {
+                foreach (AnimationKeyFrameElement kfe in kf.Elements.Values)
+                {
+                    kfe.RoundValuesAndReduceDecimals();
+                }
             }
 
             if (jointsById.Count >= GlobalConstants.MaxAnimatedElements)

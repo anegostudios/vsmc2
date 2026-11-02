@@ -9,6 +9,7 @@ public class SaveOverlayManager : MonoBehaviour
     public static SaveOverlayManager main;
 
     public GameObject saveOverlay;
+    public GameObject discardButton;
     public TMP_Text saveOverlayTitle;
     public TMP_Text saveOverlayBody;
 
@@ -34,6 +35,23 @@ public class SaveOverlayManager : MonoBehaviour
         saveOverlayBody.text = bodyTextP1 + (addConfirmText ? "\n\nDo you want to save?" : "");
         currentOnCancel = onCancel;
         currentOnSaveOrDiscard = onSaveOrDiscard;
+        discardButton.SetActive(true);
+        saveOverlay.SetActive(true);
+    }
+
+    public void OpenSaveOverlayWithFunctionsForMustSave(UnityAction onCancel, UnityAction onSave, string titleText, string bodyTextP1, bool addConfirmText = true, bool forcePopup = false)
+    {
+        //No need to prompt for a save if there is nothing to save...
+        if (!forcePopup && (ShapeHolder.CurrentLoadedShape == null || !UndoManager.main.HasAnyActionBeenCommitted()))
+        {
+            onSave.Invoke();
+            return;
+        }
+        saveOverlayTitle.text = titleText;
+        saveOverlayBody.text = bodyTextP1 + (addConfirmText ? "\n\nDo you want to save?" : "");
+        currentOnCancel = onCancel;
+        currentOnSaveOrDiscard = onSave;
+        discardButton.SetActive(false);
         saveOverlay.SetActive(true);
     }
 

@@ -17,11 +17,13 @@ public class TaskAddNewAttachmentPoint : IEditTask
     {
         LoadedAP ap = new LoadedAP(ShapeElementRegistry.main.GetShapeElementByUID(apParentUID)) { code = apCode };
         AttachmentPointsManager.main.AddNewAP(ap);
+        AttachmentPointsManager.main.OnAnyAPPropertyChanged();
     }
 
     public override void UndoTask()
     {
         AttachmentPointsManager.main.RemoveAP(AttachmentPointsManager.main.GetLoadedAPFromCode(apCode));
+        AttachmentPointsManager.main.OnAnyAPPropertyChanged();
     }
 
     public override VSEditMode GetRequiredEditMode()

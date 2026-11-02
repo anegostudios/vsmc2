@@ -28,12 +28,12 @@ public class APUIEntry : MonoBehaviour
 
     public void OnSelected()
     {
-        backgroundImage.color = BackdropAndAttachmentMenuManager.main.selectedColor;
+        backgroundImage.color = Color.green; //BackdropAndAttachmentMenuManager.main.selectedColor;
     }
 
     public void OnDeselected()
     {
-        backgroundImage.color = BackdropAndAttachmentMenuManager.main.deselectedColor;
+        backgroundImage.color = Color.clear; //BackdropAndAttachmentMenuManager.main.deselectedColor;
     }
 
 }

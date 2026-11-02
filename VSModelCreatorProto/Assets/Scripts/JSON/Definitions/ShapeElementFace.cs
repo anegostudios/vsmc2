@@ -76,9 +76,11 @@ namespace VSMC
         {
             //If texture is null (i.e. a new shape), give it the first texture found in the texture manager.
             if (textures == null) return;
-            if (Texture == null)
+            if (Texture == null || Texture == "#null" || Texture == "#")
             {
-                Texture = "#"+textures[0].code;
+                textureIndex = -2;
+                ResolvedTexture = null;
+                return;
             }
 
             //This essentially just finds the texture index based on the loaded textures.
@@ -102,17 +104,24 @@ namespace VSMC
         public string GetReadableTextureName()
         {
             if (textureIndex == -1) return "Missing Texture...";
+            if (textureIndex == -2) return "None";
             return ResolvedTexture;
         }
 
         public LoadedTexture GetLoadedTexture()
         {
-            if (textureIndex == -1) return TextureManager.main.emptyTexture;
+            if (textureIndex < 0) return TextureManager.main.emptyTexture;
             return TextureManager.main.loadedTextures[textureIndex];
         }
 
         public void ResolveBeforeSerialization()
         {
+            if (textureIndex < 0 || ResolvedTexture == null || ResolvedTexture == "")
+            {
+                Texture = null;
+                if (Enabled) Texture = "#null";
+                return;
+            }
             Texture = "#" + ResolvedTexture;
         }
 
@@ -310,6 +319,16 @@ namespace VSMC
             Vector2 scale = GetVoxelToPixelScale();
 
             return Mathf.RoundToInt(Mathf.Abs(Uv[3] - Uv[1]) * scale.y) / scale.y;
+        }
+
+        public void RoundUVValuesAndReduceDecimals()
+        {
+            //precision level - Either 3 or 6 decimal points.
+            float p = ProgramPreferences.UseHighPrecisionMode.GetValue() ? 1000000 : 1000;
+            for (int i = 0; i < 4; i++)
+            {
+                Uv[i] = Mathf.RoundToInt(Uv[i] * p) / p;
+            }
         }
     }
 }

@@ -305,5 +305,12 @@ namespace VSMC
             return c;
         }
 
+        public void CenterUVSpace()
+        {
+            panner.SetPan(new Vector2(0.5f, 0.5f));
+            zoomSlider.value = 1;
+            OnZoomOrPositionChanged();
+        }
+
     }
 }

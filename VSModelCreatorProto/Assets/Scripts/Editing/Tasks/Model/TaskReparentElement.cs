@@ -143,7 +143,8 @@ namespace VSMC
                 child.To = new double[] { startPos.x + size[0], startPos.y + size[1], startPos.z + size[2] };
             }
 
-            child.RecreateObjectMeshAndTransforms();
+            //Refresh the model order.
+            MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
             if (updateHierarchy) ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
         }
 
@@ -192,6 +193,10 @@ namespace VSMC
                 }
                 oldParent.RecreateObjectMeshAndTransforms();
             }
+
+            //Refresh the model order.
+            MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
+
             if (updateHierarchy) ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
 
         }

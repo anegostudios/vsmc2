@@ -11,8 +11,19 @@ public abstract class IOriginPoint
 
     public Vector3 itemTranslation;
     public Vector3 itemRotation;
-    public Vector3 itemOrigin;
+    public Vector3 itemOrigin = new Vector3(0.5f, 0.5f, 0.5f);
     public Vector3 itemScaleXYZ = Vector3.one;
+
+    /// <summary>
+    /// Copy the transform values from this origin into another.
+    /// </summary>
+    public void CopyTransformValuesTo(IOriginPoint other)
+    {
+        other.itemTranslation = itemTranslation;
+        other.itemRotation = itemRotation;
+        other.itemOrigin = itemOrigin;
+        other.itemScaleXYZ = itemScaleXYZ;
+    }
 
     /// <summary>
     /// Gets the matrix to use when this element doesn't need to move.
@@ -35,14 +46,14 @@ public abstract class IOriginPoint
     public abstract OriginPointData SaveToOriginData();
 
     /// <summary>
-    /// Does this origin point depend on another root element?
+    /// Does this origin point depend on another element?
     /// </summary>
-    public abstract bool DependsOnOtherRootShapeElement();
+    public abstract bool DependsOnOtherShapeElement();
 
     /// <summary>
-    /// Finds the root shape element that this origin point uses.
+    /// Finds the shape element that this origin point uses.
     /// </summary>
-    public abstract ShapeElement GetRootShapeElementThisDependsOn();
+    public abstract ShapeElement GetShapeElementThisDependsOn();
 
     /// <summary>
     /// If this origin point needs any setting up, this is where it happens.

@@ -23,6 +23,8 @@ namespace VSMC
         LinkedList<IEditTask> completedEditTasks;
         LinkedList<IEditTask> undoneEditTasks;
 
+        bool anyTaskSinceLastSave;
+
         UnityEvent OnAnyActionDoneOrUndone;
 
         private void Awake()
@@ -35,10 +37,16 @@ namespace VSMC
             OnAnyAction();
         }
 
+        void Start()
+        {
+            ShapeLoader.RegisterForOnShapeSaveEvent(OnShapeSave);  
+        }
+
         public void ReInit()
         {
             completedEditTasks = new LinkedList<IEditTask>();
             undoneEditTasks = new LinkedList<IEditTask>();
+            anyTaskSinceLastSave = false;
             OnAnyAction();
         }
 
@@ -84,6 +92,7 @@ namespace VSMC
             completedEditTasks.AddFirst(newTask);
             undoneEditTasks.Clear();
             OnAnyActionDoneOrUndone.Invoke();
+            anyTaskSinceLastSave = true;
             //uiElements.RefreshSelectionValues();
         }
 
@@ -100,6 +109,7 @@ namespace VSMC
                 }
             }
 
+            anyTaskSinceLastSave = true;
             IEditTask toUndo = completedEditTasks.First.Value;
 
             //Need to set edit mode to correct mode for undoing.
@@ -132,6 +142,7 @@ namespace VSMC
                 }
             }
 
+            anyTaskSinceLastSave = true;
             IEditTask toRedo = undoneEditTasks.First.Value;
 
             //Need to set edit mode to correct mode for redoing.
@@ -184,9 +195,14 @@ namespace VSMC
             }
         }
 
+        public void OnShapeSave(Shape shape)
+        {
+            anyTaskSinceLastSave = false;
+        }
+
         public bool HasAnyActionBeenCommitted()
         {
-            return completedEditTasks.Count > 0;
+            return anyTaskSinceLastSave && completedEditTasks.Count > 0;
         }
 
 

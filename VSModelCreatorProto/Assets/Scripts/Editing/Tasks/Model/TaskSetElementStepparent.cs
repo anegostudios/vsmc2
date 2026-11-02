@@ -21,14 +21,15 @@ namespace VSMC
         {
             ShapeElement elem = ShapeElementRegistry.main.GetShapeElementByUID(elemUID);
             elem.StepParentName = newStepparentName;
-            ShapeLoader.main.shapeHolder.RefreshAllStepparents();
+            MultiShapeManager.main.AttemptToAutoAssignOriginPointsForRootElement(elem, true);
         }
 
         public override void UndoTask()
         {
             ShapeElement elem = ShapeElementRegistry.main.GetShapeElementByUID(elemUID);
             elem.StepParentName = oldStepparentName;
-            ShapeLoader.main.shapeHolder.RefreshAllStepparents();
+            MultiShapeManager.main.AttemptToAutoAssignOriginPointsForRootElement(elem, true);
+
         }
 
         public override bool MergeTasksIfPossible(IEditTask nextTask)

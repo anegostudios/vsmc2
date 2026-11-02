@@ -28,11 +28,11 @@ public class ShapeEditorSettings
     [JsonProperty]
     public bool entityTextureMode = false;
 
-    [JsonProperty]
-    public AdditionalShapeData[] backdrops = null;
+    //[JsonProperty]
+    //public AdditionalShapeData[] backdrops = null;
 
-    [JsonProperty]
-    public AdditionalShapeData[] attachments = null;
+    //[JsonProperty]
+    //public AdditionalShapeData[] attachments = null;
 
     [JsonProperty]
     [Obsolete("Kept for backwards compatiblity, but now using 'backdrops' array.")]
@@ -40,6 +40,11 @@ public class ShapeEditorSettings
 
     [JsonProperty]
     public string mountBackDropShape = null;
+
+    [JsonProperty]
+    public AdditionalShapeData[] additionalShapes = null;
+
+    public OriginPointData[] rootElementOrigins = null;
 
     /// <summary>
     /// Should the auto UVs sizes be rounded rather than clamped?

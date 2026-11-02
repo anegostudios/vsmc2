@@ -17,6 +17,7 @@ namespace VSMC
         {
             elemUID = element.elementUID;
             this.newUnwrapUV = newUnwrapUV;
+            this.oldUnwrapUV = element.autoUnwrap;
             oldUvs = new Vector4[6];
             oldRotationIndices = new int[6];
             float minX = float.MaxValue;

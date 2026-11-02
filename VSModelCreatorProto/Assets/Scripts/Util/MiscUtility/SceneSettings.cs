@@ -10,16 +10,23 @@ public class SceneSettings : MonoBehaviour
 
     public static SceneSettings main;
 
+    public Image cameraBG;
+    public Graphic[] compassElements;
     public Light mainLight;
     public TMP_Text shadowSettingText;
     public GameObject lightingEnabledToggleIcon;
     public GameObject texturesEnabledToggleIcon;
     public TMP_Text texturesDisabledWarningText;
     public GameObject ssaoEnabledToggleIcon;
+    public GameObject lightBGToggleIcon;
 
     public Material[] sceneMaterialsForTextureControl;
     public Color lightingEnabledColor;
     public Color lightingDisabledColor;
+    public Color darkModeBGColor;
+    public Color darkModeCompassColor;
+    public Color lightModeBGColor;
+    public Color lightModeCompassColor;
     public UniversalRendererData rendererData;
 
     public GameObject modelOpacityOverlay;
@@ -34,6 +41,8 @@ public class SceneSettings : MonoBehaviour
     public GameObject grid;
     public GameObject compassEnabledToggleIcon;
     public GameObject compass;
+    public GameObject cameraPivotEnabledToggleIcon;
+    public CameraPivotRenderer cameraPivot;
 
     void Awake()
     {
@@ -75,7 +84,7 @@ public class SceneSettings : MonoBehaviour
         lightingEnabledToggleIcon.SetActive(lightingEnabled);
 
         bool texturesEnabled = GetTexturesEnabled();
-        texturesDisabledWarningText.text = texturesEnabled ? "" : "Warning: Textures are currently disabled in settings!";
+        texturesDisabledWarningText.text = texturesEnabled ? "" : "Warning: \"Show Textures\" is disabled in the 'View' tab!";
         texturesEnabledToggleIcon.SetActive(texturesEnabled);
         foreach (Material m in sceneMaterialsForTextureControl)
         {
@@ -94,6 +103,16 @@ public class SceneSettings : MonoBehaviour
         }
         gridEnabledToggleIcon.SetActive(grid.activeSelf);
         compassEnabledToggleIcon.SetActive(compass.activeSelf);
+        bool cameraPivotEnabled = GetCameraPivotEnabled();
+        cameraPivot.doRendering = cameraPivotEnabled;
+        cameraPivotEnabledToggleIcon.SetActive(cameraPivotEnabled);
+        bool lightBG = GetLightBGEnabled();
+        lightBGToggleIcon.SetActive(lightBG);
+        cameraBG.color = lightBG ? lightModeBGColor : darkModeBGColor;
+        foreach (Graphic c in compassElements)
+        {
+            c.color = lightBG ? lightModeCompassColor : darkModeCompassColor;
+        }
     }
 
     int GetShadowMode()
@@ -194,11 +213,45 @@ public class SceneSettings : MonoBehaviour
         grid.SetActive(!grid.activeSelf);
         gridEnabledToggleIcon.SetActive(grid.activeSelf);
     }
-    
+
     public void ToggleCompassVisibility()
     {
         compass.SetActive(!compass.activeSelf);
         compassEnabledToggleIcon.SetActive(compass.activeSelf);
+    }
+
+    public bool GetCameraPivotEnabled()
+    {
+        return ProgramPreferences.EnableCameraPivotObject.GetValue();
+    }
+
+    public void SetCameraPivotEnabled(bool enabled)
+    {
+        ProgramPreferences.EnableCameraPivotObject.SetValue(enabled);
+        InfoLogger.main.LogText("Camera Pivot " + (enabled ? "enabled" : "disabled"));
+        RefreshSceneSettings();
+    }
+
+    public void ToggleCameraPivotEnabled()
+    {
+        SetCameraPivotEnabled(!GetCameraPivotEnabled());
+    }
+
+    public bool GetLightBGEnabled()
+    {
+        return ProgramPreferences.EnableLightBG.GetValue();
+    }
+
+    public void SetLightBGEnabled(bool enabled)
+    {
+        ProgramPreferences.EnableLightBG.SetValue(enabled);
+        InfoLogger.main.LogText("Light BG " + (enabled ? "enabled" : "disabled"));
+        RefreshSceneSettings();
+    }
+
+    public void ToggleLightBGEnabled()
+    {
+        SetLightBGEnabled(!GetLightBGEnabled());
     }
 
 }

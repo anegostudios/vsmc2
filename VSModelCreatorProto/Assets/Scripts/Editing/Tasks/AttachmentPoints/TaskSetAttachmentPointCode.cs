@@ -17,12 +17,14 @@ public class TaskSetAttachmentPointCode : IEditTask
     {
         AttachmentPointsManager.main.GetLoadedAPFromCode(oldCode).code = newCode;
         AttachmentPointsManager.main.RecreateAPList();
+        AttachmentPointsManager.main.OnAnyAPPropertyChanged();
     }
 
     public override void UndoTask()
     {
         AttachmentPointsManager.main.GetLoadedAPFromCode(newCode).code = oldCode;
         AttachmentPointsManager.main.RecreateAPList();
+        AttachmentPointsManager.main.OnAnyAPPropertyChanged();
     }
 
     public override VSEditMode GetRequiredEditMode()

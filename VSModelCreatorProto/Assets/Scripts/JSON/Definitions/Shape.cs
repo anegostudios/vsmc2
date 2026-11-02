@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using Unity.Collections;
+using UnityEditor;
 using UnityEngine;
 
 namespace VSMC
@@ -56,7 +58,7 @@ namespace VSMC
         public Animation[] Animations = new Animation[0];
 
         [NonSerialized()]
-        public int shapeUID;
+        public string shapeLoadedFromPath;
 
         [NonSerialized()]
         //Joints stuff.
@@ -64,6 +66,7 @@ namespace VSMC
 
         [NonSerialized()]
         public bool isBackdropOrAttachmentShape = false;
+
 
         /// <param name="context"></param>
         [OnDeserialized()]
@@ -395,14 +398,14 @@ namespace VSMC
 
         public void ResolveForBeforeSerialization()
         {
-            editor.editorVersion = Application.productName+"v" + Application.version;
+            editor.editorVersion = ShapeLoader.ApplicationVersion;
             foreach (ShapeElement elem in Elements)
             {
                 elem.ResolveBeforeSerialization();
             }
         }
 
-            public TaskImportShape.ImportData MergeWithOtherShape(Shape importedShape)
+        public TaskImportShape.ImportData MergeWithOtherShape(Shape importedShape)
         {
             TaskImportShape.ImportData importData = new TaskImportShape.ImportData();
 
@@ -542,6 +545,40 @@ namespace VSMC
                 Debug.LogError("Cannot find element with code " + code + " during root filtering. The shape will keep all elements.");
                 return;
             }
+
+            //Need to remove animations.
+            List<string> foundShapeElements = new List<string>();
+            List<ShapeElement> t = new List<ShapeElement>();
+            t.Add(root);
+            while (t.Count > 0)
+            {
+                ShapeElement el = t[0];
+                t.RemoveAt(0);
+                foundShapeElements.Add(el.Name);
+                if (el.Children != null) t.AddRange(el.Children);
+            }
+
+            int removedKFEs = 0;
+            foreach (Animation a in Animations)
+            {
+                foreach (AnimationKeyFrame kf in a.KeyFrames)
+                {
+                    List<string> remove = new List<string>();
+                    foreach (var kvp in kf.Elements)
+                    {
+                        if (!foundShapeElements.Contains(kvp.Key, StringComparer.OrdinalIgnoreCase))
+                        {
+                            remove.Add(kvp.Key);
+                        }
+                    }
+                    foreach (string s in remove)
+                    {
+                        kf.Elements.Remove(s);
+                        removedKFEs++;
+                    }
+                }
+            }
+            Debug.Log("Removed " + removedKFEs + " animation KFEs.");
             Elements = new ShapeElement[] { root };
         }
 

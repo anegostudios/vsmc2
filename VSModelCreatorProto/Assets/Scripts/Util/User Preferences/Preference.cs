@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using UnityEngine;
 using static UnityEngine.Rendering.DebugUI;
 
@@ -29,12 +30,19 @@ public class Preference<T>
     /// </summary>
     public T GetValue()
     {
-        //If key doesn't exist, return the default.
-        if (!PlayerPrefs.HasKey(playerPrefCode))
+        try
         {
-            cached = defaultVal;
-            isCached = true;
-            return cached;
+            //If key doesn't exist, return the default.
+            if (!PlayerPrefs.HasKey(playerPrefCode))
+            {
+                cached = defaultVal;
+                isCached = true;
+                return cached;
+            }
+        }
+        catch //If this isn't the main thread, HasKey will throw an error. Annoying.
+        {
+            return defaultVal;
         }
         if (!isCached)
         {

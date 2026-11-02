@@ -67,6 +67,9 @@ namespace VSMC
             //We recreate the entire element list for easy usage.
             ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
 
+            //Refresh the model order.
+            MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
+
             //Finally, select the object to make it noticable.
             ObjectSelector.main.SelectObject(createdElement.gameObject.gameObject, false, false);
         }
@@ -84,6 +87,10 @@ namespace VSMC
             {
                 ShapeHolder.CurrentLoadedShape.RemoveRootShapeElement(createdElement);
             }
+
+            //Refresh the model order.
+            MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
+            
             //We recreate the entire element list for easy usage.
             ElementHierarchyManager.ElementHierarchy.StartCreatingElementPrefabs(ShapeHolder.CurrentLoadedShape);
         }

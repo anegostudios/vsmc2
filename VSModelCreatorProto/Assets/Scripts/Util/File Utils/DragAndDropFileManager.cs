@@ -113,8 +113,10 @@ public class DragAndDropFileManager : MonoBehaviour
                 OnOpenDroppedShapeAsNewFileAfterSaveDialog();
                 return;
             }
-            openShapeFileFromFileDropFilePathText.text = storedFilepath;
-            openShapeFileFromFileDropOverlay.SetActive(true);
+            OnOpenDroppedShapeAsNewFile();
+            return;
+            //openShapeFileFromFileDropFilePathText.text = storedFilepath;
+            //openShapeFileFromFileDropOverlay.SetActive(true);
         }
         else //invalid
         {
@@ -126,14 +128,14 @@ public class DragAndDropFileManager : MonoBehaviour
     {
 
         EditModeManager.main.SelectMode(VSEditMode.Model);
-        BackdropManager.main.AddBackdropFromFileDrop(storedFilepath);
+        //BackdropManager.main.AddBackdropFromFileDrop(storedFilepath);
         openShapeFileFromFileDropOverlay.SetActive(false);
     }
 
     public void OnOpenDroppedShapeAsAttachment()
     {
         EditModeManager.main.SelectMode(VSEditMode.Model);
-        AttachmentManager.main.AddAttachmentFromFileDrop(storedFilepath);
+        //AttachmentManager.main.AddAttachmentFromFileDrop(storedFilepath);
         openShapeFileFromFileDropOverlay.SetActive(false);
     }
 
@@ -158,17 +160,13 @@ public class DragAndDropFileManager : MonoBehaviour
     LoadedTexture GetTextureFromFilepath()
     {
         string texPath = AssetPathManager.main.GetRelativePathForFile(storedFilepath, "textures");
-        Debug.Log("Fuck " + texPath);
         if (!Path.IsPathRooted(texPath)) //If the path is rooted, then it has no asset path from the manager.
         {
             texPath = AssetPathManager.main.FindTextureFilePath(texPath);
-            Debug.Log("my " + texPath);
         }
         texPath = Path.GetFullPath(texPath);
-        Debug.Log("life " + texPath);
         foreach (LoadedTexture loadedTex in TextureManager.main.loadedTextures)
         {
-            Debug.Log("ihateeverything " + loadedTex.code);
             string s = AssetPathManager.main.FindTextureFilePath(loadedTex.path + ".png");
             if (s == "" || s == null)
             {

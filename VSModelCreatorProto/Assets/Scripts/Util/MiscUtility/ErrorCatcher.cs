@@ -1,4 +1,5 @@
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 
 namespace VSMC
@@ -12,11 +13,13 @@ namespace VSMC
 
         private void Awake()
         {
+            if (Application.isEditor && !Application.isPlaying) return;
             Application.logMessageReceived += OnLogReceived;
         }
 
         void OnLogReceived(string condition, string stackTrace, LogType type)
         {
+            if (Application.isEditor && !Application.isPlaying) return;
             //Replace my home path in the log.
             stackTrace = stackTrace.Replace("/home/nat/Documents/GitHub/vsmc2/VSModelCreatorProto", "vsmc2");
             //Only show exceptions, errors, and potentially warnings to the user.
@@ -28,6 +31,7 @@ namespace VSMC
 
         public void OpenWithLog(string condition, string stackTrace)
         {
+            if (Application.isEditor && !Application.isPlaying) return;
             if (errorOverlay.activeSelf)
             {
                 logText.text += "\n\n"+condition+"\n"+stackTrace;

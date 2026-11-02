@@ -5,11 +5,24 @@ public class VSMCLineRenderer : MonoBehaviour
 
     public Material linesMaterial;
     public Color lineColor;
+    public int priority;
     public Vector3[] positions;
     public bool doRendering;
 
+    void Update()
+    {
+        VSMCLineManager.main.AddLineRenderer(this);
+    }
 
-    void OnRenderObject()
+    public void CopyFromOther(VSMCLineRenderer other)
+    {
+        lineColor = other.lineColor;
+        priority = other.priority;
+        positions = other.positions;
+        doRendering = other.doRendering;        
+    }
+
+    public void RenderLines()
     {
         if (!doRendering) return;
         //It appears we can't use Camera.current as it always returns null, but we _can_ use the current render texture!
@@ -32,6 +45,14 @@ public class VSMCLineRenderer : MonoBehaviour
                 GL.Vertex(transform.TransformPoint(positions[i]));
                 GL.Vertex(transform.TransformPoint(positions[i + 1]));
             }
+            GL.Vertex(transform.TransformPoint(positions[0]));
+            GL.Vertex(transform.TransformPoint(positions[positions.Length - 1]));
+            if (priority > 0 && positions.Length >= 2)
+            {
+                GL.Color(new Color(lineColor.r, lineColor.g, lineColor.b, lineColor.a / 2));
+                GL.Vertex(transform.TransformPoint(positions[0]));
+                GL.Vertex(transform.TransformPoint(positions[2]));
+            }
             GL.End();
             GL.PopMatrix();
         }
@@ -40,5 +61,4 @@ public class VSMCLineRenderer : MonoBehaviour
             Debug.Log("Failed to set line material pass.");
         }
     }
-
 }

@@ -85,8 +85,7 @@ namespace VSMC
                 {
                     e.StepParentName = newName;
                 }
-            }
-            ShapeLoader.main.shapeHolder.RefreshAllStepparents();            
+            }         
         }
 
         public override void UndoTask()
@@ -119,7 +118,6 @@ namespace VSMC
                     e.StepParentName = oldName;
                 }
             }
-            ShapeLoader.main.shapeHolder.RefreshAllStepparents();
         } 
 
         public override bool MergeTasksIfPossible(IEditTask nextTask)

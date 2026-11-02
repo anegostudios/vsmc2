@@ -13,7 +13,7 @@ namespace VSMC
         [Header("Unity References")]
         public GameObject shapeElementPrefab;
         public Transform noJointParent;
-        public List<Transform> jointParents;
+        public Dictionary<ShapeElement, List<Transform>> jointParentsForRootElements = new Dictionary<ShapeElement, List<Transform>>();
 
         [Tooltip("The parent of the joint parents.")]
         public Transform jointParentParent;

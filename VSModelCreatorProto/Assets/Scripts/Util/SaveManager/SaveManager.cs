@@ -18,7 +18,7 @@ public class SaveManager : MonoBehaviour
     public Transform recentFilesContentList;
     public GameObject startSectionContent;
     public GameObject modellingSectionContent;
-    public int autosaveFrequencySeconds = 120;
+    public int autosaveFrequencySeconds = 30;
 
     [System.Serializable]
     public class RecentFiles
@@ -244,5 +244,7 @@ public class SaveManager : MonoBehaviour
     {
         Application.Quit();
     }
+
+    
 
 }

@@ -11,7 +11,12 @@ using System.Collections.Generic;
 public class ShapeAccessor
 {
 
-    public static JsonSerializerSettings BasicSerializerSettings;
+    public static JsonSerializerSettings BasicSerializerSettings = new JsonSerializerSettings()
+    {
+        NullValueHandling = NullValueHandling.Ignore,
+        DefaultValueHandling = DefaultValueHandling.Ignore,
+        ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy(false, false) },
+    };
 
 
 
@@ -22,50 +27,40 @@ public class ShapeAccessor
         TextureManager.main.ApplyTexturesIntoShape(shape);
         shape.ResolveForBeforeSerialization();
 
-        BasicSerializerSettings = new JsonSerializerSettings()
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-            DefaultValueHandling = DefaultValueHandling.Ignore,
-            ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy(false, false) },
-        };
-
-        JsonSerializerSettings settings = new JsonSerializerSettings()
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-            DefaultValueHandling = DefaultValueHandling.Ignore,
-            ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy(false, false) },
-            Converters = new List<JsonConverter>
-            {
-                new DoubleArrayJSONConverter(),
-                new FloatArrayJSONConverter(),
-                new FacesJSONConverter(),
-                new AnimationElementJSONConverter(),
-            }
-        };
-        File.WriteAllText(filePath, JsonConvert.SerializeObject(shape, Formatting.Indented, settings));
+        File.WriteAllText(filePath, JsonConvert.SerializeObject(shape, Formatting.Indented, MainSettings));
         SaveManager.main.OnModelSave(filePath, isAutosave);
     }
-    
+
     public static string SerializeShapeToString(Shape shape, UnityEvent<Shape> onSaveEvent, bool isAutosave = false)
     {
         //Save some things to the shape itself first...
         onSaveEvent.Invoke(shape);
         shape.ResolveForBeforeSerialization();
 
-        JsonSerializerSettings settings = new JsonSerializerSettings()
+        
+        return JsonConvert.SerializeObject(shape, Formatting.None, MainSettings);
+    }
+    
+    public static JsonSerializerSettings MainSettings
+    {
+        get
         {
-            NullValueHandling = NullValueHandling.Ignore,
-            DefaultValueHandling = DefaultValueHandling.Ignore,
-            ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy(false, false) },
-            Converters = new List<JsonConverter>
+            return new JsonSerializerSettings()
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                DefaultValueHandling = DefaultValueHandling.Ignore,
+                ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy(false, false) },
+                Converters = new List<JsonConverter>
             {
                 new DoubleArrayJSONConverter(),
                 new FloatArrayJSONConverter(),
                 new FacesJSONConverter(),
                 new AnimationElementJSONConverter(),
+                new OriginPointDataJSONConverter(),
+                new Vector3SerJsonConverter(),
             }
-        };
-        return JsonConvert.SerializeObject(shape, Formatting.None, settings);
+            };
+        }
     }
 
     /// <summary>

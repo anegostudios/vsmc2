@@ -11,6 +11,7 @@ public class OptionSlider : MonoBehaviour
     public TMP_Text option1;
     public TMP_Text option2;
     public int cSelectedValue;
+    public bool instant = false;
     private UnityEvent<int> OnOptionChangedEvent;
 
     void Start()
@@ -18,6 +19,10 @@ public class OptionSlider : MonoBehaviour
         option1.CrossFadeColor(cSelectedValue == 0 ? Color.white : Color.grey, 0f, true, true);
         option2.CrossFadeColor(cSelectedValue == 1 ? Color.white : Color.grey, 0f, true, true);
         scrollbar.onValueChanged.AddListener(OnScrollbarValueSet);
+        if (instant)
+        {
+            scrollbar.numberOfSteps = 2;
+        }
     }
 
     public void AddListenerOnValueChanged(UnityAction<int> action)
@@ -31,6 +36,11 @@ public class OptionSlider : MonoBehaviour
         //Only update if scrollbar is not currently held.
         if (EventSystem.current.currentSelectedGameObject == gameObject && Input.GetMouseButton(0)) return;
         //Easy smoothness - The scrollbar will always go towards the cValue.
+        if (instant)
+        {
+            scrollbar.value = cSelectedValue;
+            return;
+        }
         if (scrollbar.value > cSelectedValue)
         {
             scrollbar.SetValueWithoutNotify(Mathf.Clamp01(scrollbar.value - Time.deltaTime * UIConfigManager.main.optionSliderChangeSpeed));

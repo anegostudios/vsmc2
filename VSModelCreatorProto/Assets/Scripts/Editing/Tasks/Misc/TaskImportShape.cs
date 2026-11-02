@@ -23,6 +23,7 @@ namespace VSMC
             ShapeTesselator.TesselateShapeElements(ShapeHolder.CurrentLoadedShape.Elements);
             foreach (ShapeElement e in importShape.Elements)
             {
+                ShapeTesselator.ResolveAllLocalMatricesForRootShapeElement(e);
                 ShapeLoader.main.shapeHolder.CreateShapeElementGameObject(e, true);
             }
             
@@ -51,8 +52,8 @@ namespace VSMC
                 ShapeElementRegistry.main.ReregisterShapeElement(elem, true);
                 ShapeHolder.CurrentLoadedShape.AddRootShapeElement(elem);
                 ShapeLoader.main.shapeHolder.RestoreElementFromDeletionLimbo(elem, true);
-                MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
             }
+            MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
             foreach (LoadedTexture t in importedStuff.importedTextures)
             {
                 TextureManager.main.loadedTextures.Add(t);
@@ -73,8 +74,8 @@ namespace VSMC
                 ShapeElementRegistry.main.UnregisterShapeElement(elem, true);
                 ShapeLoader.main.shapeHolder.SendElementToDeletionLimbo(elem, true);
                 ShapeHolder.CurrentLoadedShape.RemoveRootShapeElement(elem);
-                MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
             }
+            MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
 
             foreach (LoadedTexture t in importedStuff.importedTextures)
             {

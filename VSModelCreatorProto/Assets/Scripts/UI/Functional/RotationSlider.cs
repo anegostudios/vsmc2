@@ -9,9 +9,11 @@ using VSMC;
 
 public class RotationSlider : MonoBehaviour
 {
+    public float rotationValue;
     public Slider rotSlider;
     public TMP_InputField rotInputField;
-    private UnityEvent<float> OnRotationSetEvent;
+    private UnityEvent<float> OnRotationChangedEvent;
+    private UnityEvent<float> OnRotationSetFinalizedEvent;
     private string dpFormat;
 
     [Space(8)]
@@ -28,14 +30,21 @@ public class RotationSlider : MonoBehaviour
     private void Start()
     {
         parentScrollRect = GetComponentInParent<ScrollRect>();
-        if (OnRotationSetEvent == null) OnRotationSetEvent = new UnityEvent<float>();
+        if (OnRotationChangedEvent == null) OnRotationChangedEvent = new UnityEvent<float>();
+        if (OnRotationSetFinalizedEvent == null) OnRotationSetFinalizedEvent = new UnityEvent<float>();
         dpFormat = UIConfigManager.main.decimalFormatting;
         rotSlider.minValue = -180;
         rotSlider.maxValue = 180;
         if (rotInputField != null)
         {
-            rotInputField.onEndEdit.AddListener(SetRotationFromInputField);
+            rotInputField.onEndEdit.AddListener(x => FinalizeEdit());
+            rotInputField.onValueChanged.AddListener(SetRotationFromInputField);
             rotSlider.onValueChanged.AddListener(OnSliderChanged);
+            var trigger = rotSlider.GetOrAddComponent<EventTrigger>();
+            EventTrigger.Entry entry = new EventTrigger.Entry();
+            entry.eventID = EventTriggerType.EndDrag;
+            entry.callback.AddListener(x => FinalizeEdit());
+            trigger.triggers.Add(entry);
         }
 
         if (setAxisColor)
@@ -56,8 +65,8 @@ public class RotationSlider : MonoBehaviour
         {
             val *= Input.GetKey(KeyCode.LeftControl) ? shiftAndControlMult : shiftMult;
         }
-        rotInputField.text = (float.Parse(rotInputField.text) + val).ToString(dpFormat);
-        rotInputField.onEndEdit.Invoke(rotInputField.text);
+        rotInputField.text = (rotationValue + val).ToString(dpFormat); //Should trigger onValueChanged
+        rotInputField.onEndEdit.Invoke(rotInputField.text); //Trigger onEndEdit
     }
 
     public void Dec()
@@ -69,39 +78,34 @@ public class RotationSlider : MonoBehaviour
         {
             val *= Input.GetKey(KeyCode.LeftControl) ? shiftAndControlMult : shiftMult;
         }
-        rotInputField.text = (float.Parse(rotInputField.text) - val).ToString(dpFormat);
-        rotInputField.onEndEdit.Invoke(rotInputField.text);
+        rotInputField.text = (rotationValue - val).ToString(dpFormat); //Should trigger onValueChanged
+        rotInputField.onEndEdit.Invoke(rotInputField.text); //Trigger onEndEdit
     }
 
     public void AddToOnRotationSetEvent(UnityAction<float> action)
     {
-        if (OnRotationSetEvent == null) OnRotationSetEvent = new UnityEvent<float>();
-        OnRotationSetEvent.AddListener(action);
+        if (OnRotationChangedEvent == null) OnRotationChangedEvent = new UnityEvent<float>();
+        OnRotationChangedEvent.AddListener(action);
+    }
+
+    public void AddToOnRotationFinalizedEvent(UnityAction<float> action)
+    {
+        if (OnRotationSetFinalizedEvent == null) OnRotationSetFinalizedEvent = new UnityEvent<float>();
+        OnRotationSetFinalizedEvent.AddListener(action);
     }
 
     private void SetRotationFromInputField(string rot)
     {
         if (float.TryParse(rot, out float v))
         {
-            rotSlider.value = v;
+            SetRotationValueTo(v, true);
         }
-        else
-        {
-            if (rotInputField != null) rotInputField.SetTextWithoutNotify(Val.ToString(dpFormat));
-        }
+        //No longer validate here - We do validate onEndEdit though.
     }
 
     public void SetToRotationValue(float rot, bool notify = false)
     {
-        if (notify)
-        {
-            rotSlider.value = rot;
-        }
-        else
-        {
-            rotSlider.SetValueWithoutNotify(rot);
-            rotInputField.SetTextWithoutNotify(rot.ToString(dpFormat));
-        }
+        SetRotationValueTo(rot, notify);
     }
 
     void OnSliderChanged(float val)
@@ -109,37 +113,47 @@ public class RotationSlider : MonoBehaviour
         //If left shift is not down, the mouse is down and the relevant slider is currently selected.
         if (Input.GetMouseButton(0) && EventSystem.current.currentSelectedGameObject.GetComponentInParent<Slider>() == rotSlider)
         {
-            if (!Input.GetKey(KeyCode.LeftShift))
+            if (Input.GetKey(KeyCode.LeftShift) ^ ProgramPreferences.RoundRotationValuesOnSliders.GetValue())
             {
                 //Lock the value to 1/8ths and also clamp to the minmax values.
                 float snapped = Mathf.Clamp(Mathf.Round(val / 22.5f) * 22.5f, -180f, 180f);
-                rotSlider.SetValueWithoutNotify(snapped);
-                rotInputField.SetTextWithoutNotify(snapped.ToString(dpFormat));
-                OnRotationSetEvent.Invoke(snapped);
+                SetRotationValueTo(snapped, true);
             }
             else
             {
                 //Lock to whole values
                 float snapped = Mathf.Clamp(Mathf.Round(val), -180f, 180f);
-                rotSlider.SetValueWithoutNotify(snapped);
-                rotInputField.SetTextWithoutNotify(snapped.ToString(dpFormat));
-                OnRotationSetEvent.Invoke(snapped);
+                SetRotationValueTo(snapped, true);
             }
         }
         else //set by UI or set by input field
         {
-            rotSlider.SetValueWithoutNotify(val);
-            rotInputField.SetTextWithoutNotify(val.ToString(dpFormat));
-            OnRotationSetEvent.Invoke(val);
+            SetRotationValueTo(val, true);
         }
+    }
+
+    void SetRotationValueTo(float val, bool notify = false)
+    {
+        rotationValue = val;
+        rotInputField.SetTextWithoutNotify(val.ToString(dpFormat));
+        rotSlider.SetValueWithoutNotify(val);
+        if (notify)
+        {
+            OnRotationChangedEvent.Invoke(val);
+        }
+    }
+
+    void FinalizeEdit()
+    {
+        if (rotInputField != null) rotInputField.SetTextWithoutNotify(rotationValue.ToString(dpFormat));
+        OnRotationSetFinalizedEvent.Invoke(rotationValue);
     }
 
     public float Val
     {
         get
         {
-            return rotSlider.value;
-            //return UnlockAllAngles ? rotSlider.value : rotSlider.value * (180f / 8f);
+            return rotationValue;
         }
     }
 

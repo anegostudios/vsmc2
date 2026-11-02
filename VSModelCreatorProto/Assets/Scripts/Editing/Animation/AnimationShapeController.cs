@@ -5,11 +5,12 @@ using UnityEngine;
 
 namespace VSMC
 {
-    public class AnimationShapeController
+    public class AnimationRootShapeElementController
     {
 
         public ClientAnimator animator;
         public IShapeHolder shapeHolder;
+        public ShapeElement rootElement;
 
         /// <summary>
         /// Every animation by code.
@@ -33,9 +34,12 @@ namespace VSMC
         /// </summary>
         public Animation cSelectedAnimation;
 
-        public AnimationShapeController(IShapeHolder shapeHolder)
+        public List<int> jointIDsForController = new List<int>();
+
+        public AnimationRootShapeElementController(IShapeHolder shapeHolder, ShapeElement rootElement)
         {
             this.shapeHolder = shapeHolder;
+            this.rootElement = rootElement;
         }
 
 
@@ -69,7 +73,7 @@ namespace VSMC
             SetAllJointsToAnimatorMatrices();
             return true;
         }
-
+    
         /// <summary>
         /// Sets the frame of the current animation.
         /// If the frame cannot be set for any reason, this returns false.
@@ -92,6 +96,11 @@ namespace VSMC
 
         public void ResetCurrentAnimationFrame()
         {
+            if (animator == null || animator.anims == null || cSelectedAnimation == null)
+            {
+                IdentityAllJoints();
+                return;
+            }
             RunningAnimation anim = animator.GetAnimationState(cSelectedAnimation.Code);
             if (anim == null) return;
             anim.Iterations = 0;
@@ -101,9 +110,35 @@ namespace VSMC
         public void SetSelectedAnimation(string code)
         {
             animator.ResetAllAnimationsForVSMC();
+            code = GetMostRelevantAnimationCode(code);
+            Debug.Log("Setting animation for " + rootElement.GetElementCodeInShape().ToString() + " to " + code);
             cSelectedAnimation = shapeHolder.GetShape().Animations.FirstOrDefault(x => x.Code.Equals(code));
             ProgressAnimation(1);
             SetFrame(0, true);
+        }
+
+        public string GetMostRelevantAnimationCode(string code)
+        {
+            //Find the correct code; if there is a bypass.
+            ShapeElement rootElem = this.rootElement;
+            while (rootElem != null)
+            {
+                LoadedAdditionalShape las = MultiShapeManager.main.GetLoadedAdditionalShapeFromRootElementCode(rootElem.GetElementCodeInShape());
+                if (las == null) return code;
+                if (las != null && las.data.animationPlaybackMapping.ContainsKey(code))
+                {
+                    return las.data.animationPlaybackMapping[code];
+                }
+                if (rootElem.OriginPoint == null || !rootElem.OriginPoint.DependsOnOtherShapeElement())
+                {
+                    rootElem = null;
+                }
+                else
+                {
+                    rootElem = rootElem.OriginPoint.GetShapeElementThisDependsOn().GetRootElement();
+                }
+            }
+            return code;
         }
 
         public void DeselectAnimation()
@@ -118,13 +153,16 @@ namespace VSMC
 
         #region Setup
 
-        public void RecreateAnimationJointsAndSetup(bool resetJoints)
+        public void RecreateAnimationJointsAndSetup(bool resetJoints, bool alreadyInitialized)
         {
             Shape s = shapeHolder.GetShape();
 
-            s.InitForAnimations("root");
-            
-            if (s.Animations == null) s.Animations = new Animation[0];
+            if (!alreadyInitialized)
+            {
+                s.InitForAnimations(rootElement.parentShape.shapeLoadedFromPath);
+                if (s.Animations == null) s.Animations = new Animation[0];
+            }
+         
             animator = ClientAnimator.Create(s.Animations, s.Elements, s.JointsById);
             //Load the animations themselves.
             allAnimations = new Dictionary<string, AnimationMetaData>();
@@ -135,13 +173,38 @@ namespace VSMC
                 anim.PrevNextKeyFrameByFrame = null;
             }
 
-            shapeHolder.ReparentGameObjectsByJoints();
+            if (!alreadyInitialized)
+            {
+                shapeHolder.ReparentGameObjectsByJoints();
+            }
 
+            FindRelevantJointsInRootElement(rootElement);
+        }
+
+        private void FindRelevantJointsInRootElement(ShapeElement rootElement)
+        {
+            jointIDsForController = new List<int>();
+            List<ShapeElement> temp = new List<ShapeElement>();
+            temp.Add(rootElement);
+            while (temp.Count > 0)
+            {
+                ShapeElement e = temp[0];
+                temp.RemoveAt(0);
+                if (!jointIDsForController.Contains(e.JointId))
+                {
+                    jointIDsForController.Add(e.JointId);
+                }
+                if (e.Children != null)
+                {
+                    temp.AddRange(e.Children);
+                }
+            }
         }
 
         public void ResetAllAnimations()
         {
             animator.ResetAllAnimationsForVSMC();
+            ProgressAnimation(0);
         }
 
         #endregion
@@ -153,25 +216,21 @@ namespace VSMC
         /// <returns></returns>
         public Matrix4x4 GetOriginMatrix()
         {
-            if (shapeHolder is AdditionalObjectHolder att)
+            if (rootElement.OriginPoint != null)
             {
-                ShapeElement step = null; //att.GetShape().Elements[0].StepParentElement;
-                if (step != null)
-                {
-                    return AnimationEditorManager.main.animationShapeControllers[0].animator.Matrices[step.JointId] * step.meshData.storedMatrix;
-                }
+                return rootElement.OriginPoint.GetAnimationOriginMatrix();
             }
             return Matrix4x4.identity;
         }
 
         public Transform GetJoint(int i)
         {
-            return shapeHolder.jointParents[i];
+            return shapeHolder.jointParentsForRootElements[rootElement][i];
         }
 
         public void ZeroAllJoints()
         {
-            for (int i = 0; i < animator.MaxJointId; i++)
+            foreach (int i in jointIDsForController)
             {
                 Transform joint = GetJoint(i);
                 joint.localPosition = Vector3.zero;
@@ -182,7 +241,7 @@ namespace VSMC
 
         public void IdentityAllJoints()
         {
-            for (int i = 0; i < animator.MaxJointId; i++)
+            foreach (int i in jointIDsForController)
             {
                 Transform joint = GetJoint(i);
                 //Flip animation matrices too.
@@ -197,7 +256,7 @@ namespace VSMC
 
         public void SetAllJointsToAnimatorMatrices()
         {
-            for (int i = 0; i < animator.MaxJointId; i++)
+            foreach (int i in jointIDsForController)
             {
                 Transform joint = GetJoint(i);
 
