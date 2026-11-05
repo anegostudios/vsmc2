@@ -4,6 +4,9 @@ using Unity.Collections;
 using UnityEngine;
 using System.Drawing;
 using System.IO;
+using UnityEngine.InputSystem.LowLevel;
+using UnityEngine.EventSystems;
+using TMPro;
 
 namespace VSMC
 {
@@ -102,6 +105,8 @@ namespace VSMC
         {
             if (deselect != VSEditMode.Animation) return;
 
+            AnimationSelector.main.DeselectCurrent();
+
             //All joints need zero-ing.
             foreach (var cont in animationShapeControllersInOrder)
             {
@@ -190,8 +195,12 @@ namespace VSMC
             foreach (AnimationRootShapeElementController t in animationShapeControllersInOrder)
             {
                 t.SetSelectedAnimation(animation.Code);
-            } 
+            }
             cSelectedAnimation = animation;
+            if (cFrame >= animation.QuantityFrames)
+            {
+                SetAnimationFrame(0, true);
+            }
             UI.RefreshUIForChangeInAnimation();
         }
 
@@ -329,8 +338,12 @@ namespace VSMC
             //However, only the current animation playing has any matrices, so an unselected animation will refresh anyway.
             if (!AnimationSelector.main.IsAnySelected()) return;
             RecalculateAnimationMatrices(AnimationSelector.main.GetCurrentlySelected());
+            if (EventSystem.current.currentSelectedGameObject != null && EventSystem.current.currentSelectedGameObject.GetComponentInChildren<TMP_InputField>() != null)
+            {
+                //Don't refresh the UI if we are still interacting with it.
+                return;
+            }
             UI.RefreshUIForFrameElementSelection(cFrame);
-
         }
 
         public AnimationRootShapeElementController GetAnimationShapeControllerFromRootShapeElement(ShapeElement rootElement)

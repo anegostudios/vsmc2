@@ -431,7 +431,10 @@ namespace VSMC
                 ShapeElement c = elems[0];
                 elems.RemoveAt(0);
                 if (c.Children != null) elems.AddRange(c.Children);
+
+                //Per-Imported Element Things
                 importShapeNames.Add(c.Name);
+                c.parentShape = this;
             }
 
             elems.AddRange(importedShape.Elements);
@@ -444,6 +447,7 @@ namespace VSMC
                 string oldName = c.Name;
                 while (shapeNames.Contains(c.Name))
                 {
+                    c.Name = ShapeElement.IncrementName(c.Name);
                     //This is correct - We only want the names of the imported shapes to interfere if the name has already been changed.
                     while (importShapeNames.Contains(c.Name))
                     {
@@ -506,6 +510,7 @@ namespace VSMC
                     importData.importedAnimations.Add(a);
                 }
             }
+
 
             return importData;
         }

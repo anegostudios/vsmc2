@@ -22,6 +22,7 @@ namespace VSMC
         public void OnAnimationDeselected(Animation anim)
         {
             GetUIEntryFromAnimationCode(anim.Code)?.OnEntryDeselected();
+            cSelected = null;
         }
 
         public override void StartCreatingEntries()

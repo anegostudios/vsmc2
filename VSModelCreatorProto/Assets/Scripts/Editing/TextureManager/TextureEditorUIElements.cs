@@ -178,10 +178,6 @@ namespace VSMC
                     VSMCLineRenderer lines = elObj.transform.GetChild(i).GetComponent<VSMCLineRenderer>();
                     lines.lineColor = cSelectedFaces[i] ? selectedFaceOnObjectLinesColor : nonSelectedFaceOnObjectLinesColor;
                     lines.priority = cSelectedFaces[i] ? 5 : 0;
-                    if (cSelectedFaces[i])
-                    {
-                        Debug.Log("Selecting face " + i);
-                    }
                 }
             }
 

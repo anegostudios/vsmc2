@@ -38,7 +38,7 @@ namespace VSMC
             kfElem.OffsetX = iPosX;
             kfElem.OffsetY = iPosY;
             kfElem.OffsetZ = iPosZ;
-            AnimationEditorManager.main.OnAnyKeyframeAddedOrRemoved();
+            AnimationEditorManager.main.OnAnyKeyframeChanged();
         }
 
         public override VSEditMode GetRequiredEditMode()

@@ -820,6 +820,8 @@ namespace VSMC
                 {
                     cElem.Name = IncrementName(cElem.Name);
                 }
+
+                cElem.parentShape = this.parentShape;
             }
             elem.ResolveFacesAndTextures(TextureManager.main.loadedTextures);
             ShapeTesselator.TesselateShapeElements(new ShapeElement[] { elem });

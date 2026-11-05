@@ -91,6 +91,7 @@ namespace VSMC
                 sizeDelta.y = 4;
             }
             rect.sizeDelta = sizeDelta;
+            rect.localScale = Vector3.one;
 
             foreach (RectTransform g in rotationMarkers)
             {

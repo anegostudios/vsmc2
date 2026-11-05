@@ -26,7 +26,8 @@ namespace VSMC
                 ShapeTesselator.ResolveAllLocalMatricesForRootShapeElement(e);
                 ShapeLoader.main.shapeHolder.CreateShapeElementGameObject(e, true);
             }
-            
+            MultiShapeManager.main.RecalculateAndApplyTransformsForAllObjects();
+
             foreach (ShapeElement elem in importedStuff.importedElements)
             {
                 ShapeElementRegistry.main.UnregisterShapeElement(elem, true);

@@ -61,24 +61,24 @@ public class ModelEditorUIElements : MonoBehaviour
         localOrGlobalOption.AddListenerOnValueChanged(SetLocalOrGlobalMode);
         elemName.onEndEdit.AddListener(val => { elemName.SetTextWithoutNotify(shapeEditor.RenameElement(val)); });
 
-        sizeX.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetSize(EnumAxis.X, fVal); } });
-        sizeY.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetSize(EnumAxis.Y, fVal); } });
-        sizeZ.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetSize(EnumAxis.Z, fVal); } });
+        sizeX.onValueChanged.AddListener(val => { if (val == "") val = "0"; if (float.TryParse(val, out float fVal)) { shapeEditor.SetSize(EnumAxis.X, fVal); } });
+        sizeY.onValueChanged.AddListener(val => { if (val == "") val = "0"; if (float.TryParse(val, out float fVal)) { shapeEditor.SetSize(EnumAxis.Y, fVal); } });
+        sizeZ.onValueChanged.AddListener(val => { if (val == "") val = "0"; if (float.TryParse(val, out float fVal)) { shapeEditor.SetSize(EnumAxis.Z, fVal); } });
         sizeX.onEndEdit.AddListener(val => { FinalizeInputTask(); });
         sizeY.onEndEdit.AddListener(val => { FinalizeInputTask(); });
         sizeZ.onEndEdit.AddListener(val => { FinalizeInputTask(); });
 
-        posX.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetPosition(EnumAxis.X, fVal); } });
-        posY.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetPosition(EnumAxis.Y, fVal); } });
-        posZ.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetPosition(EnumAxis.Z, fVal); } });
+        posX.onValueChanged.AddListener(val => { if (val == "") val = "0"; if (float.TryParse(val, out float fVal)) { shapeEditor.SetPosition(EnumAxis.X, fVal); } });
+        posY.onValueChanged.AddListener(val => { if (val == "") val = "0"; if (float.TryParse(val, out float fVal)) { shapeEditor.SetPosition(EnumAxis.Y, fVal); } });
+        posZ.onValueChanged.AddListener(val => { if (val == "") val = "0"; if (float.TryParse(val, out float fVal)) { shapeEditor.SetPosition(EnumAxis.Z, fVal); } });
         posX.onEndEdit.AddListener(val => { FinalizeInputTask(); });
         posY.onEndEdit.AddListener(val => { FinalizeInputTask(); });
         posZ.onEndEdit.AddListener(val => { FinalizeInputTask(); });
 
 
-        originX.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetRotationOrigin(EnumAxis.X, fVal); } });
-        originY.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetRotationOrigin(EnumAxis.Y, fVal); } });
-        originZ.onValueChanged.AddListener(val => { if (float.TryParse(val, out float fVal)) { shapeEditor.SetRotationOrigin(EnumAxis.Z, fVal); } });
+        originX.onValueChanged.AddListener(val => { if (val == "") val = "0"; if (float.TryParse(val, out float fVal)) { shapeEditor.SetRotationOrigin(EnumAxis.X, fVal); } });
+        originY.onValueChanged.AddListener(val => { if (val == "") val = "0"; if (float.TryParse(val, out float fVal)) { shapeEditor.SetRotationOrigin(EnumAxis.Y, fVal); } });
+        originZ.onValueChanged.AddListener(val => { if (val == "") val = "0"; if (float.TryParse(val, out float fVal)) { shapeEditor.SetRotationOrigin(EnumAxis.Z, fVal); } });
         originX.onEndEdit.AddListener(val => { FinalizeInputTask(); });
         originY.onEndEdit.AddListener(val => { FinalizeInputTask(); });
         originZ.onEndEdit.AddListener(val => { FinalizeInputTask(); });

@@ -249,7 +249,7 @@ namespace VSMC
                     lmbPositionForScrollingThroughEntries = (Vector2)Input.mousePosition;
                     foreach (RectTransform t in uvEntriesParent)
                     {
-                        if (RectTransformUtility.RectangleContainsScreenPoint(t, Input.mousePosition))
+                        if (t.gameObject.activeSelf && RectTransformUtility.RectangleContainsScreenPoint(t, Input.mousePosition))
                         {
                             uvEntries.Add(t.GetComponent<EntityTextureUVEntry>());
                         }

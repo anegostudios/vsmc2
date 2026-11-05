@@ -96,9 +96,10 @@ public class RotationSlider : MonoBehaviour
 
     private void SetRotationFromInputField(string rot)
     {
+        if (rot == "") rot = "0";
         if (float.TryParse(rot, out float v))
         {
-            SetRotationValueTo(v, true);
+            SetRotationValueTo(v, true, false);
         }
         //No longer validate here - We do validate onEndEdit though.
     }
@@ -132,10 +133,13 @@ public class RotationSlider : MonoBehaviour
         }
     }
 
-    void SetRotationValueTo(float val, bool notify = false)
+    void SetRotationValueTo(float val, bool notify = false, bool updateInputField = true)
     {
         rotationValue = val;
-        rotInputField.SetTextWithoutNotify(val.ToString(dpFormat));
+        if (updateInputField && !(EventSystem.current.currentSelectedGameObject != null && EventSystem.current.currentSelectedGameObject.GetComponentInChildren<TMP_InputField>() != null))
+        {
+            rotInputField.SetTextWithoutNotify(val.ToString(dpFormat));
+        }
         rotSlider.SetValueWithoutNotify(val);
         if (notify)
         {
